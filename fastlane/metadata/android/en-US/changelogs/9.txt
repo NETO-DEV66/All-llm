@@ -1,0 +1,3 @@
+All-LLM 3.8.1 - bouncier everywhere.
+- Bouncier everywhere: presses, list pop-in, expand/collapse, screen changes
+- In-app updates: live download progress in the banner, skip a version you do not want
