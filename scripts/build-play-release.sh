@@ -33,7 +33,5 @@ ALLLM_UPLOAD_KEY_PASSWORD="$upload_secret" \
   -PappVersionName="$version_name" \
   playReadinessCheck testOnlineDebugUnitTest lintOnlineDebug assembleRelease bundleRelease
 
-echo "Signed online bundle: $project_dir/app/build/outputs/bundle/onlineRelease/app-online-release.aab"
-echo "Signed offline bundle: $project_dir/app/build/outputs/bundle/offlineRelease/app-offline-release.aab"
-echo "Signed online APK: $project_dir/app/build/outputs/apk/online/release/app-online-release.apk"
-echo "Signed offline APK: $project_dir/app/build/outputs/apk/offline/release/app-offline-release.apk"
+echo "Signed bundle: $project_dir/app/build/outputs/bundle/onlineRelease/app-online-release.aab"
+echo "Signed APK: $project_dir/app/build/outputs/apk/online/release/app-online-release.apk"

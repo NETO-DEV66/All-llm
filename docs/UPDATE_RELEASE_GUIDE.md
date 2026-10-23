@@ -1,21 +1,20 @@
 # All-LLM: In-App Updates & Private Release Architecture
 
-This guide explains how **All-LLM** delivers in-app updates for both **Online** and **Offline** editions, how to publish future builds from a **private repository**, and how to deploy a zero-token Cloudflare Worker release proxy.
+This guide explains how **All-LLM** delivers in-app updates for its single universal edition, how to publish future builds from a **private repository**, and how to deploy a zero-token Cloudflare Worker release proxy.
 
 ---
 
-## 1. Dual-Flavor Update Architecture
+## 1. Update Architecture
 
-All-LLM is distributed in two distinct flavors (`runtimeDelivery` dimension):
+All-LLM ships one universal `online` build. Linux runtime components are fetched on demand from verified mirrors rather than bundled into the APK:
 
-| Flavor | Artifact Name | Approximate Size | Characteristics |
+| Edition | Artifact Name | Approximate Size | Characteristics |
 | :--- | :--- | :--- | :--- |
-| **Online Edition** | `app-online-release.apk` | ~85 MB | Lightweight base app. Downloads runtime components dynamically from verified mirrors. |
-| **Offline Edition** | `app-offline-release.apk` | ~880 MB | Fully bundled standalone app. Includes all core Linux runtimes, Python, Node, Android SDK, and agent tools. Zero external downloads needed. |
+| **Universal** | `alllm-universal-release.apk` | ~85 MB | Lightweight base app. Downloads runtime components dynamically from verified mirrors. |
 
-### How Flavor Isolation Works:
-1. Every APK compiles with its own `BuildConfig.APP_VARIANT` (`"online"` or `"offline"`).
-2. The release manifest `alllm-update.json` indexes both editions under `artifacts`:
+### How the Release Manifest Works:
+1. The APK compiles with `BuildConfig.APP_VARIANT` (`"online"`).
+2. The release manifest `alllm-update.json` indexes the build under `artifacts`:
    ```json
    {
      "versionCode": 28,
@@ -23,22 +22,14 @@ All-LLM is distributed in two distinct flavors (`runtimeDelivery` dimension):
      "notes": "Feature notes...",
      "artifacts": {
        "online": {
-         "url": "https://.../app-online-release.apk",
+         "url": "https://.../alllm-universal-release.apk",
          "sha256": "4b68019e1fa3b07ae7e189873d6ebefae3e0ec05f013d2f928e469e38d77bfbb",
          "sizeBytes": 87421923
-       },
-       "offline": {
-         "url": "https://.../app-offline-release.apk",
-         "sha256": "8064a7c06ebfa507d8cf1f486d3029272898c69ee33ea8536f6d50ff0630b42b",
-         "sizeBytes": 887721644
        }
      }
    }
    ```
-3. `AppUpdater.check()` inspects `BuildConfig.APP_VARIANT`:
-   - An **Online** user is strictly served `artifacts.online`.
-   - An **Offline** user is strictly served `artifacts.offline`.
-   - Neither flavor will ever mistakenly receive or install the other edition.
+3. `AppUpdater.check()` inspects `BuildConfig.APP_VARIANT` and serves the matching `artifacts` entry.
 
 ---
 
@@ -74,7 +65,7 @@ export default {
       const releaseRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`, {
         headers: {
           "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
-          "User-Agent": "Mobile-Harness-Updater",
+          "User-Agent": "All-LLM-Updater",
           "Accept": "application/vnd.github+json"
         }
       });
@@ -87,7 +78,7 @@ export default {
       const manifestRes = await fetch(manifestAsset.url, {
         headers: {
           "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
-          "User-Agent": "Mobile-Harness-Updater",
+          "User-Agent": "All-LLM-Updater",
           "Accept": "application/octet-stream"
         }
       });
@@ -96,15 +87,14 @@ export default {
       });
     }
 
-    // 2. Direct APK Download Endpoint (/download/online or /download/offline)
-    const match = url.pathname.match(/^\/download\/(online|offline)$/);
+    // 2. Direct APK Download Endpoint (/download/online)
+    const match = url.pathname.match(/^\/download\/online$/);
     if (match) {
-      const variant = match[1];
-      const targetName = `app-${variant}-release.apk`;
+      const targetName = "alllm-universal-release.apk";
       const releaseRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`, {
         headers: {
           "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
-          "User-Agent": "Mobile-Harness-Updater",
+          "User-Agent": "All-LLM-Updater",
           "Accept": "application/vnd.github+json"
         }
       });
@@ -116,7 +106,7 @@ export default {
       const downloadRes = await fetch(apkAsset.url, {
         headers: {
           "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
-          "User-Agent": "Mobile-Harness-Updater",
+          "User-Agent": "All-LLM-Updater",
           "Accept": "application/octet-stream"
         },
         redirect: "follow"
@@ -142,8 +132,8 @@ export default {
 
 ### Strategy C: Dual-Repository Mirror (Private Source + Public Release Binaries)
 1. Keep the source code repository (`NETO-DEV66/All-llm`) strictly private.
-2. Create an empty public repository (e.g. `NETO-DEV66/Mobile-Harness-Releases`).
-3. In `.github/workflows/android.yml`, add a release step that uploads the compiled APKs and `alllm-update.json` to the public releases repository using `gh release upload --repo NETO-DEV66/Mobile-Harness-Releases`.
+2. Create an empty public repository (e.g. `NETO-DEV66/All-llm`).
+3. In `.github/workflows/android.yml`, add a release step that uploads the compiled APKs and `alllm-update.json` to the public releases repository using `gh release upload --repo NETO-DEV66/All-llm`.
 
 ---
 
@@ -178,9 +168,9 @@ To release a new update:
    git push origin main --tags
    ```
 3. GitHub Actions (`.github/workflows/android.yml`) will:
-   - Build `assembleOnlineRelease` and `assembleOfflineRelease`.
-   - Sign both APKs with the permanent Codeair release key.
-   - Compute SHA-256 checksums and file sizes.
-   - Generate `alllm-update.json` with both `online` and `offline` artifacts.
-   - Publish the GitHub Release with the tag `v2.2.0`.
-4. Users opening All-LLM will automatically see the in-app update banner or dialog and download the exact matching flavor!
+   - Build `assembleOnlineRelease`.
+   - Sign the APK with the permanent NETO-DEV66 release key.
+   - Compute the SHA-256 checksum and file size.
+   - Generate `alllm-update.json` with the `online` artifact.
+   - Publish the GitHub Release with the tag `v3.5.0`.
+4. Users opening All-LLM will automatically see the in-app update banner or dialog and download the new build!

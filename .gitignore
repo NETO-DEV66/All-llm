@@ -86,3 +86,6 @@ release-notes*.md
 .signing/
 .signing-alllm/
 .signing-new/
+
+# Agent workspace state
+.openhands/

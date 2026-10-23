@@ -4325,7 +4325,7 @@ private fun ProjectsScreen(
             }
         },
         confirmButton = {
-            Button(
+            PocketButton(
                 enabled = gitUrl.isNotBlank() && !state.gitCloneRunning,
                 onClick = { onCloneGit(gitUrl); showGitDialog = false; gitUrl = "" },
             ) { Text(if (state.gitCloneRunning) "Cloning…" else "Clone project") }
@@ -4526,7 +4526,7 @@ private fun ProjectsScreen(
                 }
             },
             confirmButton = {
-                Button(
+                PocketButton(
                     enabled = !downloading && !installing,
                     onClick = {
                         if (!canInstall && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

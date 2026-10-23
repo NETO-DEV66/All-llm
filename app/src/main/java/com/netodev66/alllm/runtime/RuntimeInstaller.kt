@@ -3135,7 +3135,7 @@ printf '%s\n' "{\"hookSpecificOutput\":{\"hookEventName\":\"PermissionRequest\",
             "Accept",
             if (url.startsWith("https://api.github.com/")) "application/vnd.github+json" else "application/json",
         )
-        connection.setRequestProperty("User-Agent", "Mobile-Harness")
+        connection.setRequestProperty("User-Agent", "All-LLM")
         if (url.startsWith("https://api.github.com/")) {
             connection.setRequestProperty("X-GitHub-Api-Version", "2022-11-28")
         }

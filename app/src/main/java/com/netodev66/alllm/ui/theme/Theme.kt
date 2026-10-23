@@ -1,6 +1,7 @@
 package com.netodev66.alllm.ui.theme
 
 import android.app.Activity
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -150,6 +151,9 @@ fun PocketTheme(themeMode: AppThemeMode = AppThemeMode.SYSTEM, content: @Composa
         CompositionLocalProvider(
             LocalGlassTokens provides if (isDark) DarkGlass else LightGlass,
             LocalMotionTokens provides DefaultMotion,
+            // One seam gives every `clickable` in the app the signature bounce.
+            // Components that animate themselves opt out via `indication = null`.
+            LocalIndication provides BouncyIndication,
             content = content,
         )
     }

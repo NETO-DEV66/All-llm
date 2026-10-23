@@ -8,7 +8,7 @@
 
 A platform that does not exist on mobile devices. Run a real Linux development environment, command multi-agent AI engineering teams, automate GitHub workflows, and build Android APKs, all from your phone. No root required.
 
-[![Release v3.4.7](https://img.shields.io/badge/Release-v3.4.7-F28C52?style=flat-square&logo=github&logoColor=white)](https://github.com/NETO-DEV66/All-llm/releases/tag/v3.4.7)
+[![Release v3.5.0](https://img.shields.io/badge/Release-v3.5.0-F28C52?style=flat-square&logo=github&logoColor=white)](https://github.com/NETO-DEV66/All-llm/releases/tag/v3.5.0)
 [![CI](https://img.shields.io/github/actions/workflow/status/NETO-DEV66/All-llm/android.yml?branch=main&style=flat-square&label=CI)](https://github.com/NETO-DEV66/All-llm/actions)
 [![Android 9+](https://img.shields.io/badge/Android-9%2B-3DDC84?style=flat-square&logo=android&logoColor=white)](#-system-requirements)
 [![ARM64](https://img.shields.io/badge/CPU-ARM64-5B8DEF?style=flat-square)](#-system-requirements)
@@ -16,8 +16,8 @@ A platform that does not exist on mobile devices. Run a real Linux development e
 
 <br/>
 
-[**Download Online APK**](https://github.com/NETO-DEV66/All-llm/releases/download/v3.4.7/app-online-release.apk) &nbsp;·&nbsp;
-[**Download Offline APK**](https://github.com/NETO-DEV66/All-llm/releases/download/v3.4.7/app-offline-release.apk)
+[**Download APK**](https://github.com/NETO-DEV66/All-llm/releases/download/v3.5.0/alllm-universal-release.apk) &nbsp;·&nbsp;
+[**All releases**](https://github.com/NETO-DEV66/All-llm/releases)
 
 </div>
 
@@ -25,7 +25,7 @@ A platform that does not exist on mobile devices. Run a real Linux development e
 
 ## Table of Contents
 
-- [What is All-LLM?](#-what-is-conzyx)
+- [What is All-LLM?](#-what-is-all-llm)
 - [Documentation](#-documentation)
 - [Design Language](#-design-language)
 - [Features](#-features)
@@ -46,14 +46,13 @@ A platform that does not exist on mobile devices. Run a real Linux development e
 
 All-LLM is an AI-powered software engineering environment that runs natively on Android. It combines a rootless Linux userspace (Ubuntu 20.04 on ARM64 via PRoot) with a full mobile IDE, multi-agent AI engineering teams, autonomous GitHub workflows, an Android app factory, and hybrid cloud execution.
 
-The app ships in two editions:
+The app ships as one universal build:
 
 | Edition | Size | Description |
 |---|---|---|
-| **Online** | ~150 MB | Lightweight. Downloads Linux runtime stacks on demand from verified releases. Best for devices with limited storage. |
-| **Offline** | ~1.2 GB | Fully bundled. All toolchains (core, Python, Android SDK, Claude Code, DeepSeek, Antigravity) ship inside the APK. Works without network after install. |
+| **Universal** | ~150 MB | Downloads Linux runtime stacks on demand from verified releases, SHA-256 checked before use. Best for devices with limited storage. |
 
-Both editions share the same application ID (`com.netodev66.alllm`) and the same feature set; only the runtime delivery differs.
+Application ID `com.netodev66.alllm`; runtime delivery is the only moving part.
 
 ---
 
@@ -202,10 +201,8 @@ The app runs 100% in rootless userspace. No root, no custom ROM, no special perm
 
 ## 📲 Installation
 
-1. Go to the [v3.4.7 release page](https://github.com/NETO-DEV66/All-llm/releases/tag/v3.4.7).
-2. Download the edition you want:
-   - `app-online-release.apk` - lightweight, downloads runtimes on demand
-   - `app-offline-release.apk` - everything bundled, works offline after install
+1. Go to the [v3.5.0 release page](https://github.com/NETO-DEV66/All-llm/releases/tag/v3.5.0).
+2. Download `alllm-universal-release.apk` (signed, installs on any arm64 device).
 3. On your phone, allow **Install unknown apps** for your browser or file manager when prompted.
 4. Open the APK and tap **Install**.
 5. (Online edition) On first launch, the app downloads the verified Linux runtime stacks. Keep the app open and on Wi-Fi during this step.
@@ -258,14 +255,11 @@ git submodule update --init --recursive
 <summary><b>Debug builds</b></summary>
 
 ```bash
-# Online flavor (lightweight, runtimes downloaded on demand)
+# Debug build (runtimes downloaded on demand)
 ./gradlew assembleOnlineDebug
-
-# Offline flavor (runtimes bundled into the APK)
-./gradlew assembleOfflineDebug
 ```
 
-APKs land in `app/build/outputs/apk/<flavor>/debug/`.
+APKs land in `app/build/outputs/apk/online/debug/`.
 
 </details>
 
@@ -276,7 +270,6 @@ Release builds require the signing key (see **Release signing** below). With the
 
 ```bash
 ./gradlew assembleOnlineRelease
-./gradlew assembleOfflineRelease
 ```
 
 </details>
@@ -285,11 +278,8 @@ Release builds require the signing key (see **Release signing** below). With the
 <summary><b>Running tests</b></summary>
 
 ```bash
-# Full online unit test suite (1000+ tests)
+# Full unit test suite (1200+ tests)
 ./gradlew testOnlineDebugUnitTest
-
-# Offline flavor tests
-./gradlew testOfflineDebugUnitTest
 ```
 
 </details>
@@ -299,17 +289,14 @@ Release builds require the signing key (see **Release signing** below). With the
 | Task | Flavor | Build type | Output |
 |---|---|---|---|
 | `assembleOnlineDebug` | online | debug | `app/build/outputs/apk/online/debug/` |
-| `assembleOfflineDebug` | offline | debug | `app/build/outputs/apk/offline/debug/` |
 | `assembleOnlineRelease` | online | release | `app/build/outputs/apk/online/release/` |
-| `assembleOfflineRelease` | offline | release | `app/build/outputs/apk/offline/release/` |
 | `testOnlineDebugUnitTest` | online | debug (tests) | test report |
-| `testOfflineDebugUnitTest` | offline | debug (tests) | test report |
 
 Flavor behavior is controlled by `BuildConfig.OFFLINE_RUNTIME_BUNDLES` and `BuildConfig.APP_VARIANT`. A Play-targeted build is available with `-PplayBuild=true` (targets SDK 36 and runs the Play readiness check via `./gradlew playReadinessCheck -PplayBuild=true`).
 
 ### Runtime bundles note
 
-The offline flavor bundles Linux runtime archives (`alllm-*-arm64-*.tar.zst`). CI downloads the latest verified bundles from the `NETO-DEV66/All-llm` `runtime-*` releases into `dist/runtime-bundles/` before building, renaming them to `alllm-*`. For local offline builds, place the bundle archives plus a `manifest.json` in `dist/runtime-bundles/`; the `prepareOfflineRuntimeAssets` task picks them up automatically.
+The app ships one universal `online` flavor. It resolves Linux runtime archives (`alllm-*-arm64-*.tar.zst`) at install time from the `NETO-DEV66/All-llm` releases, SHA-256 verified, and publishes them under canonical `alllm-*` names.
 
 ---
 
@@ -410,7 +397,7 @@ All-LLM/
 
 ```
 +-------------------------------------------------------------------+
-|              All-LLM (v3.4.7)                      |
+|              All-LLM (v3.5.0)                      |
 |                                                                    |
 |  +------------------+  +-----------------+  +------------------+   |
 |  | Mobile IDE       |  | Visual DevTools |  | Android App      |   |

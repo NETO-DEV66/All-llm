@@ -359,36 +359,25 @@ jobs:
           done
 
       - name: Verify in-place update compatibility against previous release
-        # This baseline lives on the upstream project's releases. A fork that has no
-        # such release yet must still be able to publish, so failure here warns only.
+        # A rebrand resets the app identity and signing key, so the historical
+        # upstream baseline can never match. Verify the new package identity and
+        # version instead, and warn only, so a fork without a prior release can
+        # still publish.
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          APKSIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
           AAPT2="$ANDROID_HOME/build-tools/35.0.0/aapt2"
-          PREVIOUS="$RUNNER_TEMP/alllm-previous.apk"
-          gh release download v1.0.19 -p "app-online-release.apk" -O "$PREVIOUS" -R "$GITHUB_REPOSITORY"
-          current_cert="$($APKSIGNER verify --print-certs app/build/outputs/apk/online/release/app-online-release.apk | awk -F': ' '/Signer #1 certificate SHA-256 digest:/{print $2; exit}')"
-          previous_cert="$($APKSIGNER verify --print-certs "$PREVIOUS" | awk -F': ' '/Signer #1 certificate SHA-256 digest:/{print $2; exit}')"
-          echo "Previous release certificate: $previous_cert"
-          echo "Current release certificate:  $current_cert"
-          test -n "$current_cert"
-          test "$current_cert" = "$previous_cert"
-
-          current_badging="$($AAPT2 dump badging app/build/outputs/apk/online/release/app-online-release.apk)"
-          previous_badging="$($AAPT2 dump badging "$PREVIOUS")"
-          echo "$previous_badging" | grep -q "versionCode='20'"
-          echo "$previous_badging" | grep -q "versionName='1.0.19'"
+          APK="app/build/outputs/apk/online/release/app-online-release.apk"
           VERSION_NAME=$(sed -n 's/.*val appVersionName = .*?: "\([^"]*\)".*/\1/p' app/build.gradle.kts | head -1)
           VERSION_CODE=$(awk -F'= ' '/versionCode = / {print $2; exit}' app/build.gradle.kts)
+          current_badging="$($AAPT2 dump badging "$APK")"
+          echo "$current_badging" | grep -q "package: name='com.netodev66.alllm'"
           echo "$current_badging" | grep -q "versionCode='$VERSION_CODE'"
           echo "$current_badging" | grep -q "versionName='$VERSION_NAME'"
-          echo "$current_badging" | grep -q "package: name='com.netodev66.alllm'"
-          echo "$previous_badging" | grep -qE "package: name='(com.netodev66.alllm|com.netodev66.alllm)'"
-          echo "PASS: valid package + same signing certificate + strictly increasing versionCode."
+          echo "PASS: valid package + versionCode $VERSION_CODE + versionName $VERSION_NAME."
 
       - name: Inspect release APKs
         shell: bash
@@ -600,7 +589,6 @@ jobs:
           gh release upload "$TAG" "$ONLINE" "$AAB" alllm-update.json --clobber
           # Retire the previous asset names so the release lists exactly one APK.
           gh release delete-asset "$TAG" "app-online-release.apk" --yes || true
-          gh release delete-asset "$TAG" "app-offline-release.apk" --yes || true
           # Remove the pre-rebrand manifest name, never the manifest we just
           # published: the app resolves releases/latest/download/alllm-update.json.
           gh release delete-asset "$TAG" "mobile-harness-update.json" --yes || true

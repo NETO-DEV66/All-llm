@@ -626,7 +626,7 @@ fun CodeEditorScreen(
                 )
             },
             confirmButton = {
-                TextButton(
+                PocketTextButton(
                     enabled = !saving,
                     onClick = {
                         scope.launch {
@@ -677,7 +677,7 @@ fun CodeEditorScreen(
                 )
             },
             confirmButton = {
-                TextButton(
+                PocketTextButton(
                     enabled = isValidNewEntryName(newEntryName),
                     onClick = {
                         val name = newEntryName.trim()
@@ -703,7 +703,7 @@ fun CodeEditorScreen(
                 )
             },
             confirmButton = {
-                TextButton(
+                PocketTextButton(
                     enabled = isValidNewEntryName(newEntryName),
                     onClick = {
                         val name = newEntryName.trim()
@@ -758,7 +758,7 @@ fun CodeEditorScreen(
                 )
             },
             confirmButton = {
-                TextButton(
+                PocketTextButton(
                     enabled = !savingSecondary,
                     onClick = {
                         val target = secondaryDiscardSwitchTo
@@ -1325,7 +1325,7 @@ fun CodeEditorScreen(
                 },
                 actions = {
                     if (dirty && !readOnly) {
-                        IconButton(
+                        PocketIconButton(
                             enabled = !saving,
                             onClick = {
                                 val textToSave = value.text
@@ -1792,7 +1792,7 @@ fun CodeEditorScreen(
                             ) {
                                 // QA H3: pane-2 save — edits used to be silently discarded.
                                 if (secondaryDirty && !readOnly) {
-                                    IconButton(
+                                    PocketIconButton(
                                         enabled = !savingSecondary,
                                         onClick = saveSecondary,
                                         modifier = Modifier.size(48.dp),
@@ -1839,7 +1839,7 @@ fun CodeEditorScreen(
                                         }
                                     }
                                 }
-                                IconButton(
+                                PocketIconButton(
                                     // QA H3: closing split view with unsaved
                                     // pane-2 edits asks first.
                                     onClick = {
