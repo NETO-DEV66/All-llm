@@ -63,9 +63,9 @@ import kotlinx.coroutines.delay
 /**
  * Root background layer.
  *
- * This used to be the animated, blurred liquid-glass backdrop. It is now a plain
- * opaque fill of the theme background: solid surfaces need something flat to sit
- * on, and a drifting gradient behind them only made the borders look unsteady.
+ * A plain opaque fill of the theme background. Solid surfaces need something flat
+ * to sit on, and a drifting gradient behind them only made the borders look
+ * unsteady.
  */
 @Composable
 fun PocketBackdrop(

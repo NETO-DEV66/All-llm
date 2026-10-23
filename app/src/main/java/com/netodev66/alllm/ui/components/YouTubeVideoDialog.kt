@@ -62,6 +62,9 @@ import com.netodev66.alllm.ui.theme.pocketTokens
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
+import com.netodev66.alllm.ui.theme.bouncyExpandEnter
+import com.netodev66.alllm.ui.theme.bouncyEntry
+import com.netodev66.alllm.ui.theme.bouncyExpandExit
 
 
 val YouTubeBrandRed = Color(0xFFE60000)
@@ -104,7 +107,8 @@ fun YouTubeVideoDialog(
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp),
+                .padding(vertical = 16.dp)
+                .bouncyEntry(key = Unit, fromScale = 0.92f),
         ) {
             Column(
                 modifier = Modifier
@@ -215,7 +219,11 @@ fun YouTubeVideoDialog(
                 )
 
                 // Validation Status Banner
-                AnimatedVisibility(visible = validationResult != null) {
+                AnimatedVisibility(
+                    visible = validationResult != null,
+                    enter = bouncyExpandEnter(),
+                    exit = bouncyExpandExit(),
+                ) {
                     Column(modifier = Modifier.padding(top = 6.dp, start = 2.dp, end = 2.dp)) {
                         if (isValid && videoInfo != null) {
                             Row(

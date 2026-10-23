@@ -55,6 +55,7 @@ import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
 import com.netodev66.alllm.ui.theme.PocketAlertDialog
+import com.netodev66.alllm.ui.theme.bouncyEntry
 
 
 private data class PermissionRow(val label: String, val desc: String)
@@ -95,7 +96,9 @@ fun CustomAgentEditorDialog(
         Surface(
             shape = RoundedCornerShape(16.dp),
             color = pocketTokens.fill,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .bouncyEntry(key = Unit, fromScale = 0.92f),
         ) {
             Column(
                 modifier = Modifier
@@ -350,7 +353,9 @@ fun BuiltinAgentCustomizeDialog(
         Surface(
             shape = RoundedCornerShape(16.dp),
             color = pocketTokens.fill,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .bouncyEntry(key = Unit, fromScale = 0.92f),
         ) {
             Column(
                 modifier = Modifier

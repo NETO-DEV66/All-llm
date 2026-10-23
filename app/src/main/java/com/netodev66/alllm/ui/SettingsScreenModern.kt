@@ -468,7 +468,11 @@ fun SettingsScreen(
                                     modifier = Modifier.size(20.dp),
                                 )
                             }
-                            AnimatedVisibility(visible = expanded) {
+                            AnimatedVisibility(
+                                visible = expanded,
+                                enter = bouncyExpandEnter(),
+                                exit = bouncyExpandExit(),
+                            ) {
                                 Column(
                                     Modifier.fillMaxWidth().padding(start = 4.dp, end = 4.dp, bottom = 12.dp),
                                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -677,7 +681,11 @@ fun SettingsScreen(
                     ) {
                         Text("Advanced runtime reliability")
                     }
-                    AnimatedVisibility(showReliabilityHelp) {
+                    AnimatedVisibility(
+                        visible = showReliabilityHelp,
+                        enter = bouncyExpandEnter(),
+                        exit = bouncyExpandExit(),
+                    ) {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(
                                 "Ensure tasks never pause when switching to recent apps or locking the phone.",

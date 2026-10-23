@@ -18,11 +18,9 @@ import androidx.compose.ui.unit.dp
 /**
  * Solid design tokens.
  *
- * The app previously shipped a translucent "liquid glass" language: fills were
- * veils over an animated backdrop and every pane carried a specular sheen, an
- * edge-light stroke and a GPU blur pass. That is gone. Panes are now opaque
- * surfaces with a real hairline border and a real elevation shadow, which reads
- * cleaner over the dense developer UI and costs no per-frame blur.
+ * Panes are opaque surfaces with a real hairline border and a real elevation
+ * shadow, which reads cleaner over the dense developer UI than a translucent
+ * veil and costs no per-frame blur.
  *
  * The token set is deliberately small: a pane fill, a raised fill, an inset fill,
  * two border weights, a shadow tint, and the near-opaque reading surface used by

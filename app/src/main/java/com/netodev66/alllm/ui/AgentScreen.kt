@@ -132,6 +132,8 @@ import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
+import com.netodev66.alllm.ui.theme.bouncyExpandEnter
+import com.netodev66.alllm.ui.theme.bouncyExpandExit
 
 
 private data class KeyConnectionStatus(
@@ -2063,7 +2065,11 @@ private fun AgentProviderCard(
                 onClick = { connectionExpanded = !connectionExpanded },
             )
 
-            AnimatedVisibility(connectionExpanded) {
+            AnimatedVisibility(
+                visible = connectionExpanded,
+                enter = bouncyExpandEnter(),
+                exit = bouncyExpandExit(),
+            ) {
                 Column(
                     modifier = Modifier.padding(top = 12.dp, bottom = 4.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -2118,7 +2124,11 @@ private fun AgentProviderCard(
                     onClick = { endpointExpanded = !endpointExpanded },
                 )
 
-                AnimatedVisibility(endpointExpanded) {
+                AnimatedVisibility(
+                    visible = endpointExpanded,
+                    enter = bouncyExpandEnter(),
+                    exit = bouncyExpandExit(),
+                ) {
                     Column(
                         modifier = Modifier.padding(top = 8.dp, bottom = 10.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -2284,7 +2294,11 @@ private fun AgentProviderCard(
                 }
             }
 
-            AnimatedVisibility(keysExpanded) {
+            AnimatedVisibility(
+                visible = keysExpanded,
+                enter = bouncyExpandEnter(),
+                exit = bouncyExpandExit(),
+            ) {
                 Column(
                     modifier = Modifier.padding(top = 10.dp, bottom = 4.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -2333,7 +2347,11 @@ private fun AgentProviderCard(
                         }
                     }
 
-                    AnimatedVisibility(addKeyExpanded) {
+                    AnimatedVisibility(
+                        visible = addKeyExpanded,
+                        enter = bouncyExpandEnter(),
+                        exit = bouncyExpandExit(),
+                    ) {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedTextField(
                                 value = newKeyName,

@@ -309,6 +309,7 @@ import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
 import com.netodev66.alllm.ui.theme.PocketAlertDialog
 import com.netodev66.alllm.ui.theme.bouncyExpandEnter
+import com.netodev66.alllm.ui.theme.bouncyExpandExit
 
 
 // All-LLM branding is rendered in the shared setup headers.
@@ -4109,7 +4110,11 @@ private fun ProjectsScreen(
                                 modifier = Modifier.size(20.dp),
                             )
                         }
-                        AnimatedVisibility(visible = isImportExpanded) {
+                        AnimatedVisibility(
+                            visible = isImportExpanded,
+                            enter = bouncyExpandEnter(),
+                            exit = bouncyExpandExit(),
+                        ) {
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()

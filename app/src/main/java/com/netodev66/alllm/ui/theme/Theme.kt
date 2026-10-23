@@ -27,11 +27,10 @@ val PocketOutline = Color(0xFF2A3240)
 /**
  * Dark scheme, solid.
  *
- * Every surface role is opaque. The app used to ship translucent veils over an
- * animated backdrop; that language is gone, so `background`, `surface` and the
- * container roles are now plain colours and the borders carry the separation.
- * Container roles still step up in brightness with elevation so menus, sheets and
- * dialogs read as sitting above the panels beneath them.
+ * Every surface role is opaque, so `background`, `surface` and the container roles
+ * are plain colours and the borders carry the separation. Container roles still
+ * step up in brightness with elevation so menus, sheets and dialogs read as
+ * sitting above the panels beneath them.
  */
 private val DarkColors = darkColorScheme(
     primary = PocketOrange,
