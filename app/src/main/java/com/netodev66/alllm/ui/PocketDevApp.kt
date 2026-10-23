@@ -19,6 +19,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
+import com.netodev66.alllm.AppCrashLogger
 import com.netodev66.alllm.BuildConfig
 import com.netodev66.alllm.R
 import com.netodev66.alllm.data.AppPreferences
@@ -785,6 +786,8 @@ private fun BackgroundTaskSetupScreen(
     onContinue: () -> Unit,
 ) {
     val context = LocalContext.current
+    // `getSystemService` can still return null on stripped-down ROMs; the old code
+    // dereferenced it directly, so the battery step of setup died with an NPE.
     val powerManager = context.getSystemService(PowerManager::class.java)
     fun notificationsAllowed(): Boolean {
         val runtimeGranted = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
@@ -792,9 +795,14 @@ private fun BackgroundTaskSetupScreen(
                 context,
                 Manifest.permission.POST_NOTIFICATIONS,
             ) == PackageManager.PERMISSION_GRANTED
-        return runtimeGranted && androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled()
+        val enabled = runCatching {
+            androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled()
+        }.getOrDefault(true)
+        return runtimeGranted && enabled
     }
-    fun batteryUnrestricted(): Boolean = powerManager.isIgnoringBatteryOptimizations(context.packageName)
+    fun batteryUnrestricted(): Boolean = runCatching {
+        powerManager?.isIgnoringBatteryOptimizations(context.packageName) ?: true
+    }.getOrDefault(true)
 
     var currentStep by rememberSaveable { mutableIntStateOf(0) }
     var notificationGranted by remember { mutableStateOf(notificationsAllowed()) }
@@ -814,6 +822,44 @@ private fun BackgroundTaskSetupScreen(
     val batteryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         batteryGranted = batteryUnrestricted()
         if (batteryGranted) currentStep = 2
+    }
+
+    fun openAppNotificationSettings() {
+        runCatching {
+            notificationSettingsLauncher.launch(
+                Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(
+                    Settings.EXTRA_APP_PACKAGE,
+                    context.packageName,
+                ),
+            )
+        }.onFailure {
+            runCatching {
+                notificationSettingsLauncher.launch(
+                    Intent(
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.parse("package:${context.packageName}"),
+                    ),
+                )
+            }
+        }
+    }
+    fun requestBatteryExemption() {
+        val request = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+            data = Uri.parse("package:${context.packageName}")
+        }
+        // Some OEM ROMs ship without the request activity; fall back to the app
+        // details page, then to the global battery-optimisation list.
+        runCatching { batteryLauncher.launch(request) }
+            .recoverCatching {
+                batteryLauncher.launch(
+                    Intent(
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.parse("package:${context.packageName}"),
+                    ),
+                )
+            }
+            .recoverCatching { batteryLauncher.launch(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)) }
+            .onFailure { AppCrashLogger.log("Battery exemption intent unavailable: ${it.message}") }
     }
 
     LaunchedEffect(Unit) {
@@ -883,7 +929,8 @@ private fun BackgroundTaskSetupScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
+                .bouncyEntry(key = currentStep, fromScale = 0.97f),
         ) {
             Spacer(Modifier.height(8.dp))
             Text("Prepare for reliable setup", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
@@ -951,32 +998,19 @@ private fun BackgroundTaskSetupScreen(
                                     Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !notificationDenied -> {
                                         // Targets below API 33 can have notification prompts tied to
                                         // channel creation. Create channels only after this explicit tap.
-                                        NotificationCoordinator.ensureChannels(context)
-                                        RuntimeSetupService.ensureNotificationChannel(context)
-                                        notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                        runCatching {
+                                            NotificationCoordinator.ensureChannels(context)
+                                            RuntimeSetupService.ensureNotificationChannel(context)
+                                        }.onFailure { AppCrashLogger.log("Notification channel setup failed: ${it.message}") }
+                                        runCatching { notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) }
+                                            .onFailure { openAppNotificationSettings() }
                                     }
-                                    else -> notificationSettingsLauncher.launch(
-                                        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(
-                                            Settings.EXTRA_APP_PACKAGE,
-                                            context.packageName,
-                                        ),
-                                    )
+                                    else -> openAppNotificationSettings()
                                 }
                                 1 -> if (batteryGranted) {
                                     currentStep = 2
                                 } else {
-                                    val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                                        data = Uri.parse("package:${context.packageName}")
-                                    }
-                                    runCatching { batteryLauncher.launch(intent) }
-                                        .onFailure {
-                                            batteryLauncher.launch(
-                                                Intent(
-                                                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                                                    Uri.parse("package:${context.packageName}"),
-                                                ),
-                                            )
-                                        }
+                                    requestBatteryExemption()
                                 }
                                 else -> {
                                     taskProtectionConfirmed = true
@@ -2798,13 +2832,24 @@ private fun ProviderSetupScreen(
             )
         },
     ) { padding ->
+        // Steps 1 and 2 render a LazyColumn. A LazyColumn measured against the
+        // unbounded max-height that a `verticalScroll` parent hands down throws
+        // "Vertically scrollable component was measured with an infinity maximum
+        // height constraints" — which is what killed setup step 2. So the container
+        // itself must stay bounded and each step owns its own scrolling.
         Column(
-            // Medium: the provider form used to clip on short screens; the
-            // keyboard also covered the API-key field.
-            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 20.dp).verticalScroll(rememberScrollState()).imePadding(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(horizontal = 20.dp)
+                // Each step pops in with the app's bounce spring, so moving through
+                // setup feels as physical as every other transition in the app.
+                .bouncyEntry(key = step, fromScale = 0.97f),
         ) {
-            if (onboarding) StepDots(step)
-            Spacer(Modifier.height(16.dp))
+            if (onboarding) {
+                StepDots(step)
+                Spacer(Modifier.height(16.dp))
+            }
             when (step) {
                 0 -> DeviceCheckStep(context, onContinue = { step = 1 })
                 1 -> ProviderChoiceStep(
@@ -2915,7 +2960,10 @@ private fun DeviceCheckStep(context: Context, onContinue: () -> Unit) {
     val totalRamLabel = String.format(java.util.Locale.US, "%.1f", totalRamGb)
     val arm64 = supportsArm64Runtime(Build.SUPPORTED_ABIS, System.getProperty("os.arch"))
     val compatible = arm64
-    Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
+    Column(
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
+    ) {
         BrandMark()
         Text("Your phone is the workspace", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
         Text("All-LLM checks compatibility before downloading the private Linux runtime.", color = MaterialTheme.colorScheme.onSurfaceVariant)

@@ -3,6 +3,8 @@ package com.netodev66.alllm.ui.theme
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Build
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -27,6 +29,12 @@ import androidx.compose.ui.unit.dp
  * only exposes opaque surface roles, so translucent "glass" surfaces need their own
  * token set: the fill, the specular highlight gradient, the hairline rim, and the
  * ambient shadow that makes the pane read as a raised sheet of glass.
+ *
+ * The extra edge tokens ([edgeLight], [edgeShadow], [innerGlow], [ambientTint])
+ * are what separate a convincing pane from a flat translucent rectangle: real glass
+ * catches a bright sliver of light on the edge nearest the light source, darkens the
+ * opposite edge where the thickness occludes the backdrop, and lifts a faint inner
+ * glow just inside the rim.
  */
 @Immutable
 data class GlassTokens(
@@ -40,6 +48,14 @@ data class GlassTokens(
     val specular: Color,
     val sheen: Color,
     val scrim: Color,
+    /** Bright 1px sliver on the top/left edge, where light enters the pane. */
+    val edgeLight: Color,
+    /** Faint darkening on the bottom/right edge, where the pane's thickness reads. */
+    val edgeShadow: Color,
+    /** Soft glow just inside the rim that keeps the glass from looking like a sticker. */
+    val innerGlow: Color,
+    /** Tint of the ambient drop shadow; a neutral black shadow reads as a flat hole. */
+    val ambientTint: Color,
     /**
      * Near-opaque fill for panes that hold dense text (code editor, terminal).
      * The glass language is deliberately translucent, but code needs a stable
@@ -72,6 +88,10 @@ internal val DarkGlass = GlassTokens(
     specular = Color(0x2EFFFFFF),
     sheen = Color(0x14FFFFFF),
     scrim = Color(0xB3080B11),
+    edgeLight = Color(0x59FFFFFF),
+    edgeShadow = Color(0x66000000),
+    innerGlow = Color(0x14FFFFFF),
+    ambientTint = Color(0xFF06080C),
     readingSurface = Color(0xF20A0E15),
     isDark = true,
     backdropBlurRadius = 0.dp,
@@ -98,6 +118,10 @@ internal val LightGlass = GlassTokens(
     specular = Color(0x99FFFFFF),
     sheen = Color(0x40FFFFFF),
     scrim = Color(0x52101820),
+    edgeLight = Color(0xE6FFFFFF),
+    edgeShadow = Color(0x1F0B1226),
+    innerGlow = Color(0x1AFFFFFF),
+    ambientTint = Color(0xFF2A3446),
     readingSurface = Color(0xF5FBFCFE),
     isDark = false,
     backdropBlurRadius = 0.dp,
@@ -198,6 +222,56 @@ fun glassRimBrush(tokens: GlassTokens): Brush = Brush.horizontalGradient(
         Color.Transparent,
     ),
 )
+
+/**
+ * Edge-light gradient stroked inside the rim: bright where the light enters at the top,
+ * a faint shadow where the pane's thickness occludes the backdrop at the bottom.
+ */
+fun glassEdgeLightBrush(tokens: GlassTokens): Brush = Brush.verticalGradient(
+    colors = listOf(
+        tokens.edgeLight,
+        Color.Transparent,
+        Color.Transparent,
+        tokens.edgeShadow,
+    ),
+)
+
+/** Soft glow confined to the top sliver of a pane, just inside the rim. */
+fun glassInnerGlowBrush(tokens: GlassTokens): Brush = Brush.verticalGradient(
+    0f to tokens.innerGlow,
+    0.14f to Color.Transparent,
+)
+
+/**
+ * The complete liquid-glass pane treatment in one modifier: translucent fill, vertical
+ * specular sheen, an optional top inner glow, the hairline rim, and the edge-light stroke.
+ *
+ * Fills are applied before strokes so the rim always sits on top of the glass. Use this
+ * instead of hand-layering `.background()`/`.border()` calls, which is how panes drifted
+ * out of sync before.
+ *
+ * [innerGlow] is skipped for panes that repeat inside a scrolling list: the extra
+ * full-size gradient pass is not worth it at that count, and the edge-light stroke alone
+ * already carries the glass read.
+ */
+fun Modifier.glassPane(
+    tokens: GlassTokens,
+    shape: Shape,
+    base: Color = tokens.fill,
+    borderWidth: Dp = 1.dp,
+    specularStrength: Float = 1f,
+    innerGlow: Boolean = true,
+    edgeLight: Boolean = true,
+): Modifier {
+    var modifier = this
+        .clip(shape)
+        .background(base)
+        .background(glassSpecularBrush(tokens, specularStrength))
+    if (innerGlow) modifier = modifier.background(glassInnerGlowBrush(tokens))
+    modifier = modifier.border(borderWidth, tokens.border, shape)
+    if (edgeLight) modifier = modifier.border(1.dp, glassEdgeLightBrush(tokens), shape)
+    return modifier
+}
 
 /** Convenience: the glass fill colour, optionally strengthened for focused surfaces. */
 @Composable

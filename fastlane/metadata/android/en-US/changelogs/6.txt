@@ -1,0 +1,6 @@
+All-LLM 3.6.0 - deeper liquid glass, bounce everywhere.
+- Fixed the setup crash on step 2 (nested scroll inside the wizard container)
+- Fixed the crash when opening the battery step on devices without the PowerManager service
+- Glass panes now carry a real edge light and inner glow instead of a flat translucent fill
+- Bounce motion extended to every setup step, wizard stage and screen switch
+- Hardened stored-state parsing so a damaged checkpoint or config can no longer crash the app

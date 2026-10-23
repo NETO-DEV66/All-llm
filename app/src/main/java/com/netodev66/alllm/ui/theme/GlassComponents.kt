@@ -195,11 +195,8 @@ fun GlassSurface(
 
     Column(
         modifier = modifier
-            .shadow(elevation, shape, clip = false, ambientColor = Color.Black.copy(alpha = 0.35f))
-            .clip(shape)
-            .background(base)
-            .background(glassSpecularBrush(tokens))
-            .border(borderWidth, tokens.border, shape)
+            .shadow(elevation, shape, clip = false, ambientColor = tokens.ambientTint.copy(alpha = 0.45f))
+            .glassPane(tokens, shape, base = base, borderWidth = borderWidth)
             .padding(contentPadding),
         content = content,
     )
@@ -222,11 +219,8 @@ fun GlassPane(
 
     Box(
         modifier = modifier
-            .shadow(elevation, shape, clip = false, ambientColor = Color.Black.copy(alpha = 0.35f))
-            .clip(shape)
-            .background(base)
-            .background(glassSpecularBrush(tokens))
-            .border(borderWidth, tokens.border, shape),
+            .shadow(elevation, shape, clip = false, ambientColor = tokens.ambientTint.copy(alpha = 0.45f))
+            .glassPane(tokens, shape, base = base, borderWidth = borderWidth),
         content = content,
     )
 }
@@ -253,11 +247,8 @@ fun GlassCard(
     Column(
         modifier = modifier
             .bounceClick(enabled = enabled, onClick = onClick)
-            .shadow(12.dp, shape, clip = false, ambientColor = Color.Black.copy(alpha = 0.35f))
-            .clip(shape)
-            .background(base)
-            .background(glassSpecularBrush(tokens))
-            .border(1.dp, tokens.border, shape)
+            .shadow(12.dp, shape, clip = false, ambientColor = tokens.ambientTint.copy(alpha = 0.45f))
+            .glassPane(tokens, shape, base = base, innerGlow = false)
             .padding(contentPadding),
         content = content,
     )
@@ -544,6 +535,11 @@ fun GlassNavigationBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(glassSpecularBrush(tokens, 0.5f))
+                .border(
+                    1.dp,
+                    glassEdgeLightBrush(tokens),
+                    RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
+                )
                 .height(72.dp),
             verticalAlignment = Alignment.CenterVertically,
             content = content,
@@ -612,11 +608,8 @@ fun GlassDialogContainer(
     val tokens = glassTokens
     Column(
         modifier = modifier
-            .shadow(24.dp, shape, clip = false, ambientColor = Color.Black.copy(alpha = 0.5f))
-            .clip(shape)
-            .background(tokens.fillStrong)
-            .background(glassSpecularBrush(tokens))
-            .border(1.dp, tokens.border, shape)
+            .shadow(24.dp, shape, clip = false, ambientColor = tokens.ambientTint.copy(alpha = 0.6f))
+            .glassPane(tokens, shape, base = tokens.fillStrong)
             .padding(20.dp),
         content = content,
     )
@@ -645,10 +638,7 @@ fun GlassClickableSurface(
     Box(
         modifier = modifier
             .bounceClick(enabled = enabled, onClick = onClick)
-            .clip(shape)
-            .background(color)
-            .background(glassSpecularBrush(tokens, 0.8f))
-            .then(if (border != null) Modifier.border(border, shape) else Modifier),
+            .glassPane(tokens, shape, base = color, borderWidth = if (border != null) 1.dp else 0.dp, innerGlow = false),
         propagateMinConstraints = true,
     ) {
         androidx.compose.runtime.CompositionLocalProvider(
@@ -678,10 +668,7 @@ fun GlassClickableCard(
     Column(
         modifier = modifier
             .bounceClick(enabled = enabled, onClick = onClick)
-            .clip(shape)
-            .background(colors.containerColor)
-            .background(glassSpecularBrush(tokens, 0.8f))
-            .then(if (border != null) Modifier.border(border, shape) else Modifier),
+            .glassPane(tokens, shape, base = colors.containerColor, borderWidth = if (border != null) 1.dp else 0.dp, innerGlow = false),
         content = content,
     )
 }
