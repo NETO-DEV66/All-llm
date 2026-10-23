@@ -78,8 +78,13 @@ jobs:
               "agy": "alllm-agy-arm64-",
           }
 
-          def published_name(name):
-              return name
+          # Bundles published before the rebrand carry the legacy prefix. Accept
+          # them as a source and republish them under the canonical name so the
+          # app's RUNTIME_RELEASE_BASE_URL lookup keeps resolving.
+          legacy_prefixes = {c: v.replace("alllm-", "conzyx-") for c, v in prefixes.items()}
+
+          def published_name(component, version):
+              return f"{prefixes[component]}{version}.tar.zst"
 
           def version_key(value):
               return tuple(int(x) for x in re.findall(r"\d+", value)) or (0,)
@@ -91,8 +96,12 @@ jobs:
               for asset in release.get("assets", []):
                   name = asset.get("name", "")
                   for component, prefix in prefixes.items():
-                      if name.startswith(prefix) and name.endswith(".tar.zst"):
-                          version = name[len(prefix):-len(".tar.zst")]
+                      matched_prefix = next(
+                          (mp for mp in (prefix, legacy_prefixes[component]) if name.startswith(mp)),
+                          None,
+                      )
+                      if matched_prefix is not None and name.endswith(".tar.zst"):
+                          version = name[len(matched_prefix):-len(".tar.zst")]
                           if version and re.fullmatch(r"[0-9A-Za-z._+-]+", version):
                               candidate = (version_key(version), version, asset)
                               current = selected.get(component)
@@ -106,7 +115,7 @@ jobs:
           manifest = {}
           for component, (_, version, asset) in selected.items():
               name = asset["name"]
-              out_name = published_name(name)
+              out_name = published_name(component, version)
               out = os.path.join("dist/runtime-bundles", out_name)
               download = urllib.request.Request(
                   asset["url"],
@@ -223,7 +232,7 @@ jobs:
           ALLLM_RELEASE_KEY_ALIAS: ${{ secrets.ALLLM_RELEASE_KEY_ALIAS }}
         run: |
           set -euo pipefail
-          EXPECTED_SHA256="18:EB:C0:60:5B:61:30:14:8D:8B:9C:AE:46:86:73:F7:DF:6C:B8:1A:47:45:B8:2C:33:D4:45:53:E4:BF:75:02"
+          EXPECTED_SHA256="DB:80:D7:AB:56:F6:88:D0:E8:7B:13:A1:24:35:B9:E4:CB:DB:2F:45:12:D3:12:F8:37:65:32:96:D8:33:23:A3"
           ACTUAL_SHA256="$(keytool -list -v -keystore "$RUNNER_TEMP/alllm-release.jks" -storepass "$ALLLM_RELEASE_STORE_PASSWORD" -alias "$ALLLM_RELEASE_KEY_ALIAS" | awk -F': ' '/SHA256:/{print $2; exit}')"
           echo "Release signing SHA-256: $ACTUAL_SHA256"
           if [[ "$ACTUAL_SHA256" != "$EXPECTED_SHA256" ]]; then
@@ -258,8 +267,13 @@ jobs:
               "agy": "alllm-agy-arm64-",
           }
 
-          def published_name(name):
-              return name
+          # Bundles published before the rebrand carry the legacy prefix. Accept
+          # them as a source and republish them under the canonical name so the
+          # app's RUNTIME_RELEASE_BASE_URL lookup keeps resolving.
+          legacy_prefixes = {c: v.replace("alllm-", "conzyx-") for c, v in prefixes.items()}
+
+          def published_name(component, version):
+              return f"{prefixes[component]}{version}.tar.zst"
 
           def version_key(value):
               return tuple(int(x) for x in re.findall(r"\d+", value)) or (0,)
@@ -271,8 +285,12 @@ jobs:
               for asset in release.get("assets", []):
                   name = asset.get("name", "")
                   for component, prefix in prefixes.items():
-                      if name.startswith(prefix) and name.endswith(".tar.zst"):
-                          version = name[len(prefix):-len(".tar.zst")]
+                      matched_prefix = next(
+                          (mp for mp in (prefix, legacy_prefixes[component]) if name.startswith(mp)),
+                          None,
+                      )
+                      if matched_prefix is not None and name.endswith(".tar.zst"):
+                          version = name[len(matched_prefix):-len(".tar.zst")]
                           if version and re.fullmatch(r"[0-9A-Za-z._+-]+", version):
                               candidate = (version_key(version), version, asset)
                               current = selected.get(component)
@@ -286,7 +304,7 @@ jobs:
           manifest = {}
           for component, (_, version, asset) in selected.items():
               name = asset["name"]
-              out_name = published_name(name)
+              out_name = published_name(component, version)
               out = os.path.join("dist/runtime-bundles", out_name)
               download = urllib.request.Request(
                   asset["url"],
@@ -583,7 +601,9 @@ jobs:
           # Retire the previous asset names so the release lists exactly one APK.
           gh release delete-asset "$TAG" "app-online-release.apk" --yes || true
           gh release delete-asset "$TAG" "app-offline-release.apk" --yes || true
-          gh release delete-asset "$TAG" "alllm-update.json" --yes || true
+          # Remove the pre-rebrand manifest name, never the manifest we just
+          # published: the app resolves releases/latest/download/alllm-update.json.
+          gh release delete-asset "$TAG" "mobile-harness-update.json" --yes || true
           # The app's first-run install and runtime-bundle updates resolve
           # bundles from this repo's own releases (RUNTIME_RELEASE_BASE_URL /
           # latestRuntimeBundle) — never from the upstream author's repo. The
