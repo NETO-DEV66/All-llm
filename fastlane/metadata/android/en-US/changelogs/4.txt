@@ -1,0 +1,2 @@
+Liquid glass redesign: translucent panels, animated backdrop, real GPU blur on Android 12+,
+Inter typography, and a spring "bounce" on every button, tab and screen transition.
