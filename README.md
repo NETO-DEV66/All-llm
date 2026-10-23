@@ -8,8 +8,8 @@
 
 A platform that does not exist on mobile devices. Run a real Linux development environment, command multi-agent AI engineering teams, automate GitHub workflows, and build Android APKs, all from your phone. No root required.
 
-[![Release v3.4.4](https://img.shields.io/badge/Release-v3.4.7-F28C52?style=flat-square&logo=github&logoColor=white)](https://github.com/NETO-DEV66/All-llm/releases/tag/v3.4.7)
-[![CI](https://img.shields.io/github/actions/workflow/status/NETO-DEV66/All-llm/android.yml?branch=v3&style=flat-square&label=CI)](https://github.com/sunmughan/Conzyx/actions)
+[![Release v3.4.7](https://img.shields.io/badge/Release-v3.4.7-F28C52?style=flat-square&logo=github&logoColor=white)](https://github.com/NETO-DEV66/All-llm/releases/tag/v3.4.7)
+[![CI](https://img.shields.io/github/actions/workflow/status/NETO-DEV66/All-llm/android.yml?branch=main&style=flat-square&label=CI)](https://github.com/NETO-DEV66/All-llm/actions)
 [![Android 9+](https://img.shields.io/badge/Android-9%2B-3DDC84?style=flat-square&logo=android&logoColor=white)](#-system-requirements)
 [![ARM64](https://img.shields.io/badge/CPU-ARM64-5B8DEF?style=flat-square)](#-system-requirements)
 [![License MIT](https://img.shields.io/badge/License-MIT-8B7CF6?style=flat-square)](LICENSE)
@@ -27,6 +27,7 @@ A platform that does not exist on mobile devices. Run a real Linux development e
 
 - [What is Conzyx?](#-what-is-conzyx)
 - [Documentation](#-documentation)
+- [Design Language](#-design-language)
 - [Features](#-features)
   - [Pen Testing](#-pen-testing)
 - [System Requirements](#-system-requirements)
@@ -64,6 +65,28 @@ Want the full in-depth guide? Start here:
 - [**Pitch Deck (PDF)**](docs/Conzyx-Pitch-Deck.pdf) — the product story: what Conzyx is, who it is for, and why it exists.
 
 ---
+
+## 🎨 Design Language
+
+Conzyx uses a liquid-glass design system built on top of Material 3. The look is not
+a skin bolted on afterwards: the theme's surface roles themselves are translucent, so
+every `Surface`, `Card` and `Scaffold` in the app renders as a pane of glass without
+being rewritten one call site at a time.
+
+| Layer | What it does | Where |
+|---|---|---|
+| `GlassTokens` | Per-theme fills, specular highlights, hairline rims, ambient shadow, scrims | `ui/theme/Glass.kt` |
+| `GlassBackdrop` | Animated gradient behind the whole app, single GPU blur pass per frame | `ui/theme/GlassComponents.kt` |
+| `GlassSurface`, `GlassPane`, `GlassCard` | The glass containers the screens are built from | `ui/theme/GlassComponents.kt` |
+| `Motion` | Shared spring specs and the `bounceClick` press animation | `ui/theme/Motion.kt` |
+| `Typography` | Display/headline/body scale tuned for the glass surfaces | `ui/theme/Typography.kt` |
+
+Two deliberate exceptions opt out of translucency. The **code editor** and the
+**terminal** use a near-opaque `readingSurface` fill, because 13sp monospace over a
+moving gradient is unreadable. Everything else stays glass.
+
+Motion is spring-based rather than tween-based, so presses and screen transitions
+settle the way physical objects do instead of easing on a fixed curve.
 
 ## ✨ Features
 
@@ -179,7 +202,7 @@ The app runs 100% in rootless userspace. No root, no custom ROM, no special perm
 
 ## 📲 Installation
 
-1. Go to the [v3.4.4 release page](https://github.com/NETO-DEV66/All-llm/releases/tag/v3.4.7).
+1. Go to the [v3.4.7 release page](https://github.com/NETO-DEV66/All-llm/releases/tag/v3.4.7).
 2. Download the edition you want:
    - `app-online-release.apk` - lightweight, downloads runtimes on demand
    - `app-offline-release.apk` - everything bundled, works offline after install
