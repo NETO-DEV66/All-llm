@@ -1293,8 +1293,12 @@ private fun EnvironmentUpdateCenter() {
                 }
 
                 val manifestComponents = withContext(Dispatchers.IO) {
-                    if (remoteBody != null) {
-                        val parsed = updateManager.parseManifest(remoteBody!!)
+                    // Snapshot into a local: remoteBody is a captured var, so the
+                    // compiler cannot smart-cast it and the old `!!` was only safe
+                    // by accident of statement ordering.
+                    val body = remoteBody
+                    if (body != null) {
+                        val parsed = updateManager.parseManifest(body)
                         if (parsed.isNotEmpty()) parsed else null
                     } else null
                 } ?: withContext(Dispatchers.IO) {
