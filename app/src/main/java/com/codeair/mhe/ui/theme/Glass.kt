@@ -40,6 +40,13 @@ data class GlassTokens(
     val specular: Color,
     val sheen: Color,
     val scrim: Color,
+    /**
+     * Near-opaque fill for panes that hold dense text (code editor, terminal).
+     * The glass language is deliberately translucent, but code needs a stable
+     * backdrop: the animated gradient moving behind 13sp monospace is unreadable.
+     * Kept dark in both themes because the syntax palette is tuned for dark.
+     */
+    val readingSurface: Color,
     val isDark: Boolean,
     val backdropBlurRadius: Dp,
     val panelBlurRadius: Dp,
@@ -65,6 +72,7 @@ internal val DarkGlass = GlassTokens(
     specular = Color(0x2EFFFFFF),
     sheen = Color(0x14FFFFFF),
     scrim = Color(0xB3080B11),
+    readingSurface = Color(0xF20A0E15),
     isDark = true,
     backdropBlurRadius = 0.dp,
     panelBlurRadius = 28.dp,
@@ -90,6 +98,7 @@ internal val LightGlass = GlassTokens(
     specular = Color(0x99FFFFFF),
     sheen = Color(0x40FFFFFF),
     scrim = Color(0x52101820),
+    readingSurface = Color(0xF5FBFCFE),
     isDark = false,
     backdropBlurRadius = 0.dp,
     panelBlurRadius = 20.dp,
@@ -199,3 +208,10 @@ fun glassFill(strong: Boolean = false): Color =
 @Composable
 fun glassTint(accent: Color = MaterialTheme.colorScheme.primary, alpha: Float = 0.18f): Color =
     accent.copy(alpha = alpha)
+
+/**
+ * Fill for text-dense panes (code editor, terminal). Near-opaque on purpose: see
+ * [GlassTokens.readingSurface].
+ */
+@Composable
+fun glassReadingFill(): Color = glassTokens.readingSurface

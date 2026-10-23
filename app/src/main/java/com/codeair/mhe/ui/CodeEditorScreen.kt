@@ -113,6 +113,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.max
+import com.codeair.mhe.ui.theme.glassReadingFill
 import com.codeair.mhe.ui.theme.glassTokens
 import com.codeair.mhe.ui.theme.GlassClickableSurface
 import com.codeair.mhe.ui.theme.GlassTopAppBar
@@ -2014,7 +2015,9 @@ private fun EditorPane(
     onSplitShortcut: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    Row(modifier.fillMaxSize()) {
+    // Code is dense 13sp monospace, so this pane opts out of the translucent glass
+    // fill: the backdrop drifting behind the glyphs makes it unreadable.
+    Row(modifier.fillMaxSize().background(glassReadingFill())) {
         Box(
             Modifier
                 .fillMaxHeight()

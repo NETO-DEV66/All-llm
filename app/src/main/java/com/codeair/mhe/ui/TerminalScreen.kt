@@ -92,6 +92,7 @@ import androidx.compose.ui.unit.sp
 import com.codeair.mhe.ui.theme.AppThemeMode
 import com.codeair.mhe.ui.theme.PocketGreen
 import com.codeair.mhe.ui.theme.PocketOrange
+import com.codeair.mhe.ui.theme.glassReadingFill
 import com.codeair.mhe.ui.theme.GlassClickableSurface
 import com.codeair.mhe.ui.theme.GlassTopAppBar
 import com.codeair.mhe.ui.theme.PocketIconButton
@@ -422,7 +423,10 @@ fun TerminalScreen(
                 AppThemeMode.LIGHT -> false
                 AppThemeMode.SYSTEM -> isSystemInDarkTheme()
             }
-            val terminalBg = if (isDark) Color(0xFF090D14) else MaterialTheme.colorScheme.surface
+            // Terminal output is dense monospace, so the pane uses the near-opaque reading
+            // fill instead of the translucent glass one: moving colour behind the glyphs
+            // makes long output hard to scan.
+            val terminalBg = glassReadingFill()
             val promptGreen = if (isDark) PocketGreen else Color(0xFF0D7A3E)
             val commandTextColor = if (isDark) Color(0xFFF0F6FC) else MaterialTheme.colorScheme.onSurface
             val outputTextColor = if (isDark) Color(0xFFC9D1D9) else MaterialTheme.colorScheme.onSurface
