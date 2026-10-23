@@ -152,6 +152,9 @@ import kotlinx.coroutines.launch
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.netodev66.alllm.ui.theme.glassTokens
 import com.netodev66.alllm.ui.theme.GlassTopAppBar
+import com.netodev66.alllm.ui.theme.GlassClickableSurface
+import com.netodev66.alllm.ui.theme.bouncyExpandEnter
+import com.netodev66.alllm.ui.theme.bouncyExpandExit
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
@@ -1495,7 +1498,11 @@ private fun SettingsAccordion(
     onClick: () -> Unit,
     content: @Composable () -> Unit,
 ) {
-    Surface(
+    // Was a flat Surface with a bare clickable, so the app's press feedback
+    // skipped the settings sections entirely. GlassClickableSurface gives it
+    // the same bounce and lift as every other tappable pane.
+    GlassClickableSurface(
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
         color = glassTokens.fill,
@@ -1503,7 +1510,7 @@ private fun SettingsAccordion(
     ) {
         Column {
             Row(
-                Modifier.fillMaxWidth().clickable(onClick = onClick).padding(16.dp),
+                Modifier.fillMaxWidth().padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Surface(shape = RoundedCornerShape(11.dp), color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f), modifier = Modifier.size(40.dp)) {
@@ -1520,7 +1527,11 @@ private fun SettingsAccordion(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            AnimatedVisibility(expanded) {
+            AnimatedVisibility(
+                visible = expanded,
+                enter = bouncyExpandEnter(),
+                exit = bouncyExpandExit(),
+            ) {
                 Column {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) { content() }
