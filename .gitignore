@@ -10,14 +10,18 @@
 # Java class files
 *.class
 
-# Generated files
-bin/
-gen/
-out/
-build/
-app/build/
-.gradle/
-.kotlin/
+# Generated files.
+# These are anchored with a leading slash on purpose: an unanchored `build/`
+# matches any directory named `build` at any depth, which silently excluded the
+# source package app/src/main/java/com/codeair/mhe/factory/build/ (seven files)
+# from the repository and broke every clean checkout.
+/bin/
+/gen/
+/out/
+/build/
+/app/build/
+/.gradle/
+/.kotlin/
 
 # Android Studio / IntelliJ IDEA / VS Code project files
 .idea/
