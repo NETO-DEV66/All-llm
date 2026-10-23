@@ -211,6 +211,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -295,7 +296,9 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.documentfile.provider.DocumentFile
 import com.netodev66.alllm.ui.theme.BouncyNavIcon
 import com.netodev66.alllm.ui.theme.GlassBottomBar
+import com.netodev66.alllm.ui.theme.BouncyAppear
 import com.netodev66.alllm.ui.theme.bouncyEntry
+import com.netodev66.alllm.ui.theme.motion
 import com.netodev66.alllm.ui.theme.glassTokens
 import com.netodev66.alllm.ui.theme.GlassClickableSurface
 import com.netodev66.alllm.ui.theme.GlassTopAppBar
@@ -330,6 +333,9 @@ fun PocketDevApp(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val marketplaceInstalledIds by viewModel.marketplaceInstalledIds.collectAsStateWithLifecycle()
+    // The Cloud Hybrid panel reports the live concurrency ceiling, so it must
+    // follow the scheduler's throttle state rather than read it once.
+    val throttleState by viewModel.teamConcurrencyController.state.collectAsStateWithLifecycle()
     val marketplaceUpdatesAvailable by viewModel.marketplaceUpdatesAvailable.collectAsStateWithLifecycle()
     val detectedPorts by viewModel.detectedLocalhostPorts.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -442,7 +448,14 @@ fun PocketDevApp(
     }
 
     if (navigator.showCloudHybridScreen) {
-        navigator.closeOverlay()
+        BackHandler(onBack = { navigator.closeOverlay() })
+        CloudHybridScreen(
+            tasks = state.teamSessionState.tasks,
+            isRunning = state.teamSessionState.isRunning,
+            maxConcurrentAgents = throttleState.effectiveMaxAgents,
+            throttleReason = throttleState.throttleReason,
+            onBack = { navigator.closeOverlay() },
+        )
         return
     }
 
@@ -2942,11 +2955,41 @@ private fun DshApiProtocolPicker(selected: String, onSelected: (String) -> Unit)
 
 @Composable
 private fun StepDots(step: Int) {
+    val tokens = glassTokens
+    // The active segment stretches and the finished ones settle into the accent
+    // colour, both on the app's spring, so the indicator moves like everything else.
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         repeat(3) { index ->
+            val active by animateFloatAsState(
+                targetValue = if (index <= step) 1f else 0f,
+                animationSpec = motion.bouncy.asSpec(),
+                label = "step-dot-$index",
+            )
+            val stretched by animateFloatAsState(
+                targetValue = if (index == step) 1f else 0f,
+                animationSpec = motion.bouncy.asSpec(),
+                label = "step-stretch-$index",
+            )
+            // The springs overshoot past their targets on purpose; clamp before the
+            // values reach Row's measurement (a negative weight throws) and the colour.
+            val fill = active.coerceIn(0f, 1f)
             Box(
-                Modifier.height(5.dp).weight(1f)
-                    .background(if (index <= step) PocketOrange else MaterialTheme.colorScheme.outlineVariant, CircleShape),
+                Modifier
+                    .height(5.dp)
+                    .weight((1f + 0.35f * stretched).coerceAtLeast(0.1f))
+                    .clip(CircleShape)
+                    .background(
+                        if (fill > 0f) {
+                            Brush.horizontalGradient(
+                                listOf(
+                                    PocketOrange.copy(alpha = fill),
+                                    PocketOrange.copy(alpha = fill * (0.72f + 0.28f * stretched.coerceIn(0f, 1f))),
+                                ),
+                            )
+                        } else {
+                            Brush.horizontalGradient(listOf(tokens.borderStrong, tokens.border))
+                        },
+                    ),
             )
         }
     }
@@ -2954,8 +2997,15 @@ private fun StepDots(step: Int) {
 
 @Composable
 private fun DeviceCheckStep(context: Context, onContinue: () -> Unit) {
+    // Same hazard as the battery step: `getSystemService` is nullable on stripped ROMs
+    // and the platform type let the old code dereference it straight into an NPE.
     val activityManager = context.getSystemService(ActivityManager::class.java)
-    val memoryInfo = remember { ActivityManager.MemoryInfo().also(activityManager::getMemoryInfo) }
+    val memoryInfo = remember {
+        ActivityManager.MemoryInfo().also { info ->
+            runCatching { activityManager?.getMemoryInfo(info) }
+                .onFailure { AppCrashLogger.log("Memory info unavailable: ${it.message}") }
+        }
+    }
     val totalRamGb = memoryInfo.totalMem.toDouble() / 1_073_741_824.0
     val totalRamLabel = String.format(java.util.Locale.US, "%.1f", totalRamGb)
     val arm64 = supportsArm64Runtime(Build.SUPPORTED_ABIS, System.getProperty("os.arch"))
@@ -3619,11 +3669,10 @@ private fun StudioOnboardingDialog(
             "Reviews" to "Reviewer sign-offs on finished work, before anything is marked done.",
         )
         OverlayScreen.CLOUD_HYBRID -> listOf(
-            "Cloud Hybrid" to "Phone and cloud work as one team: heavy jobs move to fast cloud runners while your phone stays light.",
-            "Telemetry & Stats" to "Live hardware stats from your phone: battery, CPU, and network, refreshed while you watch.",
-            "Workers Fleet" to "Your cloud runners. Add your own workers to take the heavy jobs.",
-            "Job Pipeline" to "Every job in one pipeline: running, completed, and where each one ran.",
-            "Routing Policies" to "Rules that decide what runs on your phone and what goes to the cloud.",
+            "Cloud Hybrid" to "See what this phone can take on, and hand the heavy jobs to a remote agent you have configured.",
+            "Device Telemetry" to "Live readings from your phone: battery, thermal status, free memory, CPU cores, and network.",
+            "Local Concurrency" to "How many agents this device will run at once, and whether the scheduler is throttling right now.",
+            "Job Pipeline" to "The team tasks that are running, completed, or failed, read from the live session.",
         )
         OverlayScreen.PEN_TESTING -> listOf(
             "Pen Testing" to "Pen Testing puts a full AI penetration testing lab on your phone: describe a target in plain words and a team of AI agents tests it and hands you a report.",
@@ -4205,15 +4254,18 @@ private fun ProjectsScreen(
                     }
                 }
             } else {
-                items(projects.take(3), key = { it.id }) { project ->
-                    ProjectCard(
-                        project = project,
-                        taskRunning = state.isRunning && state.activeProject?.id == project.id,
-                        terminalRunning = state.projectTerminalRunning && state.activeProject?.id == project.id,
-                        onOpen = { onOpen(project) },
-                        onRename = { onRenameProject(project.id, it) },
-                        onDelete = { onDeleteProject(project.id) },
-                    )
+                itemsIndexed(projects.take(3), key = { _, project -> project.id }) { index, project ->
+                    // Staggered pop-in: each card settles a beat after the one above it.
+                    BouncyAppear(delayMillis = index * 55) {
+                        ProjectCard(
+                            project = project,
+                            taskRunning = state.isRunning && state.activeProject?.id == project.id,
+                            terminalRunning = state.projectTerminalRunning && state.activeProject?.id == project.id,
+                            onOpen = { onOpen(project) },
+                            onRename = { onRenameProject(project.id, it) },
+                            onDelete = { onDeleteProject(project.id) },
+                        )
+                    }
                 }
                 if (projects.size > 3) {
                     item {
@@ -7618,7 +7670,10 @@ private fun AllProjectsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                // One pop for the whole list on entry: per-row delays would re-fire
+                // every time a recycled row scrolled back into view.
+                .bouncyEntry(key = Unit, fromScale = 0.985f),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             items(projects, key = { it.id }) { project ->

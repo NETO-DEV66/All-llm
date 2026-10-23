@@ -246,7 +246,12 @@ fun GlassCard(
 
     Column(
         modifier = modifier
-            .bounceClick(enabled = enabled, onClick = onClick)
+            .bounceClick(
+                enabled = enabled,
+                pressedShadowBoost = 10.dp,
+                shadowShape = shape,
+                onClick = onClick,
+            )
             .shadow(12.dp, shape, clip = false, ambientColor = tokens.ambientTint.copy(alpha = 0.45f))
             .glassPane(tokens, shape, base = base, innerGlow = false)
             .padding(contentPadding),
@@ -292,6 +297,9 @@ fun Modifier.bounceScale(
     interactionSource: MutableInteractionSource,
     enabled: Boolean = true,
     pressedScale: Float = 0.955f,
+    /** Extra shadow spread added while pressed; 0 keeps the layer purely a scale. */
+    pressedShadowBoost: Dp = 0.dp,
+    shadowShape: Shape = RectangleShape,
 ): Modifier {
     if (!enabled) return this
     val pressed by interactionSource.collectIsPressedAsState()
@@ -304,10 +312,33 @@ fun Modifier.bounceScale(
         },
         label = "bounce-scale",
     )
-    return this.graphicsLayer {
-        scaleX = scale
-        scaleY = scale
-    }
+    val shadow by animateFloatAsState(
+        targetValue = if (pressed) 0f else pressedShadowBoost.value,
+        animationSpec = if (pressed) {
+            spring(dampingRatio = 1f, stiffness = Spring.StiffnessHigh)
+        } else {
+            motion.bouncy.asSpec()
+        },
+        label = "bounce-shadow",
+    )
+    val tokens = glassTokens
+    return this
+        .graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+        }
+        .then(
+            if (pressedShadowBoost > 0.dp) {
+                Modifier.shadow(
+                    elevation = shadow.dp,
+                    shape = shadowShape,
+                    clip = false,
+                    ambientColor = tokens.ambientTint.copy(alpha = 0.5f),
+                )
+            } else {
+                Modifier
+            },
+        )
 }
 
 /**
@@ -318,13 +349,21 @@ fun Modifier.bounceClick(
     enabled: Boolean = true,
     pressedScale: Float = 0.955f,
     interactionSource: MutableInteractionSource? = null,
+    pressedShadowBoost: Dp = 0.dp,
+    shadowShape: Shape = RectangleShape,
     onClick: () -> Unit,
 ): Modifier = composed {
     if (!enabled) return@composed this
     val interaction = interactionSource ?: remember { MutableInteractionSource() }
 
     this
-        .bounceScale(interaction, enabled = enabled, pressedScale = pressedScale)
+        .bounceScale(
+            interaction,
+            enabled = enabled,
+            pressedScale = pressedScale,
+            pressedShadowBoost = pressedShadowBoost,
+            shadowShape = shadowShape,
+        )
         .clickable(
             interactionSource = interaction,
             indication = null,
@@ -637,7 +676,12 @@ fun GlassClickableSurface(
     val tokens = glassTokens
     Box(
         modifier = modifier
-            .bounceClick(enabled = enabled, onClick = onClick)
+            .bounceClick(
+                enabled = enabled,
+                pressedShadowBoost = 8.dp,
+                shadowShape = shape,
+                onClick = onClick,
+            )
             .glassPane(tokens, shape, base = color, borderWidth = if (border != null) 1.dp else 0.dp, innerGlow = false),
         propagateMinConstraints = true,
     ) {
@@ -667,7 +711,12 @@ fun GlassClickableCard(
     val tokens = glassTokens
     Column(
         modifier = modifier
-            .bounceClick(enabled = enabled, onClick = onClick)
+            .bounceClick(
+                enabled = enabled,
+                pressedShadowBoost = 8.dp,
+                shadowShape = shape,
+                onClick = onClick,
+            )
             .glassPane(tokens, shape, base = colors.containerColor, borderWidth = if (border != null) 1.dp else 0.dp, innerGlow = false),
         content = content,
     )

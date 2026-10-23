@@ -1,0 +1,7 @@
+All-LLM 3.7.0 - the Cloud Hybrid screen is real now.
+- Cloud Hybrid no longer opens an explainer and then closes itself
+- See live device telemetry: battery, thermal status, free memory, CPU cores, network
+- See the real local concurrency ceiling and when the scheduler is throttling
+- See the running job pipeline straight from the live team session
+- Removed the promised workers fleet and routing policies that were never built
+- More bounce: animated glass step indicator, press-lift shadows, list pop-in
