@@ -1,4 +1,4 @@
-# Mobile Harness Extended — Environment Update Manager Roadmap
+# All-LLM — Environment Update Manager Roadmap
 
 ## Goal
 Make the Linux development environment independently updateable from inside the app, without requiring an APK rebuild for normal tool/runtime version changes.

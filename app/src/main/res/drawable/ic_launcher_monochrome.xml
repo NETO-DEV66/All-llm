@@ -3,13 +3,9 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="10"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M36,40 L52,54 L36,68" />
+    <!-- Themed-icon silhouette: the droplet with a punched-out core. -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M57,63 L71,63 A2,2 0 0 1 73,65 L73,66 A2,2 0 0 1 71,68 L57,68 A2,2 0 0 1 55,66 L55,65 A2,2 0 0 1 57,63 Z" />
+        android:fillType="evenOdd"
+        android:pathData="M54,28 C65,41 73,50 73,61 A19,19 0 0 1 35,61 C35,50 43,41 54,28 Z M54,50 m-7,0 a7,7 0 1 0 14,0 a7,7 0 1 0 -14,0 Z" />
 </vector>

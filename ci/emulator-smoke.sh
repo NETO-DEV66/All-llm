@@ -3,14 +3,14 @@ set -euxo pipefail
 
 mkdir -p emulator-logs
 
-PACKAGE="${TARGET_PACKAGE:-com.codeair.mhe}"
+PACKAGE="${TARGET_PACKAGE:-com.netodev66.alllm}"
 
 for variant in online offline; do
   apk="app/build/outputs/apk/${variant}/release/app-${variant}-release.apk"
   test -f "$apk"
 
   adb logcat -c -b all
-  adb uninstall com.codeair.mhe || true
+  adb uninstall com.netodev66.alllm || true
   adb uninstall "$PACKAGE" || true
   adb install "$apk"
 

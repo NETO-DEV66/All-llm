@@ -6,7 +6,7 @@ Comprehensive architectural analysis, classification, and integration reference 
 
 ## 1. Quick Classification Matrix
 
-| Project | Category | Integrated in Mobile Harness Extended As | Official Repository / Source |
+| Project | Category | Integrated in All-LLM As | Official Repository / Source |
 | :--- | :--- | :--- | :--- |
 | **`geo-sleuth`** | **Agent Skill** | Native Agent Skill (`.agents/skills/geo-sleuth`) | [`Oldcircle/geo-sleuth`](https://github.com/Oldcircle/geo-sleuth) |
 | **`stickman-video-director`** | **Agent Skill** | Native Agent Skill (`.agents/skills/stickman-video-director`) | [`kaomei/stickman-video-director`](https://github.com/kaomei/stickman-video-director) |
@@ -57,7 +57,7 @@ These skills are natively provisioned by `SkillManager` into `File(context.files
 
 ## 3. Standalone Systems (Browser Quick Shortcuts)
 
-These projects are independent applications, self-hosted services, or datasets that run outside the agent skill sandbox. They are accessible in Mobile Harness Extended via the in-app Chromium **Preview** homescreen under **Standalone Systems & Tools**:
+These projects are independent applications, self-hosted services, or datasets that run outside the agent skill sandbox. They are accessible in All-LLM via the in-app Chromium **Preview** homescreen under **Standalone Systems & Tools**:
 
 ### 1. `hermes3d`
 * **Repository:** [iamlukethedev/Hermes3D](https://github.com/iamlukethedev/Hermes3D)
@@ -92,17 +92,17 @@ The following skills are provisioned in `SkillManager.kt` and installed in `.age
 | Skill Name | Upstream Repository / Source | Domain | Key Capabilities |
 | :--- | :--- | :--- | :--- |
 | **`anyps5-director`** | [`boykopovar/AnyPS5`](https://github.com/boykopovar/AnyPS5) | Gaming / Binary Translation | Native PS5 ELF relinking, Vulkan SPIR-V shader recompilation, PE (.exe) conversion without full emulation. |
-| **`youtube-video-intel`** | [`jarves/youtube-video-intel`](https://github.com/jarves/youtube-video-intel) | Video Understanding | Multimodal YouTube analysis, timestamped chaptering, code/formula extraction, and deep summary briefings. |
-| **`fridge-vision-chef`** | [`jarves/fridge-vision-chef`](https://github.com/jarves/fridge-vision-chef) | Daily Life / Culinary | Refrigerator/pantry image analysis, expiration tracking, macro/calorie calculations, gourmet recipes. |
-| **`receipt-expense-sleuth`**| [`jarves/receipt-expense-sleuth`](https://github.com/jarves/receipt-expense-sleuth) | Daily Life / Personal Finance | OCR receipt & invoice auditing, recurring subscription spike detection, tax tagging, CSV/ledger export. |
-| **`contract-legal-buster`** | [`jarves/contract-legal-buster`](https://github.com/jarves/contract-legal-buster) | Daily Life / Legal | Rental lease & contract analysis, predatory clause identification, penalty risk scorecard, negotiation redlines. |
-| **`smarthome-iot-commander`**| [`jarves/smarthome-iot-commander`](https://github.com/jarves/smarthome-iot-commander)| Daily Life / Home Automation | Home Assistant / ESPHome orchestrator, automated scene blueprinting, energy optimization routines. |
-| **`academic-paper-architect`**|[`jarves/academic-paper-architect`](https://github.com/jarves/academic-paper-architect)| PhD Research & Journals | LaTeX/BibTeX structuring, related works matrix synthesis, mathematical formulations, peer-review rebuttal engine. |
-| **`document-transmuter`** | [`jarves/document-transmuter`](https://github.com/jarves/document-transmuter) | Universal Docs | Markdown, PDF, DOCX, LaTeX conversion, table preservation, OCR artifact cleaning. |
-| **`marp-presentation-deck`**| [`jarves/marp-presentation-deck`](https://github.com/jarves/marp-presentation-deck)| Presentations | Marp / Reveal.js markdown slide decks, custom CSS directives, visual hierarchies, PDF/HTML exports. |
-| **`creative-image-director`**| [`jarves/creative-image-director`](https://github.com/jarves/creative-image-director)| Visual Prompting & SVG | Cinematic camera angle prompt engineering for Google Imagen/Midjourney, style consistency, vector SVG output. |
-| **`viral-growth-creator`** | [`jarves/viral-growth-creator`](https://github.com/jarves/viral-growth-creator) | Content Creators / Growth | 15-second YouTube video hooks, high-CTR title variations, viral X threads, LinkedIn carousels, algorithmic retention. |
-| **`fullstack-dev-accelerator`**|[`jarves/fullstack-dev-accelerator`](https://github.com/jarves/fullstack-dev-accelerator)| Developers / Engineering | OpenAPI architecture design, AST refactoring, unit test generation, CI/CD Docker pipelines. |
+| **`youtube-video-intel`** | `youtube-video-intel` | Video Understanding | Multimodal YouTube analysis, timestamped chaptering, code/formula extraction, and deep summary briefings. |
+| **`fridge-vision-chef`** | `fridge-vision-chef` | Daily Life / Culinary | Refrigerator/pantry image analysis, expiration tracking, macro/calorie calculations, gourmet recipes. |
+| **`receipt-expense-sleuth`**| `receipt-expense-sleuth` | Daily Life / Personal Finance | OCR receipt & invoice auditing, recurring subscription spike detection, tax tagging, CSV/ledger export. |
+| **`contract-legal-buster`** | `contract-legal-buster` | Daily Life / Legal | Rental lease & contract analysis, predatory clause identification, penalty risk scorecard, negotiation redlines. |
+| **`smarthome-iot-commander`**| `smarthome-iot-commander`| Daily Life / Home Automation | Home Assistant / ESPHome orchestrator, automated scene blueprinting, energy optimization routines. |
+| **`academic-paper-architect`**|`academic-paper-architect`| PhD Research & Journals | LaTeX/BibTeX structuring, related works matrix synthesis, mathematical formulations, peer-review rebuttal engine. |
+| **`document-transmuter`** | `document-transmuter` | Universal Docs | Markdown, PDF, DOCX, LaTeX conversion, table preservation, OCR artifact cleaning. |
+| **`marp-presentation-deck`**| `marp-presentation-deck`| Presentations | Marp / Reveal.js markdown slide decks, custom CSS directives, visual hierarchies, PDF/HTML exports. |
+| **`creative-image-director`**| `creative-image-director`| Visual Prompting & SVG | Cinematic camera angle prompt engineering for Google Imagen/Midjourney, style consistency, vector SVG output. |
+| **`viral-growth-creator`** | `viral-growth-creator` | Content Creators / Growth | 15-second YouTube video hooks, high-CTR title variations, viral X threads, LinkedIn carousels, algorithmic retention. |
+| **`fullstack-dev-accelerator`**|`fullstack-dev-accelerator`| Developers / Engineering | OpenAPI architecture design, AST refactoring, unit test generation, CI/CD Docker pipelines. |
 
 ---
 
