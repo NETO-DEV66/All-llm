@@ -2,15 +2,15 @@
 set -euo pipefail
 
 project_dir="$(cd "$(dirname "$0")/.." && pwd)"
-if [[ -z "${MH_UPLOAD_STORE_FILE:-}" ]]; then
-  echo "MH_UPLOAD_STORE_FILE is not set: point it at your upload keystore, e.g." >&2
-  echo "  export MH_UPLOAD_STORE_FILE=\"\$HOME/.mobile-harness/mobile-harness-upload.jks\"" >&2
+if [[ -z "${ALLLM_UPLOAD_STORE_FILE:-}" ]]; then
+  echo "ALLLM_UPLOAD_STORE_FILE is not set: point it at your upload keystore, e.g." >&2
+  echo "  export ALLLM_UPLOAD_STORE_FILE=\"\$HOME/.alllm/alllm-upload.jks\"" >&2
   exit 1
 fi
-keystore_path="$MH_UPLOAD_STORE_FILE"
-key_alias="${MH_UPLOAD_KEY_ALIAS:-mobile-harness-upload}"
-keychain_account="com.codeair.mhe"
-keychain_service="Mobile Harness Upload Key"
+keystore_path="$ALLLM_UPLOAD_STORE_FILE"
+key_alias="${ALLLM_UPLOAD_KEY_ALIAS:-alllm-upload}"
+keychain_account="com.netodev66.alllm"
+keychain_service="All-LLM Upload Key"
 version_code="${1:-1}"
 version_name="${2:-1.0.0}"
 
@@ -23,10 +23,10 @@ upload_secret="$(security find-generic-password -w -a "$keychain_account" -s "$k
 trap 'unset upload_secret' EXIT
 
 cd "$project_dir"
-MH_UPLOAD_STORE_FILE="$keystore_path" \
-MH_UPLOAD_STORE_PASSWORD="$upload_secret" \
-MH_UPLOAD_KEY_ALIAS="$key_alias" \
-MH_UPLOAD_KEY_PASSWORD="$upload_secret" \
+ALLLM_UPLOAD_STORE_FILE="$keystore_path" \
+ALLLM_UPLOAD_STORE_PASSWORD="$upload_secret" \
+ALLLM_UPLOAD_KEY_ALIAS="$key_alias" \
+ALLLM_UPLOAD_KEY_PASSWORD="$upload_secret" \
 ./gradlew \
   -PplayBuild=true \
   -PappVersionCode="$version_code" \

@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="docs/conzyx-icon.png" alt="Conzyx logo" width="120"/>
+<img src="docs/alllm-icon.png" alt="All-LLM logo" width="120"/>
 
-# Conzyx
+# All-LLM
 
 ### The world's first AI software engineering workstation for Android
 
@@ -25,7 +25,7 @@ A platform that does not exist on mobile devices. Run a real Linux development e
 
 ## Table of Contents
 
-- [What is Conzyx?](#-what-is-conzyx)
+- [What is All-LLM?](#-what-is-conzyx)
 - [Documentation](#-documentation)
 - [Design Language](#-design-language)
 - [Features](#-features)
@@ -42,9 +42,9 @@ A platform that does not exist on mobile devices. Run a real Linux development e
 
 ---
 
-## 📖 What is Conzyx?
+## 📖 What is All-LLM?
 
-Conzyx is an AI-powered software engineering environment that runs natively on Android. It combines a rootless Linux userspace (Ubuntu 20.04 on ARM64 via PRoot) with a full mobile IDE, multi-agent AI engineering teams, autonomous GitHub workflows, an Android app factory, and hybrid cloud execution.
+All-LLM is an AI-powered software engineering environment that runs natively on Android. It combines a rootless Linux userspace (Ubuntu 20.04 on ARM64 via PRoot) with a full mobile IDE, multi-agent AI engineering teams, autonomous GitHub workflows, an Android app factory, and hybrid cloud execution.
 
 The app ships in two editions:
 
@@ -53,7 +53,7 @@ The app ships in two editions:
 | **Online** | ~150 MB | Lightweight. Downloads Linux runtime stacks on demand from verified releases. Best for devices with limited storage. |
 | **Offline** | ~1.2 GB | Fully bundled. All toolchains (core, Python, Android SDK, Claude Code, DeepSeek, Antigravity) ship inside the APK. Works without network after install. |
 
-Both editions share the same application ID (`com.codeair.mhe`) and the same feature set; only the runtime delivery differs.
+Both editions share the same application ID (`com.netodev66.alllm`) and the same feature set; only the runtime delivery differs.
 
 ---
 
@@ -61,14 +61,14 @@ Both editions share the same application ID (`com.codeair.mhe`) and the same fea
 
 Want the full in-depth guide? Start here:
 
-- [**Complete Documentation (PDF, 173 pages)**](docs/Conzyx-Complete-Documentation.pdf) — every screen, every feature, every setting explained in depth: agent system, terminal, file manager, marketplace, skills, settings, build variants, permissions, troubleshooting, and FAQ.
-- [**Pitch Deck (PDF)**](docs/Conzyx-Pitch-Deck.pdf) — the product story: what Conzyx is, who it is for, and why it exists.
+- [**Architecture Guide**](docs/AGENTIC_MOBILE_IDE_ARCHITECTURE.md) — how the app is put together: agent system, terminal, file manager, marketplace, skills, runtime, and settings.
+- [**Play Store Guide**](docs/PLAY_STORE_CHECKLIST.md) — release, review, and content declarations.
 
 ---
 
 ## 🎨 Design Language
 
-Conzyx uses a liquid-glass design system built on top of Material 3. The look is not
+All-LLM uses a liquid-glass design system built on top of Material 3. The look is not
 a skin bolted on afterwards: the theme's surface roles themselves are translucent, so
 every `Surface`, `Card` and `Scaffold` in the app renders as a pane of glass without
 being rewritten one call site at a time.
@@ -179,10 +179,10 @@ A full multi-agent AI penetration testing system running on your phone. Describe
 - Listing validation, TTL-cached discovery, and purchase flow with local entitlement ledger
 - Seller center: register, publish, update, unpublish, and view sales reports
 
-### 🔔 Push Notifications
+### 🔔 Local Notifications
 
-- Firebase Cloud Messaging receiver with token registration at startup
-- Available in both online and offline flavors
+- On-device notification coordinator for runtime and task events
+- No cloud messaging service required; notifications stay local to the device
 
 ---
 
@@ -238,7 +238,7 @@ sdkmanager "platform-tools" "platforms;android-36" "ndk;26.1.10909125" "cmake;3.
 yes | sdkmanager --licenses
 ```
 
-Key versions used by the project: Android Gradle Plugin `8.13.2`, Kotlin `2.1.0`, Compose BOM `2025.02.00`, Firebase BOM `34.19.0`.
+Key versions used by the project: Android Gradle Plugin `8.13.2`, Kotlin `2.1.0`, Compose BOM `2025.02.00`.
 
 </details>
 
@@ -247,7 +247,7 @@ Key versions used by the project: Android Gradle Plugin `8.13.2`, Kotlin `2.1.0`
 
 ```bash
 git clone https://github.com/NETO-DEV66/All-llm.git
-cd Conzyx
+cd All-LLM
 git checkout v3
 git submodule update --init --recursive
 ```
@@ -309,38 +309,13 @@ Flavor behavior is controlled by `BuildConfig.OFFLINE_RUNTIME_BUNDLES` and `Buil
 
 ### Runtime bundles note
 
-The offline flavor bundles Linux runtime archives (`conzyx-*-arm64-*.tar.zst`). CI downloads the latest verified bundles from the `techjarves/Mobile-Harness` `runtime-*` releases into `dist/runtime-bundles/` before building, renaming them to `conzyx-*`. For local offline builds, place the bundle archives plus a `manifest.json` in `dist/runtime-bundles/`; the `prepareOfflineRuntimeAssets` task picks them up automatically.
+The offline flavor bundles Linux runtime archives (`alllm-*-arm64-*.tar.zst`). CI downloads the latest verified bundles from the `NETO-DEV66/All-llm` `runtime-*` releases into `dist/runtime-bundles/` before building, renaming them to `alllm-*`. For local offline builds, place the bundle archives plus a `manifest.json` in `dist/runtime-bundles/`; the `prepareOfflineRuntimeAssets` task picks them up automatically.
 
 ---
 
 ## ⚙️ Configuration
 
-<details>
-<summary><b>Firebase setup</b></summary>
 
-The project uses Firebase for authentication, push notifications, and crash reporting.
-
-1. Create a project in the [Firebase console](https://console.firebase.google.com/).
-2. Add an Android app with package name `com.codeair.mhe`.
-3. Download `google-services.json` and place it at **`app/google-services.json`** (this exact path; the `com.google.gms.google-services` Gradle plugin reads it from there).
-4. The plugin is already applied in `app/build.gradle.kts`; no further Gradle changes are needed.
-
-The repository ships with a `google-services.json` for the `codeair-apps` Firebase project. Replace it with your own file to point the app at your project.
-
-</details>
-
-<details>
-<summary><b>Firebase Auth</b></summary>
-
-Enable the sign-in methods you want in **Firebase console > Authentication > Sign-in method**:
-
-- **Email/Password** - used for app accounts
-- **Google** - one-tap Google sign-in via the AndroidX Credentials API (`androidx.credentials`, `googleid` libraries are already wired)
-- **GitHub** - OAuth sign-in via `OAuthProvider("github.com")`; add your GitHub OAuth client ID and secret in the Firebase console, with the authorized callback URL `https://<your-project>.firebaseapp.com/__/auth/handler`
-
-No client-side configuration beyond `google-services.json` is required.
-
-</details>
 
 <details>
 <summary><b>API keys and secrets</b></summary>
@@ -368,10 +343,10 @@ Release APKs are signed with a permanent upload key. Provide it through environm
 
 | Environment variable | Purpose |
 |---|---|
-| `MH_UPLOAD_STORE_FILE` | Path to the `.jks` keystore file |
-| `MH_UPLOAD_STORE_PASSWORD` | Keystore password |
-| `MH_UPLOAD_KEY_ALIAS` | Key alias |
-| `MH_UPLOAD_KEY_PASSWORD` | Key password |
+| `ALLLM_UPLOAD_STORE_FILE` | Path to the `.jks` keystore file |
+| `ALLLM_UPLOAD_STORE_PASSWORD` | Keystore password |
+| `ALLLM_UPLOAD_KEY_ALIAS` | Key alias |
+| `ALLLM_UPLOAD_KEY_PASSWORD` | Key password |
 
 When all four are set, the `upload` signing config is applied to release builds automatically. CI verifies the keystore's SHA-256 certificate fingerprint before building, so a wrong key fails fast instead of shipping a mismatched signature. Never commit keystores or passwords to the repository.
 
@@ -399,14 +374,12 @@ The Pen Testing studio runs a multi-agent AI penetration testing backend on the 
 ## 🗂️ Project Structure
 
 ```
-Conzyx/
+All-LLM/
 ├── app/
-│   ├── build.gradle.kts          # App module: flavors, signing, Firebase, versions
-│   ├── google-services.json      # Firebase config (replace with your own)
+│   ├── build.gradle.kts          # App module: signing, versions
 │   └── src/main/
-│       ├── java/com/codeair/mhe/
+│       ├── java/com/netodev66/alllm/
 │       │   ├── agent/            # Multi-agent team runtime, DAG dispatch, roles
-│       │   ├── auth/             # Firebase Auth identity, Google/GitHub sign-in
 │       │   ├── cloud/            # Cloud hybrid execution client and orchestration
 │       │   ├── context/          # AI context engine: ranking, budgets, memory
 │       │   ├── core/             # OperationResult integrity contract, utilities
@@ -437,7 +410,7 @@ Conzyx/
 
 ```
 +-------------------------------------------------------------------+
-|              Conzyx (v3.4.7)                      |
+|              All-LLM (v3.4.7)                      |
 |                                                                    |
 |  +------------------+  +-----------------+  +------------------+   |
 |  | Mobile IDE       |  | Visual DevTools |  | Android App      |   |
@@ -475,8 +448,7 @@ Conzyx/
 |  +--------------------------------------------------------------+  |
 |                                                                    |
 |  +--------------------------------------------------------------+  |
-|  |     Firebase (Auth + FCM + Crashlytics)          |  |
-|  |  Identity - Notifications - Crash Reporting     |  |
+|  |  |  Identity - Notifications - Crash Reporting     |  |
 |  +--------------------------------------------------------------+  |
 +-------------------------------------------------------------------+
 ```
@@ -508,4 +480,4 @@ See [PRIVACY.md](PRIVACY.md) for the full privacy policy.
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
-Copyright (c) 2024-2026 Conzyx Contributors.
+Copyright (c) 2024-2026 All-LLM Contributors.

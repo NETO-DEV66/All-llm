@@ -1,12 +1,12 @@
-# Mobile Harness Extended: In-App Updates & Private Release Architecture
+# All-LLM: In-App Updates & Private Release Architecture
 
-This guide explains how **Mobile Harness Extended** delivers in-app updates for both **Online** and **Offline** editions, how to publish future builds from a **private repository**, and how to deploy a zero-token Cloudflare Worker release proxy.
+This guide explains how **All-LLM** delivers in-app updates for both **Online** and **Offline** editions, how to publish future builds from a **private repository**, and how to deploy a zero-token Cloudflare Worker release proxy.
 
 ---
 
 ## 1. Dual-Flavor Update Architecture
 
-Mobile Harness Extended is distributed in two distinct flavors (`runtimeDelivery` dimension):
+All-LLM is distributed in two distinct flavors (`runtimeDelivery` dimension):
 
 | Flavor | Artifact Name | Approximate Size | Characteristics |
 | :--- | :--- | :--- | :--- |
@@ -15,7 +15,7 @@ Mobile Harness Extended is distributed in two distinct flavors (`runtimeDelivery
 
 ### How Flavor Isolation Works:
 1. Every APK compiles with its own `BuildConfig.APP_VARIANT` (`"online"` or `"offline"`).
-2. The release manifest `mobile-harness-update.json` indexes both editions under `artifacts`:
+2. The release manifest `alllm-update.json` indexes both editions under `artifacts`:
    ```json
    {
      "versionCode": 28,
@@ -44,13 +44,13 @@ Mobile Harness Extended is distributed in two distinct flavors (`runtimeDelivery
 
 ## 2. Managing Updates on a Private GitHub Repository
 
-When your source repository (`sunmughan/Conzyx`) is **Private**, GitHub returns **HTTP 404** to unauthenticated download requests. Three production-grade strategies are supported:
+When your source repository (`NETO-DEV66/All-llm`) is **Private**, GitHub returns **HTTP 404** to unauthenticated download requests. Three production-grade strategies are supported:
 
 ### Strategy A: Direct GitHub Releases API with Personal Access Token (Internal Team / Testers)
 - In the app, navigate to **Settings → App updates & release channel**.
 - Enter:
-  - **Manifest / API URL**: `https://api.github.com/repos/sunmughan/Conzyx/releases/latest`
-  - **Private Repository Token**: A fine-grained GitHub Personal Access Token (PAT) with `Contents: Read-only` permission on `Conzyx`.
+  - **Manifest / API URL**: `https://api.github.com/repos/NETO-DEV66/All-llm/releases/latest`
+  - **Private Repository Token**: A fine-grained GitHub Personal Access Token (PAT) with `Contents: Read-only` permission on `All-LLM`.
 - `AppUpdater` connects via `Authorization: Bearer <token>`, fetches release assets, follows the AWS S3 redirect safely without leaking credentials, and downloads the APK.
 
 ---
@@ -61,16 +61,16 @@ To distribute updates to users without requiring them to enter a GitHub token or
 #### 1. Deploy the Cloudflare Worker Script:
 ```javascript
 // Cloudflare Worker: updates.yourdomain.workers.dev
-const GITHUB_REPO = "sunmughan/Conzyx";
+const GITHUB_REPO = "NETO-DEV66/All-llm";
 // Set GITHUB_TOKEN in Cloudflare Worker Environment Variables (Secrets)
-// Token needs: Contents: Read-only on sunmughan/Conzyx
+// Token needs: Contents: Read-only on NETO-DEV66/All-llm
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // 1. Manifest Endpoint (/check or /mobile-harness-update.json)
-    if (url.pathname === "/check" || url.pathname.endsWith("mobile-harness-update.json")) {
+    // 1. Manifest Endpoint (/check or /alllm-update.json)
+    if (url.pathname === "/check" || url.pathname.endsWith("alllm-update.json")) {
       const releaseRes = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`, {
         headers: {
           "Authorization": `Bearer ${env.GITHUB_TOKEN}`,
@@ -80,7 +80,7 @@ export default {
       });
       if (!releaseRes.ok) return new Response("Release not found", { status: 404 });
       const release = await releaseRes.json();
-      const manifestAsset = release.assets.find(a => a.name === "mobile-harness-update.json");
+      const manifestAsset = release.assets.find(a => a.name === "alllm-update.json");
       if (!manifestAsset) return new Response("Manifest asset missing", { status: 404 });
 
       // Fetch manifest binary stream
@@ -129,7 +129,7 @@ export default {
       });
     }
 
-    return new Response("Mobile Harness Extended Update Gateway Active", { status: 200 });
+    return new Response("All-LLM Update Gateway Active", { status: 200 });
   }
 };
 ```
@@ -141,17 +141,17 @@ export default {
 ---
 
 ### Strategy C: Dual-Repository Mirror (Private Source + Public Release Binaries)
-1. Keep the source code repository (`sunmughan/Conzyx`) strictly private.
-2. Create an empty public repository (e.g. `sunmughan/Mobile-Harness-Releases`).
-3. In `.github/workflows/android.yml`, add a release step that uploads the compiled APKs and `mobile-harness-update.json` to the public releases repository using `gh release upload --repo sunmughan/Mobile-Harness-Releases`.
+1. Keep the source code repository (`NETO-DEV66/All-llm`) strictly private.
+2. Create an empty public repository (e.g. `NETO-DEV66/Mobile-Harness-Releases`).
+3. In `.github/workflows/android.yml`, add a release step that uploads the compiled APKs and `alllm-update.json` to the public releases repository using `gh release upload --repo NETO-DEV66/Mobile-Harness-Releases`.
 
 ---
 
 ## 3. Cryptographic Verification & Tamper Protection
 
 Every downloaded APK must pass three mandatory security checks before `AndroidAppInstaller` is invoked:
-1. **Package ID Integrity**: The APK's package name in `AndroidManifest.xml` must match `com.codeair.mhe`.
-2. **SHA-256 Checksum Match**: The file hash must exactly match the checksum specified in `mobile-harness-update.json`.
+1. **Package ID Integrity**: The APK's package name in `AndroidManifest.xml` must match `com.netodev66.alllm`.
+2. **SHA-256 Checksum Match**: The file hash must exactly match the checksum specified in `alllm-update.json`.
 3. **Permanent Release Certificate Verification**:
    - `AppUpdater.verifyApk()` extracts the APK's signing certificate and compares its SHA-256 digest with the currently installed app's signing key:
    - Expected Release Key SHA-256:
@@ -181,6 +181,6 @@ To release a new update:
    - Build `assembleOnlineRelease` and `assembleOfflineRelease`.
    - Sign both APKs with the permanent Codeair release key.
    - Compute SHA-256 checksums and file sizes.
-   - Generate `mobile-harness-update.json` with both `online` and `offline` artifacts.
+   - Generate `alllm-update.json` with both `online` and `offline` artifacts.
    - Publish the GitHub Release with the tag `v2.2.0`.
-4. Users opening Mobile Harness Extended will automatically see the in-app update banner or dialog and download the exact matching flavor!
+4. Users opening All-LLM will automatically see the in-app update banner or dialog and download the exact matching flavor!

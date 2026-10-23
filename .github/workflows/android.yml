@@ -60,7 +60,7 @@ jobs:
           mkdir -p dist/runtime-bundles
           python3 - <<'PY'
           import json, os, re, urllib.request
-          repo = "techjarves/Mobile-Harness"
+          repo = os.environ.get("GITHUB_REPOSITORY", "NETO-DEV66/All-llm")
           token = os.environ["GITHUB_TOKEN"]
           req = urllib.request.Request(
               f"https://api.github.com/repos/{repo}/releases?per_page=100",
@@ -70,16 +70,16 @@ jobs:
               releases = json.load(response)
 
           prefixes = {
-              "core": "pocketdev-core-arm64-",
-              "claude": "pocketdev-claude-arm64-",
-              "python": "pocketdev-python-arm64-",
-              "android": "pocketdev-android-arm64-",
-              "dsh": "pocketdev-dsh-arm64-",
-              "agy": "pocketdev-agy-arm64-",
+              "core": "alllm-core-arm64-",
+              "claude": "alllm-claude-arm64-",
+              "python": "alllm-python-arm64-",
+              "android": "alllm-android-arm64-",
+              "dsh": "alllm-dsh-arm64-",
+              "agy": "alllm-agy-arm64-",
           }
 
           def published_name(name):
-              return "conzyx-" + name.removeprefix("pocketdev-")
+              return name
 
           def version_key(value):
               return tuple(int(x) for x in re.findall(r"\d+", value)) or (0,)
@@ -87,9 +87,6 @@ jobs:
           selected = {}
           for release in releases:
               if release.get("draft") or release.get("prerelease"):
-                  continue
-              tag = release.get("tag_name", "")
-              if not tag.startswith("runtime-"):
                   continue
               for asset in release.get("assets", []):
                   name = asset.get("name", "")
@@ -152,9 +149,6 @@ jobs:
             exit "$rc"
           fi
 
-      - name: Verify offline build
-        run: ./gradlew --no-daemon --stacktrace assembleOfflineDebug
-
       - name: Upload emulator launch logs
         if: always()
         continue-on-error: true
@@ -202,39 +196,38 @@ jobs:
           yes | "${SDKMANAGER}" --licenses >/dev/null || true
           "${SDKMANAGER}" "platform-tools" "platforms;android-36" "ndk;26.1.10909125" "cmake;3.22.1"
 
-      - name: Configure permanent Codeair release signing key
+      - name: Configure release signing key
         shell: bash
         env:
-          MH_RELEASE_KEYSTORE_BASE64: ${{ secrets.MH_RELEASE_KEYSTORE_BASE64 }}
-          MH_RELEASE_STORE_PASSWORD: ${{ secrets.MH_RELEASE_STORE_PASSWORD }}
-          MH_RELEASE_KEY_ALIAS: ${{ secrets.MH_RELEASE_KEY_ALIAS }}
-          MH_RELEASE_KEY_PASSWORD: ${{ secrets.MH_RELEASE_KEY_PASSWORD }}
+          ALLLM_RELEASE_KEYSTORE_BASE64: ${{ secrets.ALLLM_RELEASE_KEYSTORE_BASE64 }}
+          ALLLM_RELEASE_STORE_PASSWORD: ${{ secrets.ALLLM_RELEASE_STORE_PASSWORD }}
+          ALLLM_RELEASE_KEY_ALIAS: ${{ secrets.ALLLM_RELEASE_KEY_ALIAS }}
+          ALLLM_RELEASE_KEY_PASSWORD: ${{ secrets.ALLLM_RELEASE_KEY_PASSWORD }}
         run: |
           set -euo pipefail
-          if [[ -z "${MH_RELEASE_KEYSTORE_BASE64}" || -z "${MH_RELEASE_STORE_PASSWORD}" || -z "${MH_RELEASE_KEY_ALIAS}" || -z "${MH_RELEASE_KEY_PASSWORD}" ]]; then
-            echo "::error::Permanent release signing secrets are required. No temporary signing key will be generated."
+          if [[ -z "${ALLLM_RELEASE_KEYSTORE_BASE64}" || -z "${ALLLM_RELEASE_STORE_PASSWORD}" || -z "${ALLLM_RELEASE_KEY_ALIAS}" || -z "${ALLLM_RELEASE_KEY_PASSWORD}" ]]; then
+            echo "::error::Release signing secrets are required. No temporary signing key will be generated."
             exit 1
           fi
-          printf '%s' "${MH_RELEASE_KEYSTORE_BASE64}" | base64 --decode > "$RUNNER_TEMP/mobile-harness-release.jks"
-          chmod 600 "$RUNNER_TEMP/mobile-harness-release.jks"
-          echo "Using the permanent Conzyx release signing key."
-          echo "MH_UPLOAD_STORE_FILE=$RUNNER_TEMP/mobile-harness-release.jks" >> "$GITHUB_ENV"
-          echo "MH_UPLOAD_STORE_PASSWORD=${MH_RELEASE_STORE_PASSWORD}" >> "$GITHUB_ENV"
-          echo "MH_UPLOAD_KEY_ALIAS=${MH_RELEASE_KEY_ALIAS}" >> "$GITHUB_ENV"
-          echo "MH_UPLOAD_KEY_PASSWORD=${MH_RELEASE_KEY_PASSWORD}" >> "$GITHUB_ENV"
+          printf '%s' "${ALLLM_RELEASE_KEYSTORE_BASE64}" | base64 --decode > "$RUNNER_TEMP/alllm-release.jks"
+          chmod 600 "$RUNNER_TEMP/alllm-release.jks"
+          echo "ALLLM_UPLOAD_STORE_FILE=$RUNNER_TEMP/alllm-release.jks" >> "$GITHUB_ENV"
+          echo "ALLLM_UPLOAD_STORE_PASSWORD=${ALLLM_RELEASE_STORE_PASSWORD}" >> "$GITHUB_ENV"
+          echo "ALLLM_UPLOAD_KEY_ALIAS=${ALLLM_RELEASE_KEY_ALIAS}" >> "$GITHUB_ENV"
+          echo "ALLLM_UPLOAD_KEY_PASSWORD=${ALLLM_RELEASE_KEY_PASSWORD}" >> "$GITHUB_ENV"
 
-      - name: Verify permanent release signing certificate
+      - name: Verify release signing certificate
         shell: bash
         env:
-          MH_RELEASE_STORE_PASSWORD: ${{ secrets.MH_RELEASE_STORE_PASSWORD }}
-          MH_RELEASE_KEY_ALIAS: ${{ secrets.MH_RELEASE_KEY_ALIAS }}
+          ALLLM_RELEASE_STORE_PASSWORD: ${{ secrets.ALLLM_RELEASE_STORE_PASSWORD }}
+          ALLLM_RELEASE_KEY_ALIAS: ${{ secrets.ALLLM_RELEASE_KEY_ALIAS }}
         run: |
           set -euo pipefail
-          EXPECTED_SHA256="43:B3:B4:26:3E:0C:71:1C:AA:2F:21:1F:D1:CF:61:98:D3:24:00:0E:33:22:09:83:20:99:89:62:D0:82:B8:2D"
-          ACTUAL_SHA256="$(keytool -list -v -keystore "$RUNNER_TEMP/mobile-harness-release.jks" -storepass "$MH_RELEASE_STORE_PASSWORD" -alias "$MH_RELEASE_KEY_ALIAS" | awk -F': ' '/SHA256:/{print $2; exit}')"
+          EXPECTED_SHA256="18:EB:C0:60:5B:61:30:14:8D:8B:9C:AE:46:86:73:F7:DF:6C:B8:1A:47:45:B8:2C:33:D4:45:53:E4:BF:75:02"
+          ACTUAL_SHA256="$(keytool -list -v -keystore "$RUNNER_TEMP/alllm-release.jks" -storepass "$ALLLM_RELEASE_STORE_PASSWORD" -alias "$ALLLM_RELEASE_KEY_ALIAS" | awk -F': ' '/SHA256:/{print $2; exit}')"
           echo "Release signing SHA-256: $ACTUAL_SHA256"
           if [[ "$ACTUAL_SHA256" != "$EXPECTED_SHA256" ]]; then
-            echo "::error::The configured release keystore is not the permanent Conzyx signing key."
+            echo "::error::The configured release keystore does not match the expected All-LLM signing certificate."
             exit 1
           fi
 
@@ -247,7 +240,7 @@ jobs:
           mkdir -p dist/runtime-bundles
           python3 - <<'PY'
           import json, os, re, urllib.request
-          repo = "techjarves/Mobile-Harness"
+          repo = os.environ.get("GITHUB_REPOSITORY", "NETO-DEV66/All-llm")
           token = os.environ["GITHUB_TOKEN"]
           req = urllib.request.Request(
               f"https://api.github.com/repos/{repo}/releases?per_page=100",
@@ -257,16 +250,16 @@ jobs:
               releases = json.load(response)
 
           prefixes = {
-              "core": "pocketdev-core-arm64-",
-              "claude": "pocketdev-claude-arm64-",
-              "python": "pocketdev-python-arm64-",
-              "android": "pocketdev-android-arm64-",
-              "dsh": "pocketdev-dsh-arm64-",
-              "agy": "pocketdev-agy-arm64-",
+              "core": "alllm-core-arm64-",
+              "claude": "alllm-claude-arm64-",
+              "python": "alllm-python-arm64-",
+              "android": "alllm-android-arm64-",
+              "dsh": "alllm-dsh-arm64-",
+              "agy": "alllm-agy-arm64-",
           }
 
           def published_name(name):
-              return "conzyx-" + name.removeprefix("pocketdev-")
+              return name
 
           def version_key(value):
               return tuple(int(x) for x in re.findall(r"\d+", value)) or (0,)
@@ -274,9 +267,6 @@ jobs:
           selected = {}
           for release in releases:
               if release.get("draft") or release.get("prerelease"):
-                  continue
-              tag = release.get("tag_name", "")
-              if not tag.startswith("runtime-"):
                   continue
               for asset in release.get("assets", []):
                   name = asset.get("name", "")
@@ -330,9 +320,6 @@ jobs:
       - name: Compile online release APK
         run: ./gradlew --no-daemon --stacktrace assembleOnlineRelease
 
-      - name: Compile offline release APK
-        run: ./gradlew --no-daemon --stacktrace assembleOfflineRelease
-
       - name: Compile online release AAB (Play Store)
         run: ./gradlew --no-daemon --stacktrace bundleOnlineRelease -PplayBuild=true
 
@@ -364,7 +351,7 @@ jobs:
           set -euo pipefail
           APKSIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
           AAPT2="$ANDROID_HOME/build-tools/35.0.0/aapt2"
-          PREVIOUS="$RUNNER_TEMP/mobile-harness-previous.apk"
+          PREVIOUS="$RUNNER_TEMP/alllm-previous.apk"
           gh release download v1.0.19 -p "app-online-release.apk" -O "$PREVIOUS" -R "$GITHUB_REPOSITORY"
           current_cert="$($APKSIGNER verify --print-certs app/build/outputs/apk/online/release/app-online-release.apk | awk -F': ' '/Signer #1 certificate SHA-256 digest:/{print $2; exit}')"
           previous_cert="$($APKSIGNER verify --print-certs "$PREVIOUS" | awk -F': ' '/Signer #1 certificate SHA-256 digest:/{print $2; exit}')"
@@ -381,8 +368,8 @@ jobs:
           VERSION_CODE=$(awk -F'= ' '/versionCode = / {print $2; exit}' app/build.gradle.kts)
           echo "$current_badging" | grep -q "versionCode='$VERSION_CODE'"
           echo "$current_badging" | grep -q "versionName='$VERSION_NAME'"
-          echo "$current_badging" | grep -q "package: name='com.codeair.mhe'"
-          echo "$previous_badging" | grep -qE "package: name='(com.codeair.mhe|com.jarves.mh)'"
+          echo "$current_badging" | grep -q "package: name='com.netodev66.alllm'"
+          echo "$previous_badging" | grep -qE "package: name='(com.netodev66.alllm|com.netodev66.alllm)'"
           echo "PASS: valid package + same signing certificate + strictly increasing versionCode."
 
       - name: Inspect release APKs
@@ -396,9 +383,9 @@ jobs:
         # run: |
           # cat << 'EOF' > run-emulator-verification.sh
           # set -euxo pipefail
-          # PREVIOUS_APK="/tmp/mobile-harness-previous.apk"
-          # if [ -f "$RUNNER_TEMP/mobile-harness-previous.apk" ]; then
-            # cp "$RUNNER_TEMP/mobile-harness-previous.apk" "$PREVIOUS_APK"
+          # PREVIOUS_APK="/tmp/alllm-previous.apk"
+          # if [ -f "$RUNNER_TEMP/alllm-previous.apk" ]; then
+            # cp "$RUNNER_TEMP/alllm-previous.apk" "$PREVIOUS_APK"
           # else
             # gh release download v1.0.19 -p "app-online-release.apk" -O "$PREVIOUS_APK" -R "$GITHUB_REPOSITORY"
           # fi
@@ -437,10 +424,10 @@ jobs:
 
 #           # echo "Previous release:"
           # install_with_retry "$PREVIOUS_APK" || true
-          # "$ANDROID_HOME/platform-tools/adb" shell dumpsys package com.codeair.mhe | grep -E 'versionCode=|versionName=' || "$ANDROID_HOME/platform-tools/adb" shell dumpsys package com.jarves.mh | grep -E 'versionCode=|versionName=' || true
+          # "$ANDROID_HOME/platform-tools/adb" shell dumpsys package com.netodev66.alllm | grep -E 'versionCode=|versionName=' || "$ANDROID_HOME/platform-tools/adb" shell dumpsys package com.netodev66.alllm | grep -E 'versionCode=|versionName=' || true
           # echo "Current release update:"
           # install_with_retry "app/build/outputs/apk/online/release/app-online-release.apk" -r
-          # "$ANDROID_HOME/platform-tools/adb" shell dumpsys package com.codeair.mhe | grep -E 'versionCode=|versionName=' || true
+          # "$ANDROID_HOME/platform-tools/adb" shell dumpsys package com.netodev66.alllm | grep -E 'versionCode=|versionName=' || true
           # echo "PASS: previous release installed and current release updated in place."
           # EOF
           # chmod +x run-emulator-verification.sh
@@ -469,7 +456,7 @@ jobs:
         continue-on-error: true
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: mobile-harness-release-apks
+          name: alllm-release-apks
           if-no-files-found: warn
           path: |
             app/build/outputs/apk/**/*.apk
@@ -489,19 +476,15 @@ jobs:
           VERSION_NAME=$(sed -n 's/.*val appVersionName = .*?: "\([^"]*\)".*/\1/p' app/build.gradle.kts | head -1)
           VERSION_CODE=$(awk -F'= ' '/versionCode = / {print $2; exit}' app/build.gradle.kts)
           TAG="v$VERSION_NAME"
-          ONLINE="app-online-release.apk"
-          OFFLINE="app-offline-release.apk"
+          ONLINE="alllm-universal-release.apk"
           AAB="app-online-release.aab"
           cp app/build/outputs/apk/online/release/app-online-release.apk "$ONLINE"
-          cp app/build/outputs/apk/offline/release/app-offline-release.apk "$OFFLINE"
           cp app/build/outputs/bundle/onlineRelease/app-online-release.aab "$AAB"
           ONLINE_SHA=$(sha256sum "$ONLINE" | awk '{print $1}')
-          OFFLINE_SHA=$(sha256sum "$OFFLINE" | awk '{print $1}')
           AAB_SHA=$(sha256sum "$AAB" | awk '{print $1}')
           ONLINE_SIZE=$(stat -c '%s' "$ONLINE")
-          OFFLINE_SIZE=$(stat -c '%s' "$OFFLINE")
           AAB_SIZE=$(stat -c '%s' "$AAB")
-          export TAG VERSION_NAME VERSION_CODE ONLINE_SHA OFFLINE_SHA ONLINE_SIZE OFFLINE_SIZE AAB_SHA AAB_SIZE GITHUB_REPOSITORY
+          export TAG VERSION_NAME VERSION_CODE ONLINE_SHA ONLINE_SIZE AAB_SHA AAB_SIZE GITHUB_REPOSITORY
           # Generate release notes from actual commits in this version only.
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD~1 2>/dev/null || echo "")
           if [ -n "$PREV_TAG" ]; then
@@ -510,26 +493,24 @@ jobs:
             CHANGELOG=$(git log --pretty=format:"- %s" --no-merges -20)
           fi
           cat > release-notes.md <<EOF
-          ## Conzyx $TAG
+          ## All-LLM $TAG
 
           ### Changes in this version
           $CHANGELOG
 
           ### Release files
-          - **Online Release:** app-online-release.apk
-          - **Offline Release:** app-offline-release.apk
+          - **Universal APK:** $ONLINE (signed, installs on any arm64 device)
           - **Play Store Bundle:** app-online-release.aab (signed, upload-ready for Google Play)
 
           ### SHA-256 checksums
-          - app-online-release.apk: $ONLINE_SHA
-          - app-offline-release.apk: $OFFLINE_SHA
+          - $ONLINE: $ONLINE_SHA
           - app-online-release.aab: $AAB_SHA
 
-          The release contains the two APKs plus the \`mobile-harness-update.json\` manifest. Debug APKs are CI-only artifacts and are not release downloads.
+          The release ships one universal online APK plus the \`alllm-update.json\` manifest. Debug APKs are CI-only artifacts and are not release downloads.
           EOF
           gh release view "$TAG" >/dev/null 2>&1 || \
-            gh release create "$TAG" --title "Conzyx $TAG" --notes-file release-notes.md
-          gh release edit "$TAG" --title "Conzyx $TAG" --notes-file release-notes.md
+            gh release create "$TAG" --title "All-LLM $TAG" --notes-file release-notes.md
+          gh release edit "$TAG" --title "All-LLM $TAG" --notes-file release-notes.md
           python3 - <<'PY'
           import json, os
           with open("dist/runtime-bundles/manifest.json") as handle:
@@ -560,20 +541,15 @@ jobs:
               "versionName": version_name,
               "channel": "stable",
               "notes": (
-                  f"Conzyx {tag} — verified latest runtime assets and toolchain update controls. "
+                  f"All-LLM {tag} — verified latest runtime assets and toolchain update controls. "
                   "Runtime bundles are resolved from the latest non-prerelease upstream runtime release and SHA-256 verified during CI. "
                   "PHP uses the online Ubuntu package path with the PHP 8.4 package source and latest Composer release."
               ),
               "artifacts": {
                   "online": {
-                      "url": f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/releases/download/{tag}/app-online-release.apk",
+                      "url": f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/releases/download/{tag}/alllm-universal-release.apk",
                       "sha256": os.environ["ONLINE_SHA"],
                       "sizeBytes": int(os.environ["ONLINE_SIZE"]),
-                  },
-                  "offline": {
-                      "url": f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/releases/download/{tag}/app-offline-release.apk",
-                      "sha256": os.environ["OFFLINE_SHA"],
-                      "sizeBytes": int(os.environ["OFFLINE_SIZE"]),
                   },
               },
               "components": [
@@ -598,14 +574,16 @@ jobs:
                   },
               ],
           }
-          with open("mobile-harness-update.json", "w") as handle:
+          with open("alllm-update.json", "w") as handle:
               json.dump(manifest, handle, indent=2)
               handle.write("\n")
           PY
 
-          gh release upload "$TAG" "$ONLINE" "$OFFLINE" "$AAB" mobile-harness-update.json --clobber
-          gh release delete-asset "$TAG" "mobile-harness-online-$TAG.apk" --yes || true
-          gh release delete-asset "$TAG" "mobile-harness-offline-$TAG.apk" --yes || true
+          gh release upload "$TAG" "$ONLINE" "$AAB" alllm-update.json --clobber
+          # Retire the previous asset names so the release lists exactly one APK.
+          gh release delete-asset "$TAG" "app-online-release.apk" --yes || true
+          gh release delete-asset "$TAG" "app-offline-release.apk" --yes || true
+          gh release delete-asset "$TAG" "alllm-update.json" --yes || true
           # The app's first-run install and runtime-bundle updates resolve
           # bundles from this repo's own releases (RUNTIME_RELEASE_BASE_URL /
           # latestRuntimeBundle) — never from the upstream author's repo. The

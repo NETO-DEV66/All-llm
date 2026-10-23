@@ -5,8 +5,6 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
-    id("com.google.gms.google-services")
-    id("com.google.firebase.crashlytics")
 }
 
 val testSecrets = Properties().apply {
@@ -17,10 +15,10 @@ val playBuild = providers.gradleProperty("playBuild").orNull?.toBoolean() == tru
     providers.gradleProperty("playFeasibility").orNull?.toBoolean() == true
 val privacyPolicyUrl = providers.gradleProperty("privacyPolicyUrl").orNull
     ?: "https://github.com/NETO-DEV66/All-llm/blob/main/PRIVACY.md"
-val uploadStorePath = providers.environmentVariable("MH_UPLOAD_STORE_FILE").orNull
-val uploadStorePassword = providers.environmentVariable("MH_UPLOAD_STORE_PASSWORD").orNull
-val uploadKeyAlias = providers.environmentVariable("MH_UPLOAD_KEY_ALIAS").orNull
-val uploadKeyPassword = providers.environmentVariable("MH_UPLOAD_KEY_PASSWORD").orNull
+val uploadStorePath = providers.environmentVariable("ALLLM_UPLOAD_STORE_FILE").orNull
+val uploadStorePassword = providers.environmentVariable("ALLLM_UPLOAD_STORE_PASSWORD").orNull
+val uploadKeyAlias = providers.environmentVariable("ALLLM_UPLOAD_KEY_ALIAS").orNull
+val uploadKeyPassword = providers.environmentVariable("ALLLM_UPLOAD_KEY_PASSWORD").orNull
 val hasUploadSigning = listOf(
     uploadStorePath,
     uploadStorePassword,
@@ -31,7 +29,7 @@ val appVersionName = providers.gradleProperty("appVersionName").orNull ?: "3.4.7
 val runtimeReleaseBaseUrl =
     "https://github.com/NETO-DEV66/All-llm/releases/download/v$appVersionName"
 val appUpdateManifestUrl =
-    "https://github.com/NETO-DEV66/All-llm/releases/latest/download/mobile-harness-update.json"
+    "https://github.com/NETO-DEV66/All-llm/releases/latest/download/alllm-update.json"
 val runtimeBundleDir = rootProject.layout.projectDirectory.dir("dist/runtime-bundles")
 val generatedRuntimeAssets = layout.buildDirectory.dir("generated/runtime-assets")
 
@@ -43,26 +41,11 @@ val prepareBundledAgentAssets = tasks.register<Sync>("prepareBundledAgentAssets"
     into(generatedRuntimeAssets.map { it.dir("shared/runtime") })
 }
 
-val prepareOfflineRuntimeAssets = tasks.register<Sync>("prepareOfflineRuntimeAssets") {
-    from(runtimeBundleDir) {
-        include(
-            "manifest.json",
-            "conzyx-core-arm64-*.tar.zst",
-            "conzyx-claude-arm64-*.tar.zst",
-            "conzyx-python-arm64-*.tar.zst",
-            "conzyx-android-arm64-*.tar.zst",
-            "conzyx-dsh-arm64-*.tar.zst",
-            "conzyx-agy-arm64-*.tar.zst",
-        )
-    }
-    into(generatedRuntimeAssets.map { it.dir("offline/runtime") })
-}
-
 fun buildConfigString(value: String): String =
     "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
 
 android {
-    namespace = "com.codeair.mhe"
+    namespace = "com.netodev66.alllm"
     compileSdk = 36
     // F-Droid's r26b recipe installs 26.1.10909125. Keep AGP from selecting
     // its newer default NDK; local developers may override this explicitly.
@@ -80,7 +63,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.codeair.mhe"
+        applicationId = "com.netodev66.alllm"
         minSdk = 28
         // The direct APK retains the proven target-28 PRoot execution path. The
         // Play build targets current Android while its runtime path is validated.
@@ -115,16 +98,8 @@ android {
             buildConfigField("String", "APP_UPDATE_MANIFEST_URL", buildConfigString(appUpdateManifestUrl))
             buildConfigField("String", "APP_VARIANT", "\"online\"")
         }
-        create("offline") {
-            dimension = "runtimeDelivery"
-            buildConfigField("boolean", "OFFLINE_RUNTIME_BUNDLES", "true")
-            buildConfigField("String", "RUNTIME_RELEASE_BASE_URL", buildConfigString(runtimeReleaseBaseUrl))
-            buildConfigField("String", "APP_UPDATE_MANIFEST_URL", buildConfigString(appUpdateManifestUrl))
-            buildConfigField("String", "APP_VARIANT", "\"offline\"")
-        }
     }
 
-    sourceSets.getByName("offline").assets.srcDir(generatedRuntimeAssets.map { it.dir("offline") })
     sourceSets.getByName("main").assets.srcDir(generatedRuntimeAssets.map { it.dir("shared") })
 
     buildTypes {
@@ -181,28 +156,22 @@ kotlin {
     jvmToolchain(17)
 }
 
-tasks.matching { it.name.startsWith("mergeOffline") && it.name.endsWith("Assets") }
-    .configureEach { dependsOn(prepareOfflineRuntimeAssets) }
-
 tasks.matching { it.name.startsWith("merge") && it.name.endsWith("Assets") }
     .configureEach { dependsOn(prepareBundledAgentAssets) }
 
 tasks.matching { it.name.contains("lint", ignoreCase = true) }
     .configureEach { dependsOn(prepareBundledAgentAssets) }
 
-tasks.matching { it.name.contains("Offline") && it.name.contains("lint", ignoreCase = true) }
-    .configureEach { dependsOn(prepareOfflineRuntimeAssets) }
-
 tasks.register("playReadinessCheck") {
     group = "verification"
-    description = "Checks configuration required before uploading a Mobile Harness Extended Play bundle."
+    description = "Checks configuration required before uploading a All-LLM Play bundle."
     doLast {
         check(playBuild) { "Run with -PplayBuild=true." }
         check(privacyPolicyUrl.startsWith("https://")) {
             "privacyPolicyUrl must be a public HTTPS URL."
         }
         check(hasUploadSigning) {
-            "Set MH_UPLOAD_STORE_FILE, MH_UPLOAD_STORE_PASSWORD, MH_UPLOAD_KEY_ALIAS, and MH_UPLOAD_KEY_PASSWORD."
+            "Set ALLLM_UPLOAD_STORE_FILE, ALLLM_UPLOAD_STORE_PASSWORD, ALLLM_UPLOAD_KEY_ALIAS, and ALLLM_UPLOAD_KEY_PASSWORD."
         }
     }
 }
@@ -225,19 +194,7 @@ dependencies {
     implementation("org.apache.commons:commons-compress:1.27.1")
     implementation("com.github.luben:zstd-jni:1.5.6-9@aar")
 
-    // Firebase Auth and Identity libraries are shared across both online and offline builds
-    // so account management and Google sign-in work seamlessly with project credentials.
-    implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
-    implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-crashlytics")
-    implementation("androidx.credentials:credentials:1.3.0")
-    implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
-    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
-
-    // FCM messaging is shared across both online and offline builds so the
-    // messaging service and token registration compile in every variant.
-    implementation("com.google.firebase:firebase-messaging")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20250107")

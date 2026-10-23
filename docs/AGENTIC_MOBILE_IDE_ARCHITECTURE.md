@@ -1,8 +1,8 @@
-# Mobile Harness Extended — Agentic Mobile IDE Architecture
+# All-LLM — Agentic Mobile IDE Architecture
 
 ## Current architecture audit
 
-Mobile Harness Extended is an Android application with applicationId `com.codeair.mhe`.
+All-LLM is an Android application with applicationId `com.netodev66.alllm`.
 
 - Kotlin + Jetpack Compose UI.
 - AndroidX lifecycle/ViewModel state ownership.
@@ -24,7 +24,7 @@ The Android process owns orchestration and UX state. The Linux environment is th
 
 RuntimeBridge is the provider-neutral execution contract. Antigravity has explicit session recovery support because its provider conversation ID can be preserved.
 
-Provider credentials/session state remain owned by the respective runtime/provider; Mobile Harness Extended should not scrape or duplicate provider credentials.
+Provider credentials/session state remain owned by the respective runtime/provider; All-LLM should not scrape or duplicate provider credentials.
 
 ### Workspace/change review
 
@@ -156,10 +156,10 @@ A phase is complete only when production implementation exists, no placeholder/s
 
 The notification system is local-first. Android/Linux runtime work continues to publish local foreground-service and task-result notifications through `NotificationCoordinator`; Firebase is not placed on that execution-critical path.
 
-For the `online` flavor, Firebase Cloud Messaging is an additional remote-event transport. The online-only `MobileHarnessFirebaseMessagingService` accepts data-oriented messages, normalizes their title/body, and delegates presentation to the same `NotificationCoordinator`. The service also persists the current FCM registration token in app-private storage for a future authenticated backend registration flow.
+For the `online` flavor, Firebase Cloud Messaging is an additional remote-event transport. The online-only `AllLlmFirebaseMessagingService` accepts data-oriented messages, normalizes their title/body, and delegates presentation to the same `NotificationCoordinator`. The service also persists the current FCM registration token in app-private storage for a future authenticated backend registration flow.
 
 The `offline` flavor does not include the Firebase Messaging runtime or messaging service. This preserves the offline runtime's dependency boundary while allowing the shared Android notification policy to remain unchanged.
 
-Background FCM notification payloads may be displayed directly by the FCM SDK rather than invoking `onMessageReceived`. Remote backends that need Mobile Harness Extended to control notification presentation should therefore use data messages and the documented route/title/body contract.
+Background FCM notification payloads may be displayed directly by the FCM SDK rather than invoking `onMessageReceived`. Remote backends that need All-LLM to control notification presentation should therefore use data messages and the documented route/title/body contract.
 
-The supplied Firebase configuration contains a matching `com.codeair.mhe` Android client; the project configuration is scoped to that client rather than carrying unrelated sibling-app clients.
+The supplied Firebase configuration contains a matching `com.netodev66.alllm` Android client; the project configuration is scoped to that client rather than carrying unrelated sibling-app clients.

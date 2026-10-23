@@ -4,4 +4,4 @@
 set -e
 cd "$(dirname "$0")/.."
 ./gradlew :app:installOnlineDebug -x lint
-adb shell am start -n com.codeair.mhe/com.codeair.mhe.MainActivity --activity-single-top
+adb shell am start -n com.netodev66.alllm/com.netodev66.alllm.MainActivity --activity-single-top

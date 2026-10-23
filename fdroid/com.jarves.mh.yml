@@ -3,14 +3,14 @@ Categories:
   - System
 License: MIT
 AuthorName: TechJarves
-SourceCode: https://github.com/techjarves/Mobile-Harness
-IssueTracker: https://github.com/techjarves/Mobile-Harness/issues
-Changelog: https://github.com/techjarves/Mobile-Harness/releases
+SourceCode: https://github.com/NETO-DEV66/All-llm
+IssueTracker: https://github.com/NETO-DEV66/All-llm/issues
+Changelog: https://github.com/NETO-DEV66/All-llm/releases
 
-AutoName: Mobile Harness Extended
+AutoName: All-LLM
 
 RepoType: git
-Repo: https://github.com/techjarves/Mobile-Harness.git
+Repo: https://github.com/NETO-DEV66/All-llm.git
 
 AntiFeatures:
   - NonFreeNet
