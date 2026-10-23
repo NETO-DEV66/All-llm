@@ -54,9 +54,9 @@ import androidx.compose.ui.unit.sp
 import com.netodev66.alllm.git.model.GitDiffLine
 import com.netodev66.alllm.git.model.GitDiffLineType
 import com.netodev66.alllm.git.model.GitFileDiff
-import com.netodev66.alllm.ui.theme.glassTokens
-import com.netodev66.alllm.ui.theme.GlassClickableSurface
-import com.netodev66.alllm.ui.theme.GlassTopAppBar
+import com.netodev66.alllm.ui.theme.pocketTokens
+import com.netodev66.alllm.ui.theme.PocketClickableSurface
+import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketIconButton
 
 
@@ -72,7 +72,7 @@ fun GitDiffViewer(
 
     Scaffold(
         topBar = {
-            GlassTopAppBar(
+            PocketTopAppBar(
                 title = {
                     Column {
                         Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp)
@@ -98,7 +98,7 @@ fun GitDiffViewer(
                         modifier = Modifier.padding(end = 8.dp)
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = glassTokens.fill)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = pocketTokens.fill)
             )
         }
     ) { paddingValues ->
@@ -145,11 +145,11 @@ private fun FileDiffCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = glassTokens.fill)
+        colors = CardDefaults.cardColors(containerColor = pocketTokens.fill)
     ) {
         Column {
             // File Header
-            GlassClickableSurface(
+            PocketClickableSurface(
                 modifier = Modifier.fillMaxWidth(),
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                 onClick = onToggleExpand

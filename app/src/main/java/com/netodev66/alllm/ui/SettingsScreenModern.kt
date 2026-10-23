@@ -150,9 +150,9 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.netodev66.alllm.ui.theme.glassTokens
-import com.netodev66.alllm.ui.theme.GlassTopAppBar
-import com.netodev66.alllm.ui.theme.GlassClickableSurface
+import com.netodev66.alllm.ui.theme.pocketTokens
+import com.netodev66.alllm.ui.theme.PocketTopAppBar
+import com.netodev66.alllm.ui.theme.PocketClickableSurface
 import com.netodev66.alllm.ui.theme.bouncyExpandEnter
 import com.netodev66.alllm.ui.theme.bouncyExpandExit
 import com.netodev66.alllm.ui.theme.PocketTextButton
@@ -249,7 +249,7 @@ fun SettingsScreen(
 
     Scaffold(
         topBar = {
-            GlassTopAppBar(
+            PocketTopAppBar(
                 modifier = Modifier.padding(top = 8.dp),
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1188,7 +1188,7 @@ fun SettingsScreen(
                                         ) {
                                             Surface(
                                                 shape = RoundedCornerShape(4.dp),
-                                                color = glassTokens.fill,
+                                                color = pocketTokens.fill,
                                             ) {
                                                 Text(
                                                     entry.category.name,
@@ -1503,13 +1503,13 @@ private fun SettingsAccordion(
     content: @Composable () -> Unit,
 ) {
     // Was a flat Surface with a bare clickable, so the app's press feedback
-    // skipped the settings sections entirely. GlassClickableSurface gives it
+    // skipped the settings sections entirely. PocketClickableSurface gives it
     // the same bounce and lift as every other tappable pane.
-    GlassClickableSurface(
+    PocketClickableSurface(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
-        color = glassTokens.fill,
+        color = pocketTokens.fill,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column {
@@ -1737,7 +1737,7 @@ private fun ContributorCard(info: ContributorInfo) {
                 Surface(
                     modifier = Modifier.size(58.dp),
                     shape = CircleShape,
-                    color = glassTokens.fill,
+                    color = pocketTokens.fill,
                 ) {
                     avatar?.let {
                         Image(

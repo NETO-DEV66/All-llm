@@ -59,8 +59,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.netodev66.alllm.ui.theme.glassTokens
-import com.netodev66.alllm.ui.theme.GlassTopAppBar
+import com.netodev66.alllm.ui.theme.pocketTokens
+import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 
@@ -156,7 +156,7 @@ fun DiagnosticsLogScreen(onBack: () -> Unit) {
     BackHandler(onBack = onBack)
     Scaffold(
         topBar = {
-            GlassTopAppBar(
+            PocketTopAppBar(
                 title = { Text("Diagnostics", fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     PocketIconButton( onBack) {
@@ -164,7 +164,7 @@ fun DiagnosticsLogScreen(onBack: () -> Unit) {
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = glassTokens.fill,
+                    containerColor = pocketTokens.fill,
                 ),
             )
         },

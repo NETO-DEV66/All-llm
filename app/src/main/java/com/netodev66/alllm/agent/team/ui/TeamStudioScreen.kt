@@ -112,8 +112,8 @@ import com.netodev66.alllm.agent.team.model.TeamTaskStatus
 import com.netodev66.alllm.agent.team.runtime.LiveTaskInfo
 import com.netodev66.alllm.agent.team.runtime.LiveTaskStatus
 import kotlinx.coroutines.launch
-import com.netodev66.alllm.ui.theme.glassTokens
-import com.netodev66.alllm.ui.theme.GlassClickableCard
+import com.netodev66.alllm.ui.theme.pocketTokens
+import com.netodev66.alllm.ui.theme.PocketClickableCard
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
@@ -483,7 +483,7 @@ private fun TeamRosterTab(
             val permissions = TeamRolePermissions.forRole(role)
             val usage = usages[role]
 
-            GlassClickableCard(
+            PocketClickableCard(
                 onClick = { selectedRole = role },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp),
@@ -727,13 +727,13 @@ private fun CustomAgentCard(
     onEdit: () -> Unit,
     onToggleEnabled: () -> Unit
 ) {
-    GlassClickableCard(
+    PocketClickableCard(
         onClick = onEdit,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
         colors = CardDefaults.cardColors(
-            containerColor = glassTokens.fill,
+            containerColor = pocketTokens.fill,
             contentColor = MaterialTheme.colorScheme.onSurface
         )
     ) {
@@ -1482,7 +1482,7 @@ private fun TeamCommsTab(orchestrator: AgentTeamOrchestrator) {
         }
         Surface(
             shape = RoundedCornerShape(26.dp),
-            color = glassTokens.fill,
+            color = pocketTokens.fill,
             border = BorderStroke(
                 width = 1.dp,
                 color = if (inputMessage.isNotBlank()) MaterialTheme.colorScheme.primary.copy(alpha = 0.55f) else MaterialTheme.colorScheme.outlineVariant
@@ -1616,7 +1616,7 @@ private fun TeamBlackboardTab(orchestrator: AgentTeamOrchestrator) {
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = glassTokens.fill,
+                        containerColor = pocketTokens.fill,
                         contentColor = MaterialTheme.colorScheme.onSurface
                     )
                 ) {
@@ -1687,7 +1687,7 @@ private fun TeamReviewBudgetTab(orchestrator: AgentTeamOrchestrator) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(10.dp),
-            colors = CardDefaults.cardColors(containerColor = glassTokens.fill)
+            colors = CardDefaults.cardColors(containerColor = pocketTokens.fill)
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
                 Text(

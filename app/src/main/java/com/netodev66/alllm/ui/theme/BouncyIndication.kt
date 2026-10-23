@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
  * Provided through [androidx.compose.foundation.LocalIndication] by [PocketTheme],
  * so every `clickable` in the app picks it up without touching call sites — the
  * same way Material's ripple would. Components that already animate themselves
- * ([bounceClick], [GlassButton], [PocketButton]) pass `indication = null` and are
+ * ([bounceClick], [PocketButton], [PocketButton]) pass `indication = null` and are
  * unaffected, so nothing scales twice.
  *
  * The press is deliberately gentler than [bounceClick]'s 0.94–0.96: this one can

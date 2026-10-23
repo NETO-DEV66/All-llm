@@ -61,7 +61,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-import com.netodev66.alllm.ui.theme.GlassClickableSurface
+import com.netodev66.alllm.ui.theme.PocketClickableSurface
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
@@ -409,7 +409,7 @@ fun GlobalSearchDialog(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     items(matches, key = { "${it.filePath}:${it.lineNumber}:${it.matchStart}" }) { match ->
-                        GlassClickableSurface(
+                        PocketClickableSurface(
                             onClick = {
                                 onDismiss()
                                 onNavigateToMatch(match.filePath, match.lineNumber)

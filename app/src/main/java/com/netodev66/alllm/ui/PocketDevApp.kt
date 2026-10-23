@@ -170,6 +170,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.DropdownMenu
@@ -295,13 +296,13 @@ import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.documentfile.provider.DocumentFile
 import com.netodev66.alllm.ui.theme.BouncyNavIcon
-import com.netodev66.alllm.ui.theme.GlassBottomBar
+import com.netodev66.alllm.ui.theme.PocketBottomBar
 import com.netodev66.alllm.ui.theme.BouncyAppear
 import com.netodev66.alllm.ui.theme.bouncyEntry
 import com.netodev66.alllm.ui.theme.motion
-import com.netodev66.alllm.ui.theme.glassTokens
-import com.netodev66.alllm.ui.theme.GlassClickableSurface
-import com.netodev66.alllm.ui.theme.GlassTopAppBar
+import com.netodev66.alllm.ui.theme.pocketTokens
+import com.netodev66.alllm.ui.theme.PocketClickableSurface
+import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
@@ -707,7 +708,7 @@ private fun AntigravityOnboardingScreen(
     }
     Scaffold(
         topBar = {
-            GlassTopAppBar(
+            PocketTopAppBar(
                 title = { Text("Set up Antigravity") },
                 actions = { PocketIconButton( onToggleTheme) { Icon(Icons.Default.DarkMode, "Toggle theme") } },
             )
@@ -917,7 +918,7 @@ private fun BackgroundTaskSetupScreen(
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
-            GlassTopAppBar(
+            PocketTopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         BrandMark(compact = true)
@@ -961,7 +962,7 @@ private fun BackgroundTaskSetupScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(18.dp),
-                color = glassTokens.fill,
+                color = pocketTokens.fill,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
             ) {
                 Column {
@@ -1199,7 +1200,7 @@ private fun RuntimeSetupPromptScreen(
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
-            GlassTopAppBar(
+            PocketTopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         BrandMark(compact = true)
@@ -1264,7 +1265,7 @@ private fun RuntimeSetupPromptScreen(
                 // Hardware & Compatibility Specs Card
                 Surface(
                     shape = RoundedCornerShape(16.dp),
-                    color = glassTokens.fill,
+                    color = pocketTokens.fill,
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                     modifier = Modifier.fillMaxWidth(),
                 ) {
@@ -1409,7 +1410,7 @@ private fun RuntimeSetupPromptScreen(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    color = glassTokens.fill,
+                    color = pocketTokens.fill,
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                 ) {
                     Row(
@@ -1443,7 +1444,7 @@ private fun RuntimeSetupPromptScreen(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(18.dp),
-                    color = glassTokens.fill,
+                    color = pocketTokens.fill,
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                 ) {
                     Column {
@@ -1476,7 +1477,7 @@ private fun RuntimeSetupPromptScreen(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(18.dp),
-                    color = glassTokens.fill,
+                    color = pocketTokens.fill,
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                 ) {
                     Column {
@@ -1805,7 +1806,7 @@ private fun AgentSwitchSheet(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(18.dp),
-                color = glassTokens.fill,
+                color = pocketTokens.fill,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
             ) {
                 Column {
@@ -1879,7 +1880,7 @@ private fun RuntimeInstallationScreen(
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
-            GlassTopAppBar(
+            PocketTopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         BrandMark(compact = true)
@@ -1950,7 +1951,7 @@ private fun RuntimeInstallationScreen(
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(18.dp),
-                color = glassTokens.fill,
+                color = pocketTokens.fill,
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
             ) {
                 Column(Modifier.padding(horizontal = 16.dp, vertical = 15.dp)) {
@@ -2120,7 +2121,7 @@ private fun WorkspaceLaunchExperience(state: AppUiState) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
-        color = glassTokens.fill,
+        color = pocketTokens.fill,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)),
         tonalElevation = 3.dp,
     ) {
@@ -2272,7 +2273,7 @@ private fun SetupLogPanel(logs: List<String>) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { expanded = !expanded },
-        color = glassTokens.fill,
+        color = pocketTokens.fill,
         shape = RoundedCornerShape(18.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
     ) {
@@ -2358,7 +2359,7 @@ private fun StartupErrorScreen(
     Scaffold(
         containerColor = Color.Transparent,
         topBar = {
-            GlassTopAppBar(
+            PocketTopAppBar(
                 navigationIcon = {
                     PocketIconButton( onBackToSetup) {
                         Icon(
@@ -2485,7 +2486,7 @@ private fun RootScreenHost(
         Scaffold(
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
             bottomBar = {
-            if (!keyboardVisible) GlassBottomBar {
+            if (!keyboardVisible) PocketBottomBar {
                 RootScreen.entries.forEach { tab ->
                     NavigationBarItem(
                         selected = screen == tab,
@@ -2533,6 +2534,7 @@ private fun RootScreenHost(
                     onToggleTheme = viewModel::toggleTheme,
                     onInstallUpdate = viewModel::installAppUpdate,
                     onCancelUpdateDownload = viewModel::cancelAppUpdateDownload,
+                    onDeferUpdate = viewModel::deferAppUpdate,
                     onOpenAppFactory = onOpenAppFactory,
                     onOpenTeamStudio = onOpenTeamStudio,
                     onOpenCloudHybrid = onOpenCloudHybrid,
@@ -2822,7 +2824,7 @@ private fun ProviderSetupScreen(
 
     Scaffold(
         topBar = {
-            GlassTopAppBar(
+            PocketTopAppBar(
                 title = { Text(if (onboarding) "Set up All-LLM" else "AI Provider & Settings") },
                 navigationIcon = {
                     if (handleBack != null) {
@@ -2955,7 +2957,7 @@ private fun DshApiProtocolPicker(selected: String, onSelected: (String) -> Unit)
 
 @Composable
 private fun StepDots(step: Int) {
-    val tokens = glassTokens
+    val tokens = pocketTokens
     // The active segment stretches and the finished ones settle into the accent
     // colour, both on the app's spring, so the indicator moves like everything else.
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -3094,7 +3096,7 @@ private fun ProviderChoiceStep(
         Surface(
             modifier = Modifier.fillMaxWidth().weight(1f),
             shape = RoundedCornerShape(18.dp),
-            color = glassTokens.fill,
+            color = pocketTokens.fill,
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         ) {
             LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -3317,7 +3319,7 @@ private fun ProviderCredentialsStep(
         ModalBottomSheet(
             onDismissRequest = { showModels = false },
             sheetState = modelSheetState,
-            containerColor = glassTokens.fill,
+            containerColor = pocketTokens.fill,
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth().fillMaxHeight(0.82f).padding(horizontal = 20.dp),
@@ -3429,7 +3431,7 @@ private fun ProviderCredentialsStep(
         }
         item {
             Surface(
-                color = glassTokens.fill,
+                color = pocketTokens.fill,
                 shape = RoundedCornerShape(20.dp),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
             ) {
@@ -3587,7 +3589,7 @@ private fun ClaudeSubscriptionCredentialsStep(
         }
         item {
             Surface(
-                color = glassTokens.fill,
+                color = pocketTokens.fill,
                 shape = RoundedCornerShape(20.dp),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
             ) {
@@ -3952,6 +3954,7 @@ private fun ProjectsScreen(
     onToggleTheme: () -> Unit,
     onInstallUpdate: () -> Unit,
     onCancelUpdateDownload: () -> Unit = {},
+    onDeferUpdate: (Boolean) -> Unit = {},
     onOpenAppFactory: () -> Unit = {},
     onOpenTeamStudio: () -> Unit = {},
     onOpenCloudHybrid: () -> Unit = {},
@@ -3960,6 +3963,7 @@ private fun ProjectsScreen(
 ) {
     var showCreate by rememberSaveable { mutableStateOf(false) }
     var showUpdateDialog by rememberSaveable { mutableStateOf(false) }
+    var skipUpdateVersion by rememberSaveable { mutableStateOf(false) }
     var showGitDialog by rememberSaveable { mutableStateOf(false) }
     var showGitHubDialog by rememberSaveable { mutableStateOf(false) }
     var importExpanded by rememberSaveable { mutableStateOf(false) }
@@ -3991,7 +3995,10 @@ private fun ProjectsScreen(
         if (uri != null) onImportFolder(uri)
     }
     LaunchedEffect(state.appUpdate?.versionCode) {
-        if (state.appUpdate != null) showUpdateDialog = true
+        if (state.appUpdate != null) {
+            showUpdateDialog = true
+            skipUpdateVersion = false
+        }
     }
     Scaffold(
         topBar = {
@@ -4140,7 +4147,7 @@ private fun ProjectsScreen(
                                         showGitHubDialog = true
                                         if (state.githubAuthStatus == GitHubAuthStatus.CONNECTED && state.githubRepositories.isEmpty()) onRefreshGitHub()
                                     },
-                                    color = glassTokens.fill,
+                                    color = pocketTokens.fill,
                                     shape = RoundedCornerShape(14.dp),
                                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                                 ) {
@@ -4171,6 +4178,13 @@ private fun ProjectsScreen(
                 }
             }
             state.appUpdate?.let { update ->
+                val updateDownloading = state.appUpdateStatus == AppUpdateStatus.DOWNLOADING
+                val updateTotal = state.appUpdateTotalBytes
+                val updateProgress = if (updateTotal > 0) {
+                    (state.appUpdateDownloadedBytes.toFloat() / updateTotal).coerceIn(0f, 1f)
+                } else {
+                    0f
+                }
                 item {
                     Surface(
                         modifier = Modifier.fillMaxWidth().clickable { showUpdateDialog = true },
@@ -4178,16 +4192,43 @@ private fun ProjectsScreen(
                         color = PocketOrange.copy(alpha = 0.11f),
                         border = BorderStroke(1.dp, PocketOrange.copy(alpha = 0.45f)),
                     ) {
-                        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Surface(shape = CircleShape, color = PocketOrange.copy(alpha = 0.18f), modifier = Modifier.size(46.dp)) {
-                                Box(contentAlignment = Alignment.Center) { Icon(Icons.Default.Download, null, tint = PocketOrange) }
+                        Column(Modifier.padding(16.dp)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Surface(shape = CircleShape, color = PocketOrange.copy(alpha = 0.18f), modifier = Modifier.size(46.dp)) {
+                                    Box(contentAlignment = Alignment.Center) { Icon(Icons.Default.Download, null, tint = PocketOrange) }
+                                }
+                                Spacer(Modifier.width(12.dp))
+                                Column(Modifier.weight(1f)) {
+                                    Text("All-LLM ${update.versionName}", fontWeight = FontWeight.Bold)
+                                    Text(
+                                        if (updateDownloading) {
+                                            if (updateTotal > 0) {
+                                                "Downloading ${(updateProgress * 100).toInt()}%"
+                                            } else {
+                                                "Downloading…"
+                                            }
+                                        } else {
+                                            "A new update is ready"
+                                        },
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                Text(
+                                    if (updateDownloading) "View" else "Update",
+                                    color = PocketOrange,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp,
+                                )
                             }
-                            Spacer(Modifier.width(12.dp))
-                            Column(Modifier.weight(1f)) {
-                                Text("All-LLM ${update.versionName}", fontWeight = FontWeight.Bold)
-                                Text("A new update is ready", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            if (updateDownloading) {
+                                Spacer(Modifier.height(10.dp))
+                                if (updateTotal > 0) {
+                                    LinearProgressIndicator(progress = { updateProgress }, modifier = Modifier.fillMaxWidth())
+                                } else {
+                                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                                }
                             }
-                            Text("Update", color = PocketOrange, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                         }
                     }
                 }
@@ -4623,6 +4664,16 @@ private fun ProjectsScreen(
                     }
                     if (installing) Text("Download verified. Opening Android installer…", color = PocketGreen, fontSize = 13.sp)
                     state.appUpdateError?.let { Text(it, color = MaterialTheme.colorScheme.error, fontSize = 13.sp) }
+                    if (!downloading && !installing) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable { skipUpdateVersion = !skipUpdateVersion },
+                        ) {
+                            Checkbox(checked = skipUpdateVersion, onCheckedChange = { skipUpdateVersion = it })
+                            Spacer(Modifier.width(4.dp))
+                            Text("Skip this version", fontSize = 13.sp)
+                        }
+                    }
                 }
             },
             confirmButton = {
@@ -4648,7 +4699,12 @@ private fun ProjectsScreen(
                             Text("Cancel", color = MaterialTheme.colorScheme.error)
                         }
                     }
-                    PocketTextButton( { showUpdateDialog = false }) { Text("Later") }
+                    PocketTextButton(
+                        {
+                            showUpdateDialog = false
+                            onDeferUpdate(skipUpdateVersion)
+                        },
+                    ) { Text("Later") }
                 }
             },
         )
@@ -4756,7 +4812,7 @@ private fun ProjectCard(
     var showRename by rememberSaveable(project.id) { mutableStateOf(false) }
     var showDelete by rememberSaveable(project.id) { mutableStateOf(false) }
     var renameText by rememberSaveable(project.id) { mutableStateOf(project.name) }
-    Card(Modifier.fillMaxWidth().clickable(onClick = onOpen), colors = CardDefaults.cardColors(containerColor = glassTokens.fill)) {
+    Card(Modifier.fillMaxWidth().clickable(onClick = onOpen), colors = CardDefaults.cardColors(containerColor = pocketTokens.fill)) {
         Row(Modifier.padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Surface(shape = RoundedCornerShape(14.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
                 Icon(Icons.Default.Folder, null, Modifier.padding(13.dp), tint = PocketOrange)
@@ -4863,7 +4919,7 @@ private fun ReadOnlyProjectScreen(
 
     Scaffold(
         topBar = {
-            GlassTopAppBar(
+            PocketTopAppBar(
                 title = {
                     Column {
                         Text(project.name, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -5326,7 +5382,7 @@ private fun WorkspaceScreen(
             }
         },
         bottomBar = {
-            if (!keyboardVisible) GlassBottomBar {
+            if (!keyboardVisible) PocketBottomBar {
                 WorkspaceTab.entries.filter { it != WorkspaceTab.CHANGES }.forEach { tab ->
                     NavigationBarItem(
                         selected = tab != WorkspaceTab.HOME && selectedTab == tab,
@@ -5359,7 +5415,7 @@ private fun WorkspaceScreen(
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
             if (state.runtimeRecoveryStatus != null) {
-            GlassClickableSurface(
+            PocketClickableSurface(
                     onClick = { recoveryExpanded = !recoveryExpanded },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
                     color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.72f),
@@ -5391,7 +5447,7 @@ private fun WorkspaceScreen(
                 }
             }
             if (state.interruptedSession != null) {
-            GlassClickableSurface(
+            PocketClickableSurface(
                     onClick = { interruptedExpanded = !interruptedExpanded },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
                     color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.85f),
@@ -6741,7 +6797,7 @@ private fun ChatTab(
 
                 Surface(
                     shape = RoundedCornerShape(26.dp),
-                    color = glassTokens.fill,
+                    color = pocketTokens.fill,
                     border = BorderStroke(
                         width = 1.dp,
                         color = if (canSend) MaterialTheme.colorScheme.primary.copy(alpha = 0.55f) else MaterialTheme.colorScheme.outlineVariant,
@@ -7656,7 +7712,7 @@ private fun AllProjectsScreen(
 ) {
     Scaffold(
         topBar = {
-            GlassTopAppBar(
+            PocketTopAppBar(
                 title = { Text("All Projects (${projects.size})", fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     PocketIconButton( onBack) {

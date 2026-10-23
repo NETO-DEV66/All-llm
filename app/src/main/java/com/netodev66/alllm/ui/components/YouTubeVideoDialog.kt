@@ -58,7 +58,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.netodev66.alllm.util.YouTubeUrlValidator
 import com.netodev66.alllm.util.YouTubeVideoInfo
-import com.netodev66.alllm.ui.theme.glassTokens
+import com.netodev66.alllm.ui.theme.pocketTokens
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
@@ -99,7 +99,7 @@ fun YouTubeVideoDialog(
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(20.dp),
-            color = glassTokens.fill,
+            color = pocketTokens.fill,
             tonalElevation = 6.dp,
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
             modifier = Modifier

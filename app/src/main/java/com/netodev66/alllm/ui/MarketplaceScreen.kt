@@ -79,7 +79,7 @@ import com.netodev66.alllm.marketplace.MarketplaceCategory
 import com.netodev66.alllm.marketplace.MarketplaceItem
 import com.netodev66.alllm.marketplace.SearchSort
 import com.netodev66.alllm.marketplace.validateMarketplaceItem
-import com.netodev66.alllm.ui.theme.GlassTopAppBar
+import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
@@ -158,7 +158,7 @@ fun MarketplaceScreen(
 
     Scaffold(
         topBar = {
-            GlassTopAppBar(
+            PocketTopAppBar(
                 title = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

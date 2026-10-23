@@ -1,7 +1,7 @@
 <resources>
     <style name="Theme.AllLlm" parent="android:style/Theme.Material.NoActionBar">
         <item name="android:fontFamily">sans</item>
-        <!-- Matches the glass backdrop so the first frame does not flash white. -->
+        <!-- Matches the app background so the first frame does not flash white. -->
         <item name="android:windowBackground">#FF0A0D13</item>
         <item name="android:windowActionModeOverlay">true</item>
     </style>

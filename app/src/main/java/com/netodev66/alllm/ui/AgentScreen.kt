@@ -126,8 +126,8 @@ import com.netodev66.alllm.runtime.AntigravityAuthStatus
 import com.netodev66.alllm.ui.theme.PocketBlue
 import com.netodev66.alllm.ui.theme.PocketOrange
 import kotlinx.coroutines.launch
-import com.netodev66.alllm.ui.theme.glassTokens
-import com.netodev66.alllm.ui.theme.GlassTopAppBar
+import com.netodev66.alllm.ui.theme.pocketTokens
+import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
@@ -382,7 +382,7 @@ fun AgentScreen(
         ModalBottomSheet(
             onDismissRequest = { showAntigravityModelSheet = false },
             sheetState = antigravitySheetState,
-            containerColor = glassTokens.fill,
+            containerColor = pocketTokens.fill,
         ) {
             Column(
                 Modifier
@@ -494,7 +494,7 @@ fun AgentScreen(
         ModalBottomSheet(
             onDismissRequest = { showModels = false },
             sheetState = providerSheetState,
-            containerColor = glassTokens.fill,
+            containerColor = pocketTokens.fill,
         ) {
             Column(
                 Modifier
@@ -794,7 +794,7 @@ fun AgentScreen(
 
     Scaffold(
         topBar = {
-            GlassTopAppBar(
+            PocketTopAppBar(
                 modifier = Modifier.padding(top = 4.dp),
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -888,7 +888,7 @@ fun AgentScreen(
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Surface(
                         shape = RoundedCornerShape(16.dp),
-                        color = glassTokens.fill,
+                        color = pocketTokens.fill,
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
                         modifier = Modifier.fillMaxWidth(),
                     ) {
@@ -1032,7 +1032,7 @@ fun AgentScreen(
                         Spacer(Modifier.height(8.dp))
                         Surface(
                             shape = RoundedCornerShape(14.dp),
-                            color = glassTokens.fill,
+                            color = pocketTokens.fill,
                             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)),
                             modifier = Modifier.fillMaxWidth(),
                         ) {
@@ -1110,7 +1110,7 @@ fun AgentScreen(
                     if (viewedAgentInstalled) {
                         Surface(
                             shape = RoundedCornerShape(14.dp),
-                            color = glassTokens.fill,
+                            color = pocketTokens.fill,
                             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)),
                             modifier = Modifier.fillMaxWidth(),
                         ) {
@@ -1353,7 +1353,7 @@ private fun AgentAntigravityCard(
     LaunchedEffect(code) { submittingCode = false }
 
     Surface(
-        color = glassTokens.fill,
+        color = pocketTokens.fill,
         shape = RoundedCornerShape(20.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.7f)),
         modifier = Modifier.fillMaxWidth(),
@@ -2044,7 +2044,7 @@ private fun AgentProviderCard(
     val activeKeyStatus = activeKey?.let { keyConnectionStatuses[it.id] }
 
     Surface(
-        color = glassTokens.fill,
+        color = pocketTokens.fill,
         shape = RoundedCornerShape(20.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)),
         modifier = Modifier.fillMaxWidth(),

@@ -67,22 +67,20 @@ Want the full in-depth guide? Start here:
 
 ## 🎨 Design Language
 
-All-LLM uses a liquid-glass design system built on top of Material 3. The look is not
-a skin bolted on afterwards: the theme's surface roles themselves are translucent, so
-every `Surface`, `Card` and `Scaffold` in the app renders as a pane of glass without
-being rewritten one call site at a time.
+All-LLM uses a solid, Material 3 based design system. Panes are opaque surfaces with
+a hairline border and a real elevation shadow, which stays legible over the dense
+developer UI and costs no per-frame blur.
 
 | Layer | What it does | Where |
 |---|---|---|
-| `GlassTokens` | Per-theme fills, specular highlights, hairline rims, ambient shadow, scrims | `ui/theme/Glass.kt` |
-| `GlassBackdrop` | Animated gradient behind the whole app, single GPU blur pass per frame | `ui/theme/GlassComponents.kt` |
-| `GlassSurface`, `GlassPane`, `GlassCard` | The glass containers the screens are built from | `ui/theme/GlassComponents.kt` |
+| `DesignTokens` | Per-theme pane fills, borders, shadow tint, reading surface | `ui/theme/Design.kt` |
+| `PocketBackdrop` | Opaque root background the screens sit on | `ui/theme/PocketComponents.kt` |
+| `PocketPanel`, `PocketClickableSurface`, `PocketClickableCard` | The containers the screens are built from | `ui/theme/PocketComponents.kt` |
 | `Motion` | Shared spring specs and the `bounceClick` press animation | `ui/theme/Motion.kt` |
-| `Typography` | Display/headline/body scale tuned for the glass surfaces | `ui/theme/Typography.kt` |
+| `Typography` | Display/headline/body scale | `ui/theme/Typography.kt` |
 
-Two deliberate exceptions opt out of translucency. The **code editor** and the
-**terminal** use a near-opaque `readingSurface` fill, because 13sp monospace over a
-moving gradient is unreadable. Everything else stays glass.
+The **code editor** and the **terminal** use a near-opaque `readingSurface` fill so
+13sp monospace stays readable.
 
 Motion is spring-based rather than tween-based, so presses and screen transitions
 settle the way physical objects do instead of easing on a fixed curve.

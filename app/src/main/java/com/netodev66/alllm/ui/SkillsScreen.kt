@@ -91,7 +91,7 @@ import com.netodev66.alllm.runtime.SkillScanReport
 import com.netodev66.alllm.runtime.SkillSearchResult
 import com.netodev66.alllm.ui.coordinators.McpToolApproval
 import org.json.JSONObject
-import com.netodev66.alllm.ui.theme.GlassTopAppBar
+import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
@@ -162,7 +162,7 @@ fun SkillsScreen(
     Scaffold(
         topBar = {
             Column {
-                GlassTopAppBar(
+                PocketTopAppBar(
                     title = {
                         Column {
                             Text(

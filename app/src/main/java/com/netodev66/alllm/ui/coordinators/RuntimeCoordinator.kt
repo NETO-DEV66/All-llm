@@ -329,6 +329,9 @@ class RuntimeCoordinator(
             when (result) {
                 is AppUpdater.AppUpdateCheckResult.Available -> {
                     preferences.lastAppUpdateCheckMillis = System.currentTimeMillis()
+                    // A skipped version stays skipped for the silent startup
+                    // check, but an explicit check always re-offers it.
+                    if (!force && result.info.versionCode == preferences.skippedAppUpdateVersion) return@launch
                     host.updateState {
                         it.copy(appUpdate = result.info, appUpdateStatus = AppUpdateStatus.AVAILABLE, appUpdateError = null)
                     }
@@ -466,6 +469,18 @@ class RuntimeCoordinator(
         // to AVAILABLE (the old behavior) re-offered the same update that
         // just failed verification/download, looping the user back into
         // the same failure. The offer returns on the next update check.
+        host.updateState { it.copy(appUpdate = null, appUpdateStatus = null, appUpdateError = null) }
+    }
+
+    /**
+     * "Later" on the update dialog. The offer is withdrawn and, when the user
+     * ticked skip, this version is remembered so the silent startup check stays
+     * quiet until a newer release appears.
+     */
+    fun deferAppUpdate(skipVersion: Boolean) {
+        if (skipVersion) {
+            host.state().appUpdate?.let { preferences.skippedAppUpdateVersion = it.versionCode }
+        }
         host.updateState { it.copy(appUpdate = null, appUpdateStatus = null, appUpdateError = null) }
     }
 

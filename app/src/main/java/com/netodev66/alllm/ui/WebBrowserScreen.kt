@@ -77,8 +77,8 @@ import kotlinx.coroutines.withContext
 import com.netodev66.alllm.visual.*
 import com.netodev66.alllm.visual.ui.VisualComparisonViewer
 import com.netodev66.alllm.visual.ui.VisualDevToolsSheet
-import com.netodev66.alllm.ui.theme.glassTokens
-import com.netodev66.alllm.ui.theme.GlassClickableSurface
+import com.netodev66.alllm.ui.theme.pocketTokens
+import com.netodev66.alllm.ui.theme.PocketClickableSurface
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
@@ -558,7 +558,7 @@ fun PreviewTab(
                     // Slim, modern pill URL bar (height 40dp) with embedded Reload and Go buttons (2.2.2 layout)
                     Surface(
                         shape = RoundedCornerShape(20.dp),
-                        color = glassTokens.fill,
+                        color = pocketTokens.fill,
                         border = BorderStroke(
                             width = 1.dp,
                             color = if (addressError != null) MaterialTheme.colorScheme.error
@@ -1088,7 +1088,7 @@ fun PreviewTab(
                 if (showFindInPage) {
                     Surface(
                         shape = RoundedCornerShape(12.dp),
-                        color = glassTokens.fill,
+                        color = pocketTokens.fill,
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1244,7 +1244,7 @@ fun PreviewTab(
                                     .fillMaxWidth()
                                     .clickable { navigateTo(item.url) },
                                 shape = RoundedCornerShape(12.dp),
-                                color = glassTokens.fill,
+                                color = pocketTokens.fill,
                                 border = BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
                             ) {
                                 Row(
@@ -1938,7 +1938,7 @@ fun PreviewTab(
     }
 
         if (toolbarCollapsed) {
-            GlassClickableSurface(
+            PocketClickableSurface(
                 onClick = { toolbarCollapsed = false },
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primaryContainer,

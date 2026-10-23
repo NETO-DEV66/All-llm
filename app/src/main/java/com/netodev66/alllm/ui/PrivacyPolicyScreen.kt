@@ -23,8 +23,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.netodev66.alllm.ui.theme.glassTokens
-import com.netodev66.alllm.ui.theme.GlassTopAppBar
+import com.netodev66.alllm.ui.theme.pocketTokens
+import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketIconButton
 
 
@@ -125,7 +125,7 @@ fun PrivacyPolicyScreen(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            GlassTopAppBar(
+            PocketTopAppBar(
                 title = {
                     Text(
                         text = "Privacy Policy",
@@ -141,7 +141,7 @@ fun PrivacyPolicyScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = glassTokens.fill,
+                    containerColor = pocketTokens.fill,
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
             )

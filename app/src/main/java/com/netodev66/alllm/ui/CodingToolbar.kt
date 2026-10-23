@@ -25,7 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.netodev66.alllm.ui.theme.GlassClickableSurface
+import com.netodev66.alllm.ui.theme.PocketClickableSurface
 
 /**
  * Mobile-optimized coding symbol and action toolbar.
@@ -114,7 +114,7 @@ private fun ToolbarButton(
     enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
-    GlassClickableSurface(
+    PocketClickableSurface(
         onClick = onClick,
         enabled = enabled,
         shape = RoundedCornerShape(6.dp),

@@ -1484,6 +1484,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun dismissAppUpdateError() =
         runtimeCoordinator.dismissAppUpdateError()
 
+    /** Dismiss the update offer; when [skipVersion] is true, stay quiet for this version. */
+    fun deferAppUpdate(skipVersion: Boolean) =
+        runtimeCoordinator.deferAppUpdate(skipVersion)
+
 
 
     fun finishOnboarding(profile: ProviderProfile, secret: String) =

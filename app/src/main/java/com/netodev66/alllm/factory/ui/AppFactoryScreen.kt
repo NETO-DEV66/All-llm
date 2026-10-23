@@ -92,7 +92,7 @@ import com.netodev66.alllm.factory.model.KeystoreConfig
 import com.netodev66.alllm.factory.model.StoreListingBundle
 import com.netodev66.alllm.factory.model.VersionBumpType
 import java.io.File
-import com.netodev66.alllm.ui.theme.GlassTopAppBar
+import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
@@ -135,7 +135,7 @@ fun AppFactoryScreen(
 
     Scaffold(
         topBar = {
-            GlassTopAppBar(
+            PocketTopAppBar(
                 title = {
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {

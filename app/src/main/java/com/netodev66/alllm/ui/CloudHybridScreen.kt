@@ -49,8 +49,8 @@ import com.netodev66.alllm.runtime.DeviceTelemetry
 import com.netodev66.alllm.runtime.DeviceTelemetryFormat
 import com.netodev66.alllm.runtime.DeviceTelemetryReader
 import com.netodev66.alllm.ui.theme.BouncyAppear
-import com.netodev66.alllm.ui.theme.GlassPanel
-import com.netodev66.alllm.ui.theme.GlassTopAppBar
+import com.netodev66.alllm.ui.theme.PocketPanel
+import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.bouncyEntry
 import kotlinx.coroutines.delay
@@ -90,7 +90,7 @@ fun CloudHybridScreen(
 
     Scaffold(
         topBar = {
-            GlassTopAppBar(
+            PocketTopAppBar(
                 title = { Text("Cloud Hybrid", fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     PocketIconButton(onBack) {
@@ -126,7 +126,7 @@ fun CloudHybridScreen(
 @Composable
 private fun HeaderCard(isRunning: Boolean) {
     BouncyAppear {
-        GlassPanel(strong = true) {
+        PocketPanel(strong = true) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
@@ -168,14 +168,14 @@ private fun HeaderCard(isRunning: Boolean) {
 
 @Composable
 private fun TelemetryPanel(telemetry: DeviceTelemetry?) {
-    GlassPanel(title = "DEVICE TELEMETRY") {
+    PocketPanel(title = "DEVICE TELEMETRY") {
         if (telemetry == null) {
             Text(
                 "Reading device sensors…",
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            return@GlassPanel
+            return@PocketPanel
         }
         TelemetryRow(
             Icons.Default.BatteryFull,
@@ -237,7 +237,7 @@ private fun formatGigabytes(bytes: Long): String =
 
 @Composable
 private fun SchedulerPanel(maxConcurrentAgents: Int, throttleReason: String?, isRunning: Boolean) {
-    GlassPanel(title = "LOCAL CONCURRENCY") {
+    PocketPanel(title = "LOCAL CONCURRENCY") {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 "$maxConcurrentAgents",
@@ -279,7 +279,7 @@ private fun SchedulerPanel(maxConcurrentAgents: Int, throttleReason: String?, is
 
 @Composable
 private fun JobPipelinePanel(tasks: List<TeamTask>, isRunning: Boolean) {
-    GlassPanel(title = "JOB PIPELINE") {
+    PocketPanel(title = "JOB PIPELINE") {
         if (tasks.isEmpty()) {
             Text(
                 if (isRunning) {
@@ -290,7 +290,7 @@ private fun JobPipelinePanel(tasks: List<TeamTask>, isRunning: Boolean) {
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            return@GlassPanel
+            return@PocketPanel
         }
         val active = tasks.filter { it.status == TeamTaskStatus.IN_PROGRESS }.size
         val done = tasks.filter { it.status == TeamTaskStatus.COMPLETED }.size
@@ -339,7 +339,7 @@ private fun JobPipelinePanel(tasks: List<TeamTask>, isRunning: Boolean) {
 
 @Composable
 private fun NotBuiltYetPanel() {
-    GlassPanel(title = "NOT BUILT YET") {
+    PocketPanel(title = "NOT BUILT YET") {
         Text(
             "Remote worker management and routing policies are not implemented. The earlier " +
                 "walkthrough described them as if they were, which was wrong. When a real remote " +

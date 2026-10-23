@@ -12,14 +12,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 
 /**
- * Glass alert dialog. Keeps Material3's [AlertDialog] parameter list so call sites
- * only need the name changed, but renders the container as a translucent glass pane
- * with a hairline rim.
+ * Solid alert dialog. Keeps Material3's [AlertDialog] parameter list so call sites
+ * only need the name changed, but renders an opaque container with a hairline rim.
  *
  * The rim is drawn through [modifier] because [AlertDialog] exposes no border
- * parameter. The dialog window is a separate window from the app's root, so the
- * app-level [GlassBackdrop] is not behind it; the translucent fill composites over
- * the dialog's own scrim instead, which is why the default fill is the strong one.
+ * parameter. The dialog window is separate from the app's root, so it needs its own
+ * opaque fill rather than inheriting the root background.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,8 +29,8 @@ fun PocketAlertDialog(
     icon: (@Composable () -> Unit)? = null,
     title: (@Composable () -> Unit)? = null,
     text: (@Composable () -> Unit)? = null,
-    shape: Shape = GlassShapes.lg,
-    containerColor: androidx.compose.ui.graphics.Color = glassTokens.fillStrong,
+    shape: Shape = PocketRadii.lg,
+    containerColor: androidx.compose.ui.graphics.Color = pocketTokens.fillStrong,
     iconContentColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.secondary,
     titleContentColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface,
     textContentColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -42,7 +40,7 @@ fun PocketAlertDialog(
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = confirmButton,
-        modifier = modifier.border(1.dp, glassTokens.borderStrong, shape),
+        modifier = modifier.border(1.dp, pocketTokens.borderStrong, shape),
         dismissButton = dismissButton,
         icon = icon,
         title = title,

@@ -93,8 +93,8 @@ import com.netodev66.alllm.network.GitHubPullRequest
 import com.netodev66.alllm.network.GitHubRelease
 import com.netodev66.alllm.network.GitHubWorkflowRun
 import com.netodev66.alllm.network.PullRequestMergeMethod
-import com.netodev66.alllm.ui.theme.glassTokens
-import com.netodev66.alllm.ui.theme.GlassTopAppBar
+import com.netodev66.alllm.ui.theme.pocketTokens
+import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
@@ -158,7 +158,7 @@ fun GitHubStudioScreen(
 
     Scaffold(
         topBar = {
-            GlassTopAppBar(
+            PocketTopAppBar(
                 title = {
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -197,7 +197,7 @@ fun GitHubStudioScreen(
                         Icon(Icons.Default.Refresh, contentDescription = "Refresh")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = glassTokens.fill)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = pocketTokens.fill)
             )
         }
     ) { paddingValues ->

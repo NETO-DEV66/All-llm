@@ -54,8 +54,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.netodev66.alllm.model.WorkspaceEntry
-import com.netodev66.alllm.ui.theme.glassTokens
-import com.netodev66.alllm.ui.theme.GlassClickableSurface
+import com.netodev66.alllm.ui.theme.pocketTokens
+import com.netodev66.alllm.ui.theme.PocketClickableSurface
 import com.netodev66.alllm.ui.theme.PocketIconButton
 
 
@@ -227,7 +227,7 @@ fun CommandPalette(
                         )
                     }
                     items(matchingFiles, key = { "file_${it.path}" }) { file ->
-                        GlassClickableSurface(
+                        PocketClickableSurface(
                             onClick = {
                                 onDismiss()
                                 onFileSelected(file.path)
@@ -291,7 +291,7 @@ fun CommandPalette(
                     }
                 } else {
                     items(matchingActions, key = { it.id }) { action ->
-                        GlassClickableSurface(
+                        PocketClickableSurface(
                             onClick = {
                                 onDismiss()
                                 onActionSelected(action.id)
@@ -321,7 +321,7 @@ fun CommandPalette(
                                 }
                                 Surface(
                                     shape = RoundedCornerShape(4.dp),
-                                    color = glassTokens.fill,
+                                    color = pocketTokens.fill,
                                     modifier = Modifier.padding(start = 6.dp),
                                 ) {
                                     Text(

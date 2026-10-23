@@ -90,8 +90,8 @@ import com.netodev66.alllm.session.EngineeringState
 import com.netodev66.alllm.session.OrchestratorSnapshot
 import com.netodev66.alllm.ui.theme.PocketGreen
 import com.netodev66.alllm.ui.theme.PocketOrange
-import com.netodev66.alllm.ui.theme.glassTokens
-import com.netodev66.alllm.ui.theme.GlassClickableSurface
+import com.netodev66.alllm.ui.theme.pocketTokens
+import com.netodev66.alllm.ui.theme.PocketClickableSurface
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
@@ -125,7 +125,7 @@ fun ModeSelectorBar(
                 ExecutionMode.UNIFIED -> Icons.Default.RocketLaunch to "Unified"
             }
 
-            GlassClickableSurface(
+            PocketClickableSurface(
                 onClick = { onModeSelected(mode) },
                 shape = RoundedCornerShape(16.dp),
                 color = if (isSelected) {
@@ -180,7 +180,7 @@ fun ScratchpadPill(
     val runningCount = if (isRunning) items.count { it.status == TaskStatus.RUNNING } else 0
     val pendingCount = items.count { it.status == TaskStatus.PENDING }
 
-    GlassClickableSurface(
+    PocketClickableSurface(
         onClick = onToggleExpand,
         shape = RoundedCornerShape(20.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.85f),
@@ -261,7 +261,7 @@ fun ScratchpadCard(
             .fillMaxWidth()
             .animateContentSize(),
         shape = RoundedCornerShape(14.dp),
-        color = glassTokens.fill,
+        color = pocketTokens.fill,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         shadowElevation = 3.dp,
     ) {
@@ -870,7 +870,7 @@ fun EngineeringStateBanner(
             }
 
             if (onRollbackToBaseline != null && (state == EngineeringState.FAILED || state == EngineeringState.FIXING)) {
-                GlassClickableSurface(
+                PocketClickableSurface(
                     onClick = onRollbackToBaseline,
                     shape = RoundedCornerShape(6.dp),
                     color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.8f),

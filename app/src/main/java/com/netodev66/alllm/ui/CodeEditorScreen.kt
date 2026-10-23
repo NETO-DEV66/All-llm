@@ -7,6 +7,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -113,10 +114,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.max
-import com.netodev66.alllm.ui.theme.glassReadingFill
-import com.netodev66.alllm.ui.theme.glassTokens
-import com.netodev66.alllm.ui.theme.GlassClickableSurface
-import com.netodev66.alllm.ui.theme.GlassTopAppBar
+import com.netodev66.alllm.ui.theme.pocketReadingFill
+import com.netodev66.alllm.ui.theme.pocketTokens
+import com.netodev66.alllm.ui.theme.PocketClickableSurface
+import com.netodev66.alllm.ui.theme.bounceScale
+import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketAlertDialog
@@ -1067,7 +1069,7 @@ fun CodeEditorScreen(
                     androidx.compose.foundation.lazy.LazyColumn {
                         items(activeReferences.size) { idx ->
                             val ref = activeReferences[idx]
-                            GlassClickableSurface(
+                            PocketClickableSurface(
                                 onClick = {
                                     referencesOpen = false
                                     if (workspaceDir != null) {
@@ -1113,7 +1115,7 @@ fun CodeEditorScreen(
                     androidx.compose.foundation.lazy.LazyColumn {
                         items(diagnostics.size) { idx ->
                             val diag = diagnostics[idx]
-                            GlassClickableSurface(
+                            PocketClickableSurface(
                                 onClick = {
                                     diagnosticsOpen = false
                                     goToLine(diag.lineNumber)
@@ -1189,6 +1191,7 @@ fun CodeEditorScreen(
                     androidx.compose.foundation.lazy.LazyColumn {
                         items(activeCodeActions.size) { idx ->
                             val action = activeCodeActions[idx]
+                            val quickFixInteraction = remember { MutableInteractionSource() }
                             Surface(
                                 // QA H2: tapping a quick fix applies its edit
                                 // to the buffer (the user still reviews + saves).
@@ -1207,9 +1210,13 @@ fun CodeEditorScreen(
                                         onShowToast("This quick fix could not be applied.")
                                     }
                                 },
-                                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .bounceScale(quickFixInteraction, pressedScale = 0.97f),
                                 shape = RoundedCornerShape(8.dp),
                                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                interactionSource = quickFixInteraction,
                             ) {
                                 Row(
                                     modifier = Modifier.padding(12.dp),
@@ -1251,7 +1258,7 @@ fun CodeEditorScreen(
                     androidx.compose.foundation.lazy.LazyColumn {
                         items(activeImplementations.size) { idx ->
                             val impl = activeImplementations[idx]
-                            GlassClickableSurface(
+                            PocketClickableSurface(
                                 onClick = {
                                     implementationsOpen = false
                                     if (workspaceDir != null) {
@@ -1311,7 +1318,7 @@ fun CodeEditorScreen(
     // The parent owns navigation; the editor owns dirty-state confirmation.
     Scaffold(
         topBar = {
-            GlassTopAppBar(
+            PocketTopAppBar(
                 title = {
                     Column {
                         Text(filePath.substringAfterLast('/'), style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -1551,7 +1558,7 @@ fun CodeEditorScreen(
                         openTabs.forEach { tabPath ->
                             val isSelected = tabPath == filePath
                             val fileName = tabPath.substringAfterLast('/')
-                            GlassClickableSurface(
+                            PocketClickableSurface(
                                 onClick = { onSelectTab(tabPath) },
                                 shape = RoundedCornerShape(8.dp),
                                 color = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent,
@@ -1905,10 +1912,10 @@ fun CodeEditorScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         completions.forEach { item ->
-                            GlassClickableSurface(
+                            PocketClickableSurface(
                                 onClick = { applyCompletion(item) },
                                 shape = RoundedCornerShape(14.dp),
-                                color = glassTokens.fill,
+                                color = pocketTokens.fill,
                                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                             ) {
                                 Row(
@@ -1967,7 +1974,7 @@ fun CodeEditorScreen(
                     )
                     val errorCount = diagnostics.count { it.severity == DiagnosticSeverity.ERROR }
                     val warnCount = diagnostics.count { it.severity == DiagnosticSeverity.WARNING }
-                    GlassClickableSurface(
+                    PocketClickableSurface(
                         onClick = { diagnosticsOpen = true },
                         shape = RoundedCornerShape(4.dp),
                         color = if (errorCount > 0) MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.6f)
@@ -2015,9 +2022,9 @@ private fun EditorPane(
     onSplitShortcut: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    // Code is dense 13sp monospace, so this pane opts out of the translucent glass
+    // Code is dense 13sp monospace, so this pane opts out of the theme surface
     // fill: the backdrop drifting behind the glyphs makes it unreadable.
-    Row(modifier.fillMaxSize().background(glassReadingFill())) {
+    Row(modifier.fillMaxSize().background(pocketReadingFill())) {
         Box(
             Modifier
                 .fillMaxHeight()

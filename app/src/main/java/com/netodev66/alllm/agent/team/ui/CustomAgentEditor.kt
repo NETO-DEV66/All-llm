@@ -50,7 +50,7 @@ import com.netodev66.alllm.agent.team.model.TeamRole
 import com.netodev66.alllm.agent.team.model.TeamRolePermissions
 import com.netodev66.alllm.agent.team.model.draftCustomAgent
 import com.netodev66.alllm.model.Project
-import com.netodev66.alllm.ui.theme.glassTokens
+import com.netodev66.alllm.ui.theme.pocketTokens
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
@@ -94,7 +94,7 @@ fun CustomAgentEditorDialog(
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(16.dp),
-            color = glassTokens.fill,
+            color = pocketTokens.fill,
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
@@ -349,7 +349,7 @@ fun BuiltinAgentCustomizeDialog(
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(16.dp),
-            color = glassTokens.fill,
+            color = pocketTokens.fill,
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(

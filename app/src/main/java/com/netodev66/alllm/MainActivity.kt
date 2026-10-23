@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.netodev66.alllm.ui.MainViewModel
 import com.netodev66.alllm.ui.PocketDevApp
-import com.netodev66.alllm.ui.theme.GlassBackdrop
+import com.netodev66.alllm.ui.theme.PocketBackdrop
 import com.netodev66.alllm.ui.theme.PocketTheme
 
 class MainActivity : ComponentActivity() {
@@ -36,10 +36,9 @@ class MainActivity : ComponentActivity() {
             setContent {
                 val state by vm.state.collectAsStateWithLifecycle()
                 PocketTheme(themeMode = state.themeMode) {
-                    // The animated glass backdrop is the single base layer for the
-                    // whole app; every screen's Scaffold is transparent over it, which
-                    // is what lets the translucent panels read as real glass.
-                    GlassBackdrop {
+                    // Opaque root background. Every screen's Scaffold is transparent
+                    // over it, so the theme background shows through consistently.
+                    PocketBackdrop {
                         PocketDevApp(vm)
                     }
                 }

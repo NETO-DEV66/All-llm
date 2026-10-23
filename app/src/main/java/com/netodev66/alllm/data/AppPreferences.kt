@@ -149,6 +149,15 @@ class AppPreferences(private val context: Context) {
         set(value) { preferences.edit().putLong("last_app_update_check_millis", value).commit() }
 
     /**
+     * versionCode the user chose to skip. The startup check stays quiet for this
+     * version so a declined update does not re-open its dialog on every launch;
+     * an explicit "Check for updates" still offers it again.
+     */
+    var skippedAppUpdateVersion: Long
+        get() = preferences.getLong("skipped_app_update_version", 0L)
+        set(value) { preferences.edit().putLong("skipped_app_update_version", value).commit() }
+
+    /**
      * Debug-only manifest URL override. Empty in release builds; populated via
      * Settings → Update channel in debug builds so a local server (exposed via
      * Cloudflare Tunnel or ngrok) can be tested without publishing a release.

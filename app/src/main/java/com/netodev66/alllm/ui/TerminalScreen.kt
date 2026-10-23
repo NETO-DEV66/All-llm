@@ -92,9 +92,9 @@ import androidx.compose.ui.unit.sp
 import com.netodev66.alllm.ui.theme.AppThemeMode
 import com.netodev66.alllm.ui.theme.PocketGreen
 import com.netodev66.alllm.ui.theme.PocketOrange
-import com.netodev66.alllm.ui.theme.glassReadingFill
-import com.netodev66.alllm.ui.theme.GlassClickableSurface
-import com.netodev66.alllm.ui.theme.GlassTopAppBar
+import com.netodev66.alllm.ui.theme.pocketReadingFill
+import com.netodev66.alllm.ui.theme.PocketClickableSurface
+import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketIconButton
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -202,7 +202,7 @@ fun TerminalScreen(
         contentWindowInsets = if (compactHeader) WindowInsets(0, 0, 0, 0) else ScaffoldDefaults.contentWindowInsets,
         topBar = {
             if (!compactHeader) {
-                GlassTopAppBar(
+                PocketTopAppBar(
                     modifier = Modifier.padding(top = 8.dp),
                     title = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -278,7 +278,7 @@ fun TerminalScreen(
                 ) {
                     sessions.forEach { session ->
                         val isSelected = session.id == activeSessionId
-                        GlassClickableSurface(
+                        PocketClickableSurface(
                             onClick = { onSelectSession(session.id) },
                             shape = RoundedCornerShape(8.dp),
                             color = if (isSelected) MaterialTheme.colorScheme.surfaceVariant else Color.Transparent,
@@ -424,9 +424,9 @@ fun TerminalScreen(
                 AppThemeMode.SYSTEM -> isSystemInDarkTheme()
             }
             // Terminal output is dense monospace, so the pane uses the near-opaque reading
-            // fill instead of the translucent glass one: moving colour behind the glyphs
+            // fill instead of the theme surface: a busy backdrop behind the glyphs
             // makes long output hard to scan.
-            val terminalBg = glassReadingFill()
+            val terminalBg = pocketReadingFill()
             val promptGreen = if (isDark) PocketGreen else Color(0xFF0D7A3E)
             val commandTextColor = if (isDark) Color(0xFFF0F6FC) else MaterialTheme.colorScheme.onSurface
             val outputTextColor = if (isDark) Color(0xFFC9D1D9) else MaterialTheme.colorScheme.onSurface
