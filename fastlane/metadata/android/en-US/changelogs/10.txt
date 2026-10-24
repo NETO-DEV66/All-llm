@@ -1,0 +1,9 @@
+All-LLM 3.9.0 - liquid glass returns, with a chat-first home.
+- New liquid-glass look: translucent panes over a drifting backdrop, with specular
+  sheen, edge light and a soft inner glow on panels, cards, bars and sheets
+- New Chat home screen: type a task and a quick project starts the agent right away,
+  with recent projects listed below
+- Chat is now the landing screen; Projects moved to the rail and the prompt card
+- Fixed MCP installs: installing a server from Market or Skills now really registers it,
+  and servers installed by older builds are repaired on first launch
+- Fixed the crash when opening Skills then the MCP Servers tab

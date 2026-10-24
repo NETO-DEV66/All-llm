@@ -58,7 +58,34 @@ class MarketplaceCoordinator(
 
     init {
         publishedStore.load().forEach { DeveloperMarketplaceCatalog.addCustomItem(it) }
-        host.scope.launch(Dispatchers.IO) { seedCuratedSkills() }
+        host.scope.launch(Dispatchers.IO) {
+            seedCuratedSkills()
+            repairMissingMcpRegistrations()
+        }
+    }
+
+    /**
+     * Registers MCP servers for marketplace items that are recorded as installed but
+     * have no server behind them.
+     *
+     * Before the install path registered a server on the [MarketplaceInstallResult.ReferenceRecorded]
+     * branch, an MCP item could be persisted as installed while nothing was runnable —
+     * the card read "Installed" and the server list stayed empty. Those records are
+     * durable, so the fix alone would not repair an existing install; this pass does,
+     * once, on startup.
+     */
+    private fun repairMissingMcpRegistrations() {
+        var repaired = false
+        for ((id, _) in installManager.installedPackages.value) {
+            val item = DeveloperMarketplaceCatalog.getAllItems().find { it.id == id } ?: continue
+            if (item.category != MarketplaceCategory.MCP_SERVERS) continue
+            val template = com.netodev66.alllm.mcp.McpBuiltInCatalogTemplates
+                .find { "catalog-mcp-${it.id}" == item.id }
+            val serverId = template?.id ?: "marketplace-${item.id}"
+            if (mcpRegistry.getServer(serverId) != null) continue
+            if (registerMarketplaceMcpServer(item).isNotEmpty()) repaired = true
+        }
+        if (repaired) onMcpServersChanged()
     }
 
     private fun seedCuratedSkills() {
@@ -155,8 +182,19 @@ class MarketplaceCoordinator(
                     val mcpNote = registerMarketplaceMcpServer(item)
                     "Installed ${item.name}$mcpNote"
                 }
-                is MarketplaceInstallResult.ReferenceRecorded ->
-                    "Saved ${item.name} as a reference — no package was downloaded"
+                is MarketplaceInstallResult.ReferenceRecorded -> {
+                    // An MCP listing's install value is the server *command*
+                    // ("npx -y …"), not a downloadable artifact, so it always
+                    // lands here. Registering the server is the whole point of
+                    // the install, so it must happen on this branch too —
+                    // otherwise the card reads "Installed" while no server exists.
+                    val mcpNote = registerMarketplaceMcpServer(item)
+                    if (mcpNote.isEmpty()) {
+                        "Saved ${item.name} as a reference — no package was downloaded"
+                    } else {
+                        "Installed ${item.name}$mcpNote"
+                    }
+                }
                 is MarketplaceInstallResult.Failed ->
                     "Install failed: ${result.reason}"
                 MarketplaceInstallResult.AlreadyInstalled ->
@@ -171,17 +209,22 @@ class MarketplaceCoordinator(
 
     /**
      * Registers an installed MCP marketplace item as a usable MCP server.
-     * Returns the toast suffix describing what happened. Non-MCP items
-     * return "" — nothing to register.
+     * Returns the toast suffix describing what happened; "" means there was
+     * nothing to register (non-MCP item, or an install value that is not a
+     * command).
      */
     private fun registerMarketplaceMcpServer(item: MarketplaceItem): String {
         if (item.category != MarketplaceCategory.MCP_SERVERS) return ""
         val template = com.netodev66.alllm.mcp.McpBuiltInCatalogTemplates
             .find { "catalog-mcp-${it.id}" == item.id }
-        val server = marketplaceItemToMcpServer(item)?.copy(
+        // A catalog item registers under the template's own id, so the MCP
+        // catalog badge, "Installed Servers" list and template installs all
+        // agree on one identity per logical server.
+        val serverId = template?.id ?: "marketplace-${item.id}"
+        val server = marketplaceItemToMcpServer(item, serverId)?.copy(
             secretEnvNames = template?.requiredEnv ?: emptyList()
         )
-            ?: return " (MCP server not registered: install value is not a command)"
+            ?: return ""
         mcpRegistry.installServer(server)
         onMcpServersChanged()
         return " (MCP server registered)"
@@ -192,8 +235,12 @@ class MarketplaceCoordinator(
             val removed = installManager.uninstall(item.id)
             if (item.category == MarketplaceCategory.MCP_SERVERS) {
                 // Symmetric with install: an uninstalled MCP item must not
-                // leave a registered server behind.
-                if (mcpRegistry.removeServer("marketplace-${item.id}")) {
+                // leave a registered server behind. The server id mirrors
+                // registerMarketplaceMcpServer exactly.
+                val template = com.netodev66.alllm.mcp.McpBuiltInCatalogTemplates
+                    .find { "catalog-mcp-${it.id}" == item.id }
+                val serverId = template?.id ?: "marketplace-${item.id}"
+                if (mcpRegistry.removeServer(serverId)) {
                     onMcpServersChanged()
                 }
             }
@@ -210,17 +257,17 @@ class MarketplaceCoordinator(
  * Maps a marketplace MCP item to the [McpServerInfo] installing it
  * registers. Returns null when the item's install value cannot become a
  * server command (blank, or an http(s) URL — a URL is a download, not a
- * command to run). Server ids are namespaced `marketplace-<itemId>` so a
- * marketplace server never collides with a built-in template id.
+ * command to run). [serverId] is supplied by the caller so the registered
+ * id stays in step with what the MCP catalog badge and uninstall path use.
  * Pure function, unit-tested.
  */
-internal fun marketplaceItemToMcpServer(item: MarketplaceItem): McpServerInfo? {
+internal fun marketplaceItemToMcpServer(item: MarketplaceItem, serverId: String): McpServerInfo? {
     val commandLine = item.installUrl.trim()
     if (commandLine.isBlank()) return null
     if (commandLine.startsWith("http://") || commandLine.startsWith("https://")) return null
     val parts = commandLine.split(Regex("\\s+"))
     return McpServerInfo(
-        id = "marketplace-${item.id}",
+        id = serverId,
         name = item.name,
         description = item.description,
         command = parts.first(),

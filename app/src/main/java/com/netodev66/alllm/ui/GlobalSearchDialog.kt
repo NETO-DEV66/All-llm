@@ -65,6 +65,7 @@ import com.netodev66.alllm.ui.theme.PocketClickableSurface
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
+import com.netodev66.alllm.ui.theme.pocketTokens
 
 /**
  * Project-wide search and replace bottom sheet dialog.
@@ -191,7 +192,10 @@ fun GlobalSearchDialog(
         performSearch()
     }
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = pocketTokens.modalSurface,
+    ) {
         Column(
             Modifier
                 .fillMaxWidth()

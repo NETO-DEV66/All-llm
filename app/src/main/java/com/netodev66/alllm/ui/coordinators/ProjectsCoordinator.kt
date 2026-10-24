@@ -39,7 +39,12 @@ class ProjectsCoordinator(
     private val openProject: (Project) -> Unit,
     private val refreshProjectFiles: () -> Unit,
 ) {
-    fun createQuickProject() {
+    /**
+     * Creates a fresh quick project and opens it. [initialPrompt], when given,
+     * is handed to the opened workspace as its first message — this is what
+     * lets the chat-first landing screen start a task in one tap.
+     */
+    fun createQuickProject(initialPrompt: String? = null) {
         val busy = host.state().isRunning || host.state().projectTerminalRunning
         val identity = generateQuickChatIdentity(host.state().projects.mapTo(mutableSetOf()) { it.slug })
         val project = Project(
@@ -61,6 +66,8 @@ class ProjectsCoordinator(
             return
         }
         openProject(project)
+        val prompt = initialPrompt?.trim().orEmpty()
+        if (prompt.isNotEmpty()) host.sendPrompt(prompt)
     }
 
     private fun copyTreeToDirectory(treeUri: Uri, destinationDir: File): Int {

@@ -26,7 +26,7 @@ class MarketplaceCoordinatorMcpMappingTest {
 
     @Test
     fun `npx command maps to server with split command and args`() {
-        val server = marketplaceItemToMcpServer(mcpItem("npx -y @modelcontextprotocol/server-postgres"))
+        val server = marketplaceItemToMcpServer(mcpItem("npx -y @modelcontextprotocol/server-postgres"), "marketplace-pg-mcp")
         assertEquals("marketplace-pg-mcp", server!!.id)
         assertEquals("Postgres MCP", server.name)
         assertEquals("npx", server.command)
@@ -37,26 +37,32 @@ class MarketplaceCoordinatorMcpMappingTest {
 
     @Test
     fun `single command with no args maps to empty args`() {
-        val server = marketplaceItemToMcpServer(mcpItem("my-mcp-server"))
+        val server = marketplaceItemToMcpServer(mcpItem("my-mcp-server"), "marketplace-pg-mcp")
         assertEquals("my-mcp-server", server!!.command)
         assertTrue(server.args.isEmpty())
     }
 
     @Test
     fun `blank install value maps to null`() {
-        assertNull(marketplaceItemToMcpServer(mcpItem("   ")))
+        assertNull(marketplaceItemToMcpServer(mcpItem("   "), "marketplace-pg-mcp"))
     }
 
     @Test
     fun `http url install value maps to null`() {
-        assertNull(marketplaceItemToMcpServer(mcpItem("https://example.com/pkg.zip")))
-        assertNull(marketplaceItemToMcpServer(mcpItem("http://example.com/pkg.zip")))
+        assertNull(marketplaceItemToMcpServer(mcpItem("https://example.com/pkg.zip"), "marketplace-pg-mcp"))
+        assertNull(marketplaceItemToMcpServer(mcpItem("http://example.com/pkg.zip"), "marketplace-pg-mcp"))
     }
 
     @Test
     fun `extra whitespace is collapsed`() {
-        val server = marketplaceItemToMcpServer(mcpItem("  npx   -y   server  "))
+        val server = marketplaceItemToMcpServer(mcpItem("  npx   -y   server  "), "marketplace-pg-mcp")
         assertEquals("npx", server!!.command)
         assertEquals(listOf("-y", "server"), server.args)
+    }
+
+    @Test
+    fun `caller supplied id wins so catalog items share one identity`() {
+        val server = marketplaceItemToMcpServer(mcpItem("npx -y server-sqlite"), "sqlite")
+        assertEquals("sqlite", server!!.id)
     }
 }

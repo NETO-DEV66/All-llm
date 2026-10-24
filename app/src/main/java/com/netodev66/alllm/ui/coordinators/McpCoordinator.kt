@@ -52,8 +52,13 @@ class McpCoordinator(
      * store (encrypted), never in the server config: [McpServerInfo] only
      * carries their names in `secretEnvNames`. The server is registered
      * first so a failure there never leaves orphaned secrets behind.
+     *
+     * Every outcome is reported: an install that silently replaced an existing
+     * entry is exactly what made "it says installed but nothing happened" hard
+     * to tell apart from a real failure.
      */
     fun installMcpServer(server: McpServerInfo, secrets: Map<String, String> = emptyMap()) {
+        val existed = mcpRegistry.getServer(server.id) != null
         mcpRegistry.installServer(server)
         secrets.forEach { (name, value) ->
             if (name.isNotBlank() && value.isNotBlank()) {
@@ -61,12 +66,24 @@ class McpCoordinator(
             }
         }
         refreshMcpServers()
+        host.updateState {
+            it.copy(
+                toastMessage = if (existed) {
+                    "Updated MCP server ${server.name}"
+                } else {
+                    "Installed MCP server ${server.name} (${server.command})"
+                },
+            )
+        }
     }
 
     fun installMcpTemplate(templateId: String, envOverrides: Map<String, String> = emptyMap(), projectId: String? = host.state().activeProject?.id) {
+        val name = mcpRegistry.catalogTemplates.find { it.id == templateId }?.name ?: templateId
         runCatching {
             mcpRegistry.installFromTemplate(templateId, envOverrides, projectId)
             refreshMcpServers(projectId)
+        }.onSuccess {
+            host.updateState { it.copy(toastMessage = "Installed MCP server $name") }
         }.onFailure { err ->
             host.updateState { it.copy(toastMessage = "Failed to install MCP template: ${err.message}") }
         }

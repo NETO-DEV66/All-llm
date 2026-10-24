@@ -522,8 +522,16 @@ fun SkillsScreen(
                     )
                 }
 
-                items(mcpCatalog, key = { it.id }) { template ->
-                    val isInstalled = mcpServers.any { it.id == template.id }
+                items(mcpCatalog, key = { "catalog-${it.id}" }) { template ->
+                    // An installed template is registered under its own id, so
+                    // the same string can appear in both the installed list and
+                    // this catalog list. LazyColumn keys must be unique across
+                    // the whole list, so the catalog side is namespaced.
+                    // A project-scoped install appends "::<projectId>", which
+                    // must still count as installed here.
+                    val isInstalled = mcpServers.any {
+                        it.id == template.id || it.id.startsWith("${template.id}::")
+                    }
                     McpCatalogCard(
                         template = template,
                         isInstalled = isInstalled,

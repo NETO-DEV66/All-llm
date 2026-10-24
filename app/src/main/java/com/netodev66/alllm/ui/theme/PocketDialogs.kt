@@ -12,12 +12,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 
 /**
- * Solid alert dialog. Keeps Material3's [AlertDialog] parameter list so call sites
- * only need the name changed, but renders an opaque container with a hairline rim.
+ * Glass alert dialog. Keeps Material3's [AlertDialog] parameter list so call sites
+ * only need the name changed, but renders a near-opaque container with a bright rim.
  *
  * The rim is drawn through [modifier] because [AlertDialog] exposes no border
- * parameter. The dialog window is separate from the app's root, so it needs its own
- * opaque fill rather than inheriting the root background.
+ * parameter. The dialog window is separate from the app's root, so it carries its
+ * own [DesignTokens.modalSurface] rather than inheriting the root background.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,7 +30,7 @@ fun PocketAlertDialog(
     title: (@Composable () -> Unit)? = null,
     text: (@Composable () -> Unit)? = null,
     shape: Shape = PocketRadii.lg,
-    containerColor: androidx.compose.ui.graphics.Color = pocketTokens.fillStrong,
+    containerColor: androidx.compose.ui.graphics.Color = pocketTokens.modalSurface,
     iconContentColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.secondary,
     titleContentColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface,
     textContentColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurfaceVariant,

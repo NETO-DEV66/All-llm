@@ -6,6 +6,12 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -18,6 +24,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -25,10 +32,18 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
@@ -56,27 +71,108 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 
 /**
- * Root background layer.
+ * Root background layer: the sheet of glass everything else sits on.
  *
- * A plain opaque fill of the theme background. Solid surfaces need something flat
- * to sit on, and a drifting gradient behind them only made the borders look
- * unsteady.
+ * Draws a slow-drifting multi-stop gradient, two soft accent glows and a specular
+ * sweep. Every translucent pane in the app composites over this, so this layer is
+ * what makes the glass read as glass rather than as flat grey.
+ *
+ * Performance: the layer is built so a running animation never recomposes the
+ * content above it. All four animated values are read only inside `graphicsLayer`
+ * blocks, which Compose evaluates in the layer-update phase — a frame invalidates
+ * these layers, not the composition. The brushes are `remember`ed per theme, so no
+ * per-frame allocation happens either. [blurred] costs one full-screen GPU blur
+ * pass and is therefore applied to the glow layer only, never to content.
  */
 @Composable
 fun PocketBackdrop(
     modifier: Modifier = Modifier,
+    animated: Boolean = true,
+    blurred: Boolean = true,
     content: @Composable () -> Unit,
 ) {
+    val tokens = pocketTokens
+    val transition = rememberInfiniteTransition(label = "pocket-backdrop")
+    val drift by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = if (animated) 22_000 else 1,
+                easing = LinearEasing,
+            ),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "drift",
+    )
+    val sweep by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = if (animated) 9_000 else 1,
+                easing = LinearEasing,
+            ),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "sweep",
+    )
+
+    val backdropBrush = remember(tokens) { glassBackdropBrush(tokens) }
+    val primaryGlow = remember(tokens) { glassGlowBrush(tokens, 0.9f) }
+    val secondaryGlow = remember(tokens) { glassGlowBrush(tokens, 0.7f) }
+    val sweepBrush = remember(tokens) { glassSweepBrush(tokens) }
+    val glowModifier = remember(tokens, blurred) {
+        if (blurred) Modifier.glassBlur(tokens.panelBlurRadius, RectangleShape) else Modifier
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background),
+            .background(backdropBrush),
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .then(glowModifier)
+                .background(primaryGlow)
+                .graphicsLayer {
+                    alpha = 0.55f + 0.35f * drift
+                    translationX = size.width * (drift - 0.5f) * 0.15f
+                },
+        )
+        // Deliberately not blurred: a radial gradient is already smooth, so a second
+        // full-screen blur pass would cost GPU time and change nothing visible.
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(secondaryGlow)
+                .graphicsLayer {
+                    alpha = 0.30f + 0.30f * (1f - drift)
+                    translationX = size.width * (drift - 0.5f) * 0.4f
+                    translationY = size.height * (0.5f - drift) * 0.3f
+                },
+        )
+        // A single diagonal band of light that crosses the screen and repeats. This
+        // is the detail that separates "translucent panel" from "sheet of glass".
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    alpha = 0.5f
+                    translationX = size.width * (1.4f * sweep - 1.2f)
+                    translationY = size.height * (1.4f * sweep - 1.2f) * 0.35f
+                }
+                .background(sweepBrush),
+        )
         content()
     }
 }
@@ -296,7 +392,7 @@ fun PocketTopAppBar(
     expandedHeight: Dp = TopAppBarDefaults.TopAppBarExpandedHeight,
     windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
     colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = pocketTokens.fillStrong,
         titleContentColor = MaterialTheme.colorScheme.onSurface,
         navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
         actionIconContentColor = MaterialTheme.colorScheme.onSurface,
@@ -342,7 +438,7 @@ fun PocketBottomBar(
         )
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            color = containerColor ?: MaterialTheme.colorScheme.surface,
+            color = containerColor ?: pocketTokens.fillStrong,
             tonalElevation = 0.dp,
             shadowElevation = 0.dp,
         ) {
@@ -382,6 +478,89 @@ fun BouncyNavIcon(
 }
 
 /**
+ * Vertical navigation rail used for the app's top-level destinations.
+ *
+ * A rail keeps every destination visible with its label at once (a bottom bar
+ * crowds on phones and hides labels when there are more than five entries), and
+ * it leaves the full width for content that is itself wide — chat, file trees
+ * and the terminal. Items scroll when they outgrow the height.
+ */
+@Composable
+fun PocketNavigationRail(
+    modifier: Modifier = Modifier,
+    containerColor: Color = pocketTokens.fillStrong,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(
+        modifier
+            .fillMaxHeight()
+            .width(76.dp)
+            .background(containerColor)
+            .border(width = 1.dp, color = pocketTokens.borderStrong, shape = RectangleShape),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.statusBars)
+                .verticalScroll(rememberScrollState())
+                .padding(vertical = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            content = content,
+        )
+    }
+}
+
+/**
+ * One rail destination: icon over label, with a pill behind the selected item.
+ * The pill and the icon both spring, so selecting a destination reads as a
+ * physical "pop" rather than a colour swap.
+ */
+@Composable
+fun PocketNavRailItem(
+    selected: Boolean,
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+    val pillAlpha by animateFloatAsState(
+        targetValue = if (selected) 1f else 0f,
+        animationSpec = motion.bouncy.asSpec(),
+        label = "nav-rail-pill",
+    )
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 6.dp)
+            .clip(PocketRadii.sm)
+            .bounceClick(onClick = onClick)
+            .padding(vertical = 7.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .clip(PocketRadii.pill)
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.16f * pillAlpha))
+                .padding(horizontal = 12.dp, vertical = 4.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            BouncyNavIcon(selected, icon, label, Modifier.size(22.dp))
+        }
+        Text(
+            text = label,
+            fontSize = 9.5.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            color = tint,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+        )
+    }
+}
+
+/**
  * Drop-in replacement for Material3's clickable `Surface`, with a solid fill and a
  * bouncy press. Parameter-compatible with the overload it replaces so call sites can
  * be swapped without other edits.
@@ -416,6 +595,9 @@ fun PocketClickableSurface(
                 base = color,
                 borderWidth = if (border != null) 1.dp else 0.dp,
                 borderColor = border?.brush?.let { tokens.border } ?: tokens.border,
+                // Skipped: these repeat inside scrolling lists, and the extra
+                // full-size gradient pass is not worth it at that count.
+                innerGlow = false,
             ),
         propagateMinConstraints = true,
     ) {
@@ -457,16 +639,17 @@ fun PocketClickableCard(
                 shape,
                 base = colors.containerColor,
                 borderWidth = if (border != null) 1.dp else 0.dp,
+                innerGlow = false,
             ),
         content = content,
     )
 }
 
-/** Card container colours for the solid language. */
+/** Card container colours for the glass language. */
 @Composable
 fun pocketCardColors(): androidx.compose.material3.CardColors =
     androidx.compose.material3.CardDefaults.cardColors(
-        containerColor = MaterialTheme.colorScheme.surface,
+        containerColor = pocketTokens.fill,
         contentColor = MaterialTheme.colorScheme.onSurface,
     )
 

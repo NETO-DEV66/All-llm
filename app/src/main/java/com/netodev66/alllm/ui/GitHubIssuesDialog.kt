@@ -62,6 +62,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
+import com.netodev66.alllm.ui.theme.pocketTokens
 
 /**
  * In-App GitHub Issues & Pull Requests Viewer (Phase 10).
@@ -118,6 +119,7 @@ fun GitHubIssuesBottomSheet(
     }
 
     ModalBottomSheet(
+        containerColor = pocketTokens.modalSurface,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
     ) {

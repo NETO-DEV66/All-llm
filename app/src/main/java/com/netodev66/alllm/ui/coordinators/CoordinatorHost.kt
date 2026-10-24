@@ -22,4 +22,6 @@ class CoordinatorHost(
     val state: () -> AppUiState,
     val updateState: ((AppUiState) -> AppUiState) -> Unit,
     val showToast: (String) -> Unit,
+    /** Starts a task in the active project; used by chat-first entry points. */
+    val sendPrompt: (String) -> Unit = {},
 )

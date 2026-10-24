@@ -79,6 +79,7 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -307,6 +308,10 @@ import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
+import com.netodev66.alllm.ui.theme.PocketNavigationRail
+import com.netodev66.alllm.ui.theme.PocketNavRailItem
+import com.netodev66.alllm.ui.theme.PocketPanel
+import com.netodev66.alllm.ui.theme.PocketRadii
 import com.netodev66.alllm.ui.theme.PocketAlertDialog
 import com.netodev66.alllm.ui.theme.bouncyExpandEnter
 import com.netodev66.alllm.ui.theme.bouncyExpandExit
@@ -314,6 +319,7 @@ import com.netodev66.alllm.ui.theme.bouncyExpandExit
 
 // All-LLM branding is rendered in the shared setup headers.
 private enum class RootScreen(val label: String, val icon: ImageVector) {
+    CHAT("Chat", Icons.Default.AutoAwesome),
     PROJECTS("Projects", Icons.Default.Folder),
     AGENT("Agent", Icons.Default.SmartToy),
     SKILLS("Skills", Icons.Default.Extension),
@@ -2468,7 +2474,9 @@ private fun RootScreenHost(
     onOpenDiagnostics: () -> Unit = {},
     onOpenAllProjects: () -> Unit = {},
 ) {
-    var screen by rememberSaveable { mutableStateOf(RootScreen.PROJECTS) }
+    // Chat is the landing screen: the primary action is starting a task, and
+    // projects are reachable from the prompt card and the rail.
+    var screen by rememberSaveable { mutableStateOf(RootScreen.CHAT) }
     var showQuickTerminal by rememberSaveable { mutableStateOf(false) }
     var showPrivacyPolicy by rememberSaveable { mutableStateOf(false) }
     val marketplaceInstalledIds by viewModel.marketplaceInstalledIds.collectAsStateWithLifecycle()
@@ -2486,32 +2494,37 @@ private fun RootScreenHost(
     } else {
         Scaffold(
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
-            bottomBar = {
-            if (!keyboardVisible) PocketBottomBar {
+        ) { padding ->
+        Row(Modifier.fillMaxSize().padding(padding)) {
+            PocketNavigationRail(
+                modifier = Modifier
+                    .width(76.dp)
+                    .fillMaxHeight(),
+            ) {
                 RootScreen.entries.forEach { tab ->
-                    NavigationBarItem(
+                    PocketNavRailItem(
                         selected = screen == tab,
+                        icon = tab.icon,
+                        label = tab.label,
                         onClick = { screen = tab },
-                        icon = { BouncyNavIcon(screen == tab, tab.icon, tab.label) },
-                        label = { Text(tab.label, fontSize = 11.sp) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = MaterialTheme.colorScheme.primary,
-                            selectedTextColor = MaterialTheme.colorScheme.primary,
-                            indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f),
-                        ),
                     )
                 }
             }
-        },
-    ) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding)) {
             Box(
                 Modifier
                     .weight(1f)
-                    .fillMaxWidth()
+                    .fillMaxHeight()
                     .bouncyEntry(key = screen, fromScale = 0.975f),
             ) {
             when (screen) {
+                RootScreen.CHAT -> ChatHomeScreen(
+                    state = state,
+                    onStartTask = { prompt -> viewModel.createQuickProject(prompt) },
+                    onOpenProject = viewModel::openProject,
+                    onBrowseProjects = { screen = RootScreen.PROJECTS },
+                    onSettings = { screen = RootScreen.SETTINGS },
+                    onToggleTheme = viewModel::toggleTheme,
+                )
                 RootScreen.PROJECTS -> ProjectsScreen(
                     state = state,
                     listState = projectsListState,
@@ -2702,7 +2715,7 @@ private fun RootScreenHost(
         }
     }
     }
-}
+    }
 
 @Composable
 private fun QuickTerminalSheet(
@@ -3930,7 +3943,181 @@ private fun StudioCardsSection(
     }
 }
 
+/**
+ * Chat-first landing screen.
+ *
+ * The app's primary action is "tell the agent what to build", so this screen is
+ * a prompt box first and a project list second: typing a prompt and sending
+ * creates a quick project and starts the task in one step. Recent projects stay
+ * one tap away underneath.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ChatHomeScreen(
+    state: AppUiState,
+    onStartTask: (String) -> Unit,
+    onOpenProject: (Project) -> Unit,
+    onBrowseProjects: () -> Unit,
+    onSettings: () -> Unit,
+    onToggleTheme: () -> Unit,
+) {
+    var prompt by rememberSaveable { mutableStateOf("") }
+    val recent = remember(state.projects) { state.projects.take(6) }
+    val canSend = prompt.isNotBlank() && !state.isRunning
+
+    Column(Modifier.fillMaxSize()) {
+        PocketTopAppBar(
+            title = {
+                Column {
+                    Text("All-LLM", fontWeight = FontWeight.Bold)
+                    Text(
+                        "What should we build?",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            },
+            actions = {
+                PocketIconButton(onToggleTheme, modifier = Modifier.size(40.dp)) {
+                    Icon(
+                        if (state.themeMode == com.netodev66.alllm.ui.theme.AppThemeMode.DARK) {
+                            Icons.Default.LightMode
+                        } else {
+                            Icons.Default.DarkMode
+                        },
+                        "Toggle theme",
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+                PocketIconButton(onSettings, modifier = Modifier.size(40.dp)) {
+                    Icon(Icons.Default.Settings, "Settings", modifier = Modifier.size(20.dp))
+                }
+            },
+        )
+        Column(
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            // The prompt card is the screen's whole purpose, so it arrives with the
+            // app's signature bounce rather than simply appearing.
+            PocketPanel(
+                strong = true,
+                modifier = Modifier.bouncyEntry(key = "chat-prompt-hero", fromScale = 0.93f),
+            ) {
+                Text(
+                    "Start a task",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    "Describe what you want. A fresh quick project is created and the agent starts right away.",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = prompt,
+                    onValueChange = { prompt = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Build a notes app with offline sync…") },
+                    minLines = 3,
+                    maxLines = 6,
+                    shape = PocketRadii.sm,
+                )
+                Spacer(Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    PocketButton(
+                        onClick = {
+                            val text = prompt.trim()
+                            if (text.isNotEmpty()) {
+                                onStartTask(text)
+                                prompt = ""
+                            }
+                        },
+                        enabled = canSend,
+                        modifier = Modifier.weight(1f).height(46.dp),
+                    ) {
+                        Icon(Icons.Default.AutoAwesome, null, Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Start task", fontWeight = FontWeight.SemiBold)
+                    }
+                    PocketOutlinedButton(
+                        onClick = onBrowseProjects,
+                        modifier = Modifier.height(46.dp),
+                    ) {
+                        Icon(Icons.Default.Folder, null, Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Projects")
+                    }
+                }
+                if (state.isRunning) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "A task is already running. New prompts queue after it.",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+            }
+
+            if (recent.isNotEmpty()) {
+                Text(
+                    "Recent projects",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                recent.forEach { project ->
+                    PocketClickableSurface(
+                        onClick = { onOpenProject(project) },
+                        // Each row bounces in as it appears, so the list reads as
+                        // arriving rather than as a block that was already there.
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .bouncyEntry(key = project.id, fromScale = 0.95f),
+                    ) {
+                        Row(
+                            Modifier.fillMaxWidth().padding(14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                if (project.kind == ProjectKind.QUICK_PROJECT) {
+                                    Icons.AutoMirrored.Filled.Chat
+                                } else {
+                                    Icons.Default.Folder
+                                },
+                                null,
+                                Modifier.size(20.dp),
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(project.name, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text(
+                                    project.formattedUpdatedAt,
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            Icon(
+                                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                "Open",
+                                Modifier.size(18.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+                PocketTextButton(onBrowseProjects, modifier = Modifier.fillMaxWidth()) {
+                    Text("See all projects")
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun ProjectsScreen(
     state: AppUiState,

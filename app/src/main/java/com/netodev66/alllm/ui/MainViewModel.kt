@@ -759,6 +759,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         state = { _state.value },
         updateState = { transform -> _state.update(transform) },
         showToast = { message -> showToast(message) },
+        sendPrompt = { prompt -> sendPrompt(prompt) },
     )
 
     private val terminalCoordinator =
@@ -2409,8 +2410,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // ---- Milestone 1: project lifecycle moved to ProjectsCoordinator. ----
-    fun createQuickProject() =
-        projectsCoordinator.createQuickProject()
+    fun createQuickProject(initialPrompt: String? = null) =
+        projectsCoordinator.createQuickProject(initialPrompt)
 
     fun importZipProject(uri: Uri) {
         if (_state.value.projectImporting || _state.value.isRunning || _state.value.projectTerminalRunning) return

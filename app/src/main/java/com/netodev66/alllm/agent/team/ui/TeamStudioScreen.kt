@@ -663,6 +663,7 @@ private fun TeamRosterTab(
             .filter { it.role == role }
             .maxByOrNull { it.startedAtMs }
         ModalBottomSheet(
+            containerColor = pocketTokens.modalSurface,
             onDismissRequest = { selectedRole = null },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         ) {

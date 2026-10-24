@@ -384,7 +384,7 @@ fun AgentScreen(
         ModalBottomSheet(
             onDismissRequest = { showAntigravityModelSheet = false },
             sheetState = antigravitySheetState,
-            containerColor = pocketTokens.fill,
+            containerColor = pocketTokens.modalSurface,
         ) {
             Column(
                 Modifier
@@ -496,7 +496,7 @@ fun AgentScreen(
         ModalBottomSheet(
             onDismissRequest = { showModels = false },
             sheetState = providerSheetState,
-            containerColor = pocketTokens.fill,
+            containerColor = pocketTokens.modalSurface,
         ) {
             Column(
                 Modifier
