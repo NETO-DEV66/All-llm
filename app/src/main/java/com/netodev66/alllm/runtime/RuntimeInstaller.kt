@@ -165,6 +165,9 @@ class RuntimeInstaller(private val context: Context) {
         )
     }
 
+    /** Directory for guest process stdout logs, shared with the MCP runtime bridge. */
+    fun outputDirectory(): File = File(context.cacheDir, "runtime-output").apply { mkdirs() }
+
     fun secureCredentialRoot(): File = File(context.filesDir, "secure-credentials").apply { mkdirs() }
 
     fun githubCredentialHostDir(): File = File(secureCredentialRoot(), "github").apply { mkdirs() }

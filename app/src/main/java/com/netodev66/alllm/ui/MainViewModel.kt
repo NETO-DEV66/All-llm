@@ -529,11 +529,24 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val mcpCredentialStore = com.netodev66.alllm.mcp.McpCredentialStore(File(application.filesDir, "mcp"))
     // The live MCP implementation: NDJSON wire protocol, permission gating,
     // audit logging, discovery cache, remote support, credential resolution.
+    // Built-in catalog servers run through `npx`, which lives in the PRoot
+    // rootfs and not on Android. Routing them through the runtime is what makes
+    // a catalog install actually work; a custom server naming a host binary
+    // still spawns directly.
+    private val mcpRuntimeProcessFactory = com.netodev66.alllm.mcp.McpRuntimeProcessFactory(
+        installer = installer,
+        runtime = { runCatching { installer.installedRuntime() }.getOrNull() },
+        workspace = { File(application.filesDir, "workspace").apply { mkdirs() } },
+    )
+
     val mcpToolRegistry = com.netodev66.alllm.mcp.McpToolRegistry(
         registry = mcpRegistry,
         permissionManager = mcpPermissionManager,
         auditLogger = mcpAuditLogger,
         credentialStore = mcpCredentialStore,
+        sessionFactory = {
+            com.netodev66.alllm.mcp.McpServerSession(it, processFactory = mcpRuntimeProcessFactory)
+        },
     )
     val gitHubClient = com.netodev66.alllm.network.GitHubClient()
     val gitWorkflowEngine = com.netodev66.alllm.git.workflow.GitHubWorkflowEngine(
