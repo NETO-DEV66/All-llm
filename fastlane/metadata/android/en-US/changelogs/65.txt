@@ -1,0 +1,6 @@
+All-LLM 3.9.1 - cleaner look, drawer, smarter self-repair.
+- Removed the liquid-glass look: solid panels, cards and sheets with hairline borders and real shadows, so text reads better and scrolling costs no blur
+- New navigation drawer, opened by a hamburger button in every top bar
+- Every tap and transition bounces
+- Fixed MCP installs: Market and Skills installs now really register the server, and custom servers can be added from Skills
+- The build-fix loop now retries up to three times

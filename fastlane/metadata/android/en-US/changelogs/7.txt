@@ -4,4 +4,4 @@ All-LLM 3.7.0 - the Cloud Hybrid screen is real now.
 - See the real local concurrency ceiling and when the scheduler is throttling
 - See the running job pipeline straight from the live team session
 - Removed the promised workers fleet and routing policies that were never built
-- More bounce: animated glass step indicator, press-lift shadows, list pop-in
+- More bounce: step indicator, press-lift shadows, list pop-in
