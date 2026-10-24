@@ -5196,6 +5196,129 @@ Your objective: Analyze the request and workspace, formulate the plan, and provi
     fun reloadProjects() =
         projectsCoordinator.reloadProjects()
 
+    /**
+     * Runs the real verify → diagnose → fix → retest loop against the active
+     * project. Every attempt runs the actual Gradle build in the Linux runtime;
+     * a failed attempt is handed to the real agent as a repair prompt, and the
+     * loop retests. A green result therefore always means exit 0 was observed,
+     * never that the agent claimed success.
+     */
+    fun runSelfVerifyingBuild() {
+        val project = _state.value.activeProject ?: return
+        if (_state.value.androidBuildRunning) return
+        if (!installer.isInstalled()) {
+            _state.update { it.copy(toastMessage = "Linux runtime is not installed; cannot verify the build.") }
+            return
+        }
+        if (!installer.isStackInstalled(DevStack.ANDROID)) {
+            _state.update {
+                it.copy(toastMessage = "Android build tools are not installed. Add Android in Settings → Development stacks.")
+            }
+            return
+        }
+        if (_state.value.isRunning || _state.value.projectTerminalRunning) {
+            _state.update { it.copy(toastMessage = "Wait for the running task to finish before verifying the build.") }
+            return
+        }
+        val workspace = projectWorkspaceRoot(project)
+        val gradleRoot = findAndroidGradleProjectRoot(workspace)
+        if (gradleRoot == null) {
+            _state.update { it.copy(toastMessage = "No Android Gradle project found yet; nothing to verify.") }
+            return
+        }
+        val guestPath = guestRootFor(project)
+        _state.update {
+            it.copy(
+                androidBuildRunning = true,
+                androidBuildMessage = "Verifying build (attempt 1)…",
+                toastMessage = null,
+            )
+        }
+        viewModelScope.launch {
+            val runner = com.netodev66.alllm.session.VerificationLoopRunner(
+                maxIterations = agentOrchestrator.maxSelfHealingIterations,
+                onProgress = { attempt ->
+                    val message = when {
+                        attempt.success -> "Verified on attempt ${attempt.iteration}: build and tests pass"
+                        attempt.fixApplied == null -> "Attempt ${attempt.iteration} failed; no retry budget left"
+                        attempt.fixApplied -> "Attempt ${attempt.iteration} failed; asking the agent to fix " +
+                            (attempt.diagnosis?.affectedFiles?.take(3)?.joinToString(", ") ?: "the reported errors")
+                        else -> "Attempt ${attempt.iteration} failed and no fix was applied"
+                    }
+                    _state.update {
+                        it.copy(
+                            androidBuildMessage = message,
+                            activity = listOf(ActivityItem("Build verification", message)) + it.activity,
+                        )
+                    }
+                },
+            )
+            val result = runner.run(
+                command = VERIFY_BUILD_COMMAND,
+                runBuild = { runRealGradleBuildAndTest(gradleRoot, guestPath) },
+                applyFix = { diagnosis -> applyAgentRepair(diagnosis) },
+            )
+            _state.update {
+                it.copy(
+                    androidBuildRunning = false,
+                    androidBuildMessage = result.stoppedBecause,
+                    toastMessage = if (result.success) {
+                        "Build verified: ${result.iterations} attempt(s), exit 0"
+                    } else {
+                        result.stoppedBecause.take(160)
+                    },
+                    activity = listOf(
+                        ActivityItem(
+                            if (result.success) "Build verified" else "Build verification failed",
+                            result.stoppedBecause,
+                            result.success,
+                        ),
+                    ) + it.activity,
+                )
+            }
+            if (result.success) {
+                agentOrchestrator.transition(
+                    com.netodev66.alllm.session.EngineeringState.COMPLETED,
+                    "Build verified",
+                    result.stoppedBecause,
+                )
+            }
+        }
+    }
+
+    /**
+     * Feeds a failed build back to the real agent as a repair prompt and waits for
+     * that run to end. Returns false when the repair could not be attempted at all,
+     * which makes the loop stop instead of retesting an unchanged tree.
+     */
+    private suspend fun applyAgentRepair(
+        diagnosis: com.netodev66.alllm.session.ErrorDiagnosis,
+    ): Boolean {
+        val failure = com.netodev66.alllm.agent.BuildVerificationResult(
+            success = false,
+            toolName = "Gradle",
+            command = VERIFY_BUILD_COMMAND,
+            output = buildString {
+                appendLine(diagnosis.rootCause)
+                appendLine("Suggested fix: ${diagnosis.suggestedFix}")
+                if (diagnosis.affectedFiles.isNotEmpty()) {
+                    appendLine("Files: " + diagnosis.affectedFiles.take(10).joinToString(", "))
+                }
+            },
+        )
+        val prompt = com.netodev66.alllm.agent.AutonomousLoopEngine.buildAutoFixPrompt(
+            result = failure,
+            iteration = agentOrchestrator.selfHealing.currentIteration,
+            maxIterations = agentOrchestrator.maxSelfHealingIterations,
+        )
+        return runAgentPromptAwaitingResult(prompt).status != com.netodev66.alllm.core.result.OperationStatus.NOT_CONFIGURED
+    }
+
+    /** Clears the finished build-verification banner. */
+    fun dismissBuildMessage() {
+        _state.update { it.copy(androidBuildMessage = null) }
+    }
+
     fun runAutonomousVerification() {
         val project = _state.value.activeProject ?: return
         val workspace = projectWorkspaceRoot(project)
@@ -5451,9 +5574,7 @@ Your objective: Analyze the request and workspace, formulate the plan, and provi
             "workflow-build-${System.nanoTime()}.log"
         )
         try {
-            val command = "gradle --init-script /root/.gradle/init.d/pocketdev-android.gradle " +
-                "-Pandroid.aapt2FromMavenOverride=/root/android-sdk/build-tools/35.0.0/aapt2 " +
-                "--no-daemon assembleDebug testDebugUnitTest --console=plain"
+            val command = VERIFY_BUILD_COMMAND
             val process = installer.process(
                 installed.proot,
                 installed.rootfs,
@@ -5574,6 +5695,10 @@ Your objective: Analyze the request and workspace, formulate the plan, and provi
         private const val MAX_VISIBLE_WORKSPACE_ENTRIES = 2_000
         private const val MAX_ATTACHMENTS_PER_MESSAGE = 5
         private const val MAX_PROCESS_OUTPUT_BYTES = 512 * 1024
+        private const val VERIFY_BUILD_COMMAND =
+            "gradle --init-script /root/.gradle/init.d/pocketdev-android.gradle " +
+                "-Pandroid.aapt2FromMavenOverride=/root/android-sdk/build-tools/35.0.0/aapt2 " +
+                "--no-daemon assembleDebug testDebugUnitTest --console=plain"
         private const val MAX_ATTACHMENT_BYTES = 25L * 1024L * 1024L
         private const val MAX_EDITABLE_FILE_CHARS = 512_000
         private const val MAX_IMPORTED_PROJECT_BYTES = 8L * 1024L * 1024L * 1024L

@@ -96,6 +96,7 @@ import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
+import com.netodev66.alllm.ui.theme.PocketFilterChip
 
 @Composable
 private fun adaptiveCheckGreen(): Color =
@@ -283,7 +284,7 @@ private fun BlueprintTab(
             Spacer(Modifier.height(6.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(AppFactoryBlueprintEngine.Archetype.entries.toTypedArray()) { arch ->
-                    FilterChip(
+                    PocketFilterChip(
                         selected = selectedArchetype == arch,
                         onClick = {
                             if (selectedArchetype == arch) {
@@ -318,7 +319,7 @@ private fun BlueprintTab(
                         AppFramework.REACT_NATIVE -> "React"
                         AppFramework.FULLSTACK_BACKEND -> "Fullstack"
                     }
-                    FilterChip(
+                    PocketFilterChip(
                         selected = selectedFramework == fw,
                         onClick = { selectedFramework = fw },
                         label = {
@@ -347,7 +348,7 @@ private fun BlueprintTab(
             Spacer(Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                 BuildMode.entries.forEach { bm ->
-                    FilterChip(
+                    PocketFilterChip(
                         selected = selectedBuildMode == bm,
                         onClick = { selectedBuildMode = bm },
                         label = {
@@ -568,7 +569,7 @@ private fun BuildAutomationTab(
             Text("Artifact Type", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                 BuildArtifactType.entries.forEach { art ->
-                    FilterChip(
+                    PocketFilterChip(
                         selected = selectedArtifact == art,
                         onClick = { selectedArtifact = art },
                         label = { Text(art.displayName, fontSize = 11.5.sp) },
@@ -582,7 +583,7 @@ private fun BuildAutomationTab(
             Text("Execution Strategy", style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                 BuildMode.entries.forEach { mode ->
-                    FilterChip(
+                    PocketFilterChip(
                         selected = selectedMode == mode,
                         onClick = { selectedMode = mode },
                         label = { Text(if (mode == BuildMode.ON_DEVICE) "📱 On-Device" else "☁️ GitHub CI", fontSize = 12.sp) },

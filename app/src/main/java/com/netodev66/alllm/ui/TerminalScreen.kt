@@ -95,6 +95,7 @@ import com.netodev66.alllm.ui.theme.pocketReadingFill
 import com.netodev66.alllm.ui.theme.PocketClickableSurface
 import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketIconButton
+import com.netodev66.alllm.ui.theme.PocketAssistChip
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -402,7 +403,7 @@ fun TerminalScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     quickCommands.forEach { cmd ->
-                        AssistChip(
+                        PocketAssistChip(
                             onClick = { if (isRunning) onInput(cmd) else onRun(cmd) },
                             label = {
                                 Text(

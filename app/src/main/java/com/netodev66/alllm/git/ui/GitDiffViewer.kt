@@ -58,6 +58,7 @@ import com.netodev66.alllm.ui.theme.pocketTokens
 import com.netodev66.alllm.ui.theme.PocketClickableSurface
 import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketIconButton
+import com.netodev66.alllm.ui.theme.PocketFilterChip
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,7 +92,7 @@ fun GitDiffViewer(
                     }
                 },
                 actions = {
-                    FilterChip(
+                    PocketFilterChip(
                         selected = showOnlyChanges,
                         onClick = { showOnlyChanges = !showOnlyChanges },
                         label = { Text("Only Changes", fontSize = 11.sp) },

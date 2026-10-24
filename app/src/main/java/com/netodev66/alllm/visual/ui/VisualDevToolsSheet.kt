@@ -35,6 +35,7 @@ import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
 import com.netodev66.alllm.ui.theme.pocketTokens
+import com.netodev66.alllm.ui.theme.PocketFilterChip
 
 private enum class DevToolsTab(val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
     CONSOLE("Console", Icons.Default.Terminal),
@@ -159,7 +160,7 @@ fun VisualDevToolsSheet(
                             textStyle = LocalTextStyle.current.copy(fontSize = 11.sp),
                             singleLine = true,
                         )
-                        FilterChip(
+                        PocketFilterChip(
                             selected = selectedLogLevel == null,
                             onClick = { selectedLogLevel = null },
                             label = { Text("All", fontSize = 10.sp) },
@@ -167,7 +168,7 @@ fun VisualDevToolsSheet(
                                 selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                             ),
                         )
-                        FilterChip(
+                        PocketFilterChip(
                             selected = selectedLogLevel == LogLevel.ERROR,
                             onClick = { selectedLogLevel = if (selectedLogLevel == LogLevel.ERROR) null else LogLevel.ERROR },
                             label = { Text("Errors", fontSize = 10.sp, color = MaterialTheme.colorScheme.error) },
@@ -175,7 +176,7 @@ fun VisualDevToolsSheet(
                                 selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                             ),
                         )
-                        FilterChip(
+                        PocketFilterChip(
                             selected = selectedLogLevel == LogLevel.WARN,
                             onClick = { selectedLogLevel = if (selectedLogLevel == LogLevel.WARN) null else LogLevel.WARN },
                             label = { Text("Warn", fontSize = 10.sp, color = PocketOrange) },

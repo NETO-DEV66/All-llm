@@ -34,6 +34,7 @@ import java.io.File
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketAlertDialog
+import com.netodev66.alllm.ui.theme.PocketFilterChip
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -100,12 +101,12 @@ fun VisualComparisonViewer(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        FilterChip(
+                        PocketFilterChip(
                             selected = !isSideBySide,
                             onClick = { isSideBySide = false },
                             label = { Text("Split Slider", fontSize = 11.sp) },
                         )
-                        FilterChip(
+                        PocketFilterChip(
                             selected = isSideBySide,
                             onClick = { isSideBySide = true },
                             label = { Text("Side-by-Side", fontSize = 11.sp) },

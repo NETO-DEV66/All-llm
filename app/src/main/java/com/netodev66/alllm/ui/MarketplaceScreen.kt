@@ -87,6 +87,7 @@ import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
 import com.netodev66.alllm.ui.theme.PocketAlertDialog
 import com.netodev66.alllm.ui.theme.bouncyExpandEnter
+import com.netodev66.alllm.ui.theme.PocketFilterChip
 
 /**
  * AI Developer Marketplace (Phase 14).
@@ -248,7 +249,7 @@ fun MarketplaceScreen(
                     .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                FilterChip(
+                PocketFilterChip(
                     selected = selectedCategory == null && !showOnlyInstalled,
                     onClick = {
                         selectedCategory = null
@@ -259,7 +260,7 @@ fun MarketplaceScreen(
                         selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                     ),
                 )
-                FilterChip(
+                PocketFilterChip(
                     selected = showOnlyInstalled,
                     onClick = { showOnlyInstalled = !showOnlyInstalled },
                     label = {
@@ -273,7 +274,7 @@ fun MarketplaceScreen(
                 MarketplaceCategory.entries.forEach { cat ->
                     val isSelected = selectedCategory == cat && !showOnlyInstalled
                     val count = DeveloperMarketplaceCatalog.filterByCategory(cat).size
-                    FilterChip(
+                    PocketFilterChip(
                         selected = isSelected,
                         onClick = {
                             selectedCategory = if (isSelected) null else cat
@@ -792,7 +793,7 @@ private fun PublishMarketplaceItemDialog(
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     MarketplaceCategory.entries.forEach { cat ->
-                        FilterChip(
+                        PocketFilterChip(
                             selected = selectedCat == cat,
                             onClick = { selectedCat = cat },
                             label = { Text(cat.name.replace('_', ' '), fontSize = 11.sp) },

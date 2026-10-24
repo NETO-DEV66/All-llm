@@ -119,6 +119,7 @@ import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
 import com.netodev66.alllm.ui.theme.bounceClick
+import com.netodev66.alllm.ui.theme.PocketFilterChip
 
 
 /**
@@ -271,7 +272,7 @@ fun TeamStudioScreen(
                     ) {
                         suggestedAgents.forEach { agent ->
                             val selected = suggestedAgentIds.contains(agent.id)
-                            FilterChip(
+                            PocketFilterChip(
                                 selected = selected,
                                 onClick = {
                                     suggestedAgentIds = if (selected) suggestedAgentIds - agent.id
@@ -1410,13 +1411,13 @@ private fun TeamCommsTab(orchestrator: AgentTeamOrchestrator) {
                 .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            FilterChip(
+            PocketFilterChip(
                 selected = filterRole == null,
                 onClick = { filterRole = null },
                 label = { Text("All Messages", fontSize = 11.sp) }
             )
             TeamRole.entries.forEach { role ->
-                FilterChip(
+                PocketFilterChip(
                     selected = filterRole == role,
                     onClick = { filterRole = if (filterRole == role) null else role },
                     label = { Text(role.title.substringBefore(' '), fontSize = 11.sp) }
@@ -1584,13 +1585,13 @@ private fun TeamBlackboardTab(orchestrator: AgentTeamOrchestrator) {
                 .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            FilterChip(
+            PocketFilterChip(
                 selected = filterType == null,
                 onClick = { filterType = null },
                 label = { Text("All Artifacts", fontSize = 11.sp) }
             )
             ArtifactType.entries.forEach { type ->
-                FilterChip(
+                PocketFilterChip(
                     selected = filterType == type,
                     onClick = { filterType = if (filterType == type) null else type },
                     label = { Text(type.name, fontSize = 11.sp) }

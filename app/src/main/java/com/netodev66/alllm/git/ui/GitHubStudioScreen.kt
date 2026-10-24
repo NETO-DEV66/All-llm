@@ -100,6 +100,7 @@ import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
 import com.netodev66.alllm.ui.theme.PocketAlertDialog
+import com.netodev66.alllm.ui.theme.bounceClick
 
 
 private enum class GitStudioTab(val title: String, val icon: ImageVector) {
@@ -918,7 +919,7 @@ private fun AutonomousWorkflowTab(
                                 Surface(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .clickable { selectedIssue = issue },
+                                        .bounceClick { selectedIssue = issue },
                                     shape = RoundedCornerShape(8.dp),
                                     color = if (selectedIssue?.number == issue.number) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
                                 ) {

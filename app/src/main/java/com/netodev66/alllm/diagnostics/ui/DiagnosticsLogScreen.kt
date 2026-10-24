@@ -63,6 +63,7 @@ import com.netodev66.alllm.ui.theme.pocketTokens
 import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
+import com.netodev66.alllm.ui.theme.PocketFilterChip
 
 
 private enum class LogSource(val label: String) {
@@ -182,7 +183,7 @@ fun DiagnosticsLogScreen(onBack: () -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 LogSource.entries.forEach { entry ->
-                    FilterChip(
+                    PocketFilterChip(
                         selected = source == entry,
                         onClick = { source = entry },
                         label = { Text(entry.label, fontSize = 13.sp) },

@@ -14,18 +14,24 @@ import java.io.File
  * strip and history rows) had never been touched. Nothing failed, because a row
  * with a ripple is not a compile error — it is just an inconsistent tap.
  *
+ * The scan covers every source package, not just `ui/`: the same drift had already
+ * happened in `git/ui`, `pentest/ui` and `agent/team/ui`, which the first version
+ * of this test never looked at.
+ *
  * The allow-list is deliberately tiny and each entry is a scrim: a full-screen
  * dimmed backdrop that dismisses on tap. A scrim must not shrink under the
  * finger, so it is the one control that is correct without bounce.
  */
 class BounceCoverageTest {
 
-    private val uiDir: File = run {
+    private val sourceRoot: File = run {
         var dir: File? = File(System.getProperty("user.dir")).absoluteFile
         while (dir != null && !File(dir, "app/build.gradle.kts").isFile) dir = dir.parentFile
         requireNotNull(dir) { "could not locate the repo root from ${System.getProperty("user.dir")}" }
-        File(dir, "app/src/main/java/com/netodev66/alllm/ui")
+        File(dir, "app/src/main/java/com/netodev66/alllm")
     }
+
+    private val uiDir: File get() = File(sourceRoot, "ui")
 
     /** file name -> number of plain-clickable calls that are legitimately scrims. */
     private val allowedScrims = mapOf(
@@ -34,17 +40,23 @@ class BounceCoverageTest {
         "PocketDevApp.kt" to 1, // dimmed backdrop behind the bottom sheet
     )
 
+    /** Material's chips hardcode their ripple; only the Pocket* wrappers may be used. */
+    private val chipWrappers = mapOf(
+        "FilterChip(" to "PocketFilterChip(",
+        "AssistChip(" to "PocketAssistChip(",
+    )
+
     @Test
-    fun `every tappable in the ui package uses bounceClick`() {
+    fun `every tappable in the app uses bounceClick`() {
         val offenders = mutableListOf<String>()
-        uiDir.walkTopDown()
+        sourceRoot.walkTopDown()
             .filter { it.isFile && it.extension == "kt" }
             .forEach { file ->
                 val text = file.readText()
                 val count = Regex("""\.clickable[ (]""").findAll(text).count()
                 val allowed = allowedScrims[file.name] ?: 0
                 if (count > allowed) {
-                    val rel = file.relativeTo(uiDir)
+                    val rel = file.relativeTo(sourceRoot)
                     offenders += "$rel: $count plain .clickable (allowed $allowed)"
                 }
             }
@@ -52,6 +64,27 @@ class BounceCoverageTest {
             "These files still call Modifier.clickable, so those taps ripple instead of " +
                 "bouncing. Convert them to bounceClick, or add the file to allowedScrims if " +
                 "the call is a dismiss scrim:\n" + offenders.joinToString("\n"),
+            offenders.isEmpty(),
+        )
+    }
+
+    @Test
+    fun `every chip goes through a bounce wrapper`() {
+        val offenders = mutableListOf<String>()
+        sourceRoot.walkTopDown()
+            .filter { it.isFile && it.extension == "kt" && it.name != "PocketButtons.kt" }
+            .forEach { file ->
+                val text = file.readText()
+                chipWrappers.forEach { (material, wrapper) ->
+                    val count = Regex("""(?<![\w.])${Regex.escape(material)}""").findAll(text).count()
+                    if (count > 0) {
+                        offenders += "${file.relativeTo(sourceRoot)}: $count $material (use $wrapper)"
+                    }
+                }
+            }
+        assertTrue(
+            "Material's chips ripple on press instead of bouncing. Use the Pocket wrapper:\n" +
+                offenders.joinToString("\n"),
             offenders.isEmpty(),
         )
     }

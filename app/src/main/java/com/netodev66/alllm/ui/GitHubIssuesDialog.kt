@@ -63,6 +63,7 @@ import kotlinx.coroutines.withContext
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.pocketTokens
+import com.netodev66.alllm.ui.theme.PocketFilterChip
 
 /**
  * In-App GitHub Issues & Pull Requests Viewer (Phase 10).
@@ -168,12 +169,12 @@ fun GitHubIssuesBottomSheet(
 
             // Tab Switcher
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(
+                PocketFilterChip(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
                     label = { Text("Issues (${issues.size})") },
                 )
-                FilterChip(
+                PocketFilterChip(
                     selected = selectedTab == 1,
                     onClick = { selectedTab = 1 },
                     label = { Text("Pull Requests (${pullRequests.size})") },

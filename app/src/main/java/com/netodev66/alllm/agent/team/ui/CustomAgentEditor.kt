@@ -56,6 +56,7 @@ import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
 import com.netodev66.alllm.ui.theme.PocketAlertDialog
 import com.netodev66.alllm.ui.theme.bouncyEntry
+import com.netodev66.alllm.ui.theme.bounceClick
 
 
 private data class PermissionRow(val label: String, val desc: String)
@@ -224,7 +225,7 @@ private fun AgentFormFields(
         Surface(
             shape = RoundedCornerShape(10.dp),
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-            modifier = Modifier.fillMaxWidth().clickable { baseRoleExpanded = true }
+            modifier = Modifier.fillMaxWidth().bounceClick { baseRoleExpanded = true }
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
@@ -305,7 +306,7 @@ private fun AgentFormFields(
         projects.forEach { project ->
             val selected = agent.boundProjectIds.contains(project.id)
             Row(
-                modifier = Modifier.fillMaxWidth().clickable {
+                modifier = Modifier.fillMaxWidth().bounceClick {
                     val updated = agent.boundProjectIds.toMutableSet()
                     if (selected) updated.remove(project.id) else updated.add(project.id)
                     onChange(agent.copy(boundProjectIds = updated))

@@ -56,6 +56,7 @@ import com.netodev66.alllm.model.WorkspaceEntry
 import com.netodev66.alllm.ui.theme.pocketTokens
 import com.netodev66.alllm.ui.theme.PocketClickableSurface
 import com.netodev66.alllm.ui.theme.PocketIconButton
+import com.netodev66.alllm.ui.theme.PocketFilterChip
 
 
 enum class PaletteActionCategory {
@@ -184,27 +185,27 @@ fun CommandPalette(
                 modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                FilterChip(
+                PocketFilterChip(
                     selected = selectedCategory == null,
                     onClick = { selectedCategory = null },
                     label = { Text("All", fontSize = 11.sp) },
                 )
-                FilterChip(
+                PocketFilterChip(
                     selected = selectedCategory == PaletteActionCategory.EDITOR,
                     onClick = { selectedCategory = if (selectedCategory == PaletteActionCategory.EDITOR) null else PaletteActionCategory.EDITOR },
                     label = { Text("Editor", fontSize = 11.sp) },
                 )
-                FilterChip(
+                PocketFilterChip(
                     selected = selectedCategory == PaletteActionCategory.NAVIGATION,
                     onClick = { selectedCategory = if (selectedCategory == PaletteActionCategory.NAVIGATION) null else PaletteActionCategory.NAVIGATION },
                     label = { Text("Nav", fontSize = 11.sp) },
                 )
-                FilterChip(
+                PocketFilterChip(
                     selected = selectedCategory == PaletteActionCategory.FILE,
                     onClick = { selectedCategory = if (selectedCategory == PaletteActionCategory.FILE) null else PaletteActionCategory.FILE },
                     label = { Text("Files", fontSize = 11.sp) },
                 )
-                FilterChip(
+                PocketFilterChip(
                     selected = selectedCategory == PaletteActionCategory.BUILD,
                     onClick = { selectedCategory = if (selectedCategory == PaletteActionCategory.BUILD) null else PaletteActionCategory.BUILD },
                     label = { Text("Build", fontSize = 11.sp) },

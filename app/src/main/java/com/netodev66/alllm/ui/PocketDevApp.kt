@@ -125,6 +125,7 @@ import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Extension
+import androidx.compose.material.icons.filled.FactCheck
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MoreVert
@@ -322,6 +323,7 @@ import com.netodev66.alllm.ui.theme.PocketAlertDialog
 import com.netodev66.alllm.ui.theme.bouncyExpandEnter
 import com.netodev66.alllm.ui.theme.bouncyExpandExit
 import com.netodev66.alllm.ui.theme.bounceClick
+import com.netodev66.alllm.ui.theme.PocketFilterChip
 
 
 // All-LLM branding is rendered in the shared setup headers.
@@ -655,6 +657,8 @@ fun PocketDevApp(
             onResumeInterruptedSession = viewModel::resumeInterruptedSession,
             onDismissInterruptedSession = viewModel::dismissInterruptedSession,
             onRunAutonomousVerification = viewModel::runAutonomousVerification,
+            onRunSelfVerifyingBuild = viewModel::runSelfVerifyingBuild,
+            onDismissBuildMessage = viewModel::dismissBuildMessage,
             onCreateFile = viewModel::createFile,
             onCreateFolder = viewModel::createFolder,
             onRenameFile = viewModel::renameEntry,
@@ -4806,18 +4810,18 @@ private fun ProjectsScreen(
                             modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            FilterChip(
+                            PocketFilterChip(
                                 selected = repositoryOwnerFilter == null,
                                 onClick = { repositoryOwnerFilter = null },
                                 label = { Text("All", fontSize = 12.sp) },
                             )
-                            FilterChip(
+                            PocketFilterChip(
                                 selected = repositoryOwnerFilter == "personal",
                                 onClick = { repositoryOwnerFilter = "personal" },
                                 label = { Text("Personal", fontSize = 12.sp) },
                             )
                             repositoryOwners.forEach { owner ->
-                                FilterChip(
+                                PocketFilterChip(
                                     selected = repositoryOwnerFilter == owner,
                                     onClick = { repositoryOwnerFilter = owner },
                                     label = { Text(owner, fontSize = 12.sp, maxLines = 1) },
@@ -5284,6 +5288,8 @@ private fun WorkspaceScreen(
     onResumeInterruptedSession: () -> Unit = {},
     onDismissInterruptedSession: () -> Unit = {},
     onRunAutonomousVerification: () -> Unit = {},
+    onRunSelfVerifyingBuild: () -> Unit = {},
+    onDismissBuildMessage: () -> Unit = {},
     onCreateFile: (String) -> Unit = {},
     onCreateFolder: (String) -> Unit = {},
     onRenameFile: (String, String) -> Unit = { _, _ -> },
@@ -5613,6 +5619,15 @@ private fun WorkspaceScreen(
                                     if (state.androidBuildRunning) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
                                     else Icon(Icons.Default.PlayArrow, "Build and run Android app", modifier = Modifier.size(20.dp))
                                 }
+                                // Verify = build + test, then hand failures back to the agent
+                                // and retest. Build-and-run installs; this one proves.
+                                PocketIconButton( onRunSelfVerifyingBuild,
+                                    enabled = !state.androidBuildRunning && !state.isRunning && !state.projectTerminalRunning,
+                                    modifier = Modifier.size(40.dp),
+                                ) {
+                                    if (state.androidBuildRunning) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                                    else Icon(Icons.Default.FactCheck, "Verify build and tests, fixing failures", modifier = Modifier.size(20.dp))
+                                }
                             }
                             PocketIconButton( { showChats = true },
                                 modifier = Modifier.size(40.dp),
@@ -5701,6 +5716,52 @@ private fun WorkspaceScreen(
                             ) { Text("Resume task", fontSize = 12.sp, maxLines = 1) }
                         } else {
                             CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+                        }
+                    }
+                }
+            }
+            if (state.androidBuildRunning || state.androidBuildMessage != null) {
+                val verifying = state.androidBuildRunning
+                Surface(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+                    color = if (verifying) {
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
+                    } else {
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f)
+                    },
+                    shape = RoundedCornerShape(10.dp),
+                ) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        if (verifying) {
+                            CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp)
+                        } else {
+                            Icon(Icons.Default.FactCheck, contentDescription = null, modifier = Modifier.size(16.dp))
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                if (verifying) "Verifying build" else "Last build verification",
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 12.5.sp,
+                                maxLines = 1,
+                            )
+                            Text(
+                                state.androidBuildMessage.orEmpty(),
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 3,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                        if (!verifying) {
+                            Spacer(Modifier.width(6.dp))
+                            PocketTextButton(
+                                onClick = onDismissBuildMessage,
+                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                            ) { Text("Dismiss", fontSize = 11.sp, maxLines = 1) }
                         }
                     }
                 }

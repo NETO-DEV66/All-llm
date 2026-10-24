@@ -66,6 +66,7 @@ import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
 import com.netodev66.alllm.ui.theme.pocketTokens
+import com.netodev66.alllm.ui.theme.PocketFilterChip
 
 /**
  * Project-wide search and replace bottom sheet dialog.
@@ -352,22 +353,22 @@ fun GlobalSearchDialog(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                FilterChip(
+                PocketFilterChip(
                     selected = matchCase,
                     onClick = { matchCase = !matchCase },
                     label = { Text("Aa", fontWeight = FontWeight.Bold, fontSize = 11.sp) },
                 )
-                FilterChip(
+                PocketFilterChip(
                     selected = wholeWord,
                     onClick = { wholeWord = !wholeWord },
                     label = { Text("Word", fontSize = 11.sp) },
                 )
-                FilterChip(
+                PocketFilterChip(
                     selected = isRegex,
                     onClick = { isRegex = !isRegex },
                     label = { Text(".*", fontWeight = FontWeight.Bold, fontSize = 11.sp) },
                 )
-                FilterChip(
+                PocketFilterChip(
                     selected = showReplace,
                     onClick = { showReplace = !showReplace },
                     label = { Text("Replace", fontSize = 11.sp) },

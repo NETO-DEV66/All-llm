@@ -161,6 +161,7 @@ import com.netodev66.alllm.ui.theme.PocketButton
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketAlertDialog
 import com.netodev66.alllm.ui.theme.bounceClick
+import com.netodev66.alllm.ui.theme.PocketFilterChip
 
 
 private enum class SettingsSection { ACCOUNT, APPEARANCE, TOOLS, RUNTIME, ENVIRONMENT, CONTRIBUTORS, UPDATE_CHANNEL, PERMISSIONS }
@@ -1125,7 +1126,7 @@ fun SettingsScreen(
                     modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
                 ) {
                     item {
-                        FilterChip(
+                        PocketFilterChip(
                             selected = selectedCategory == null && selectedDecision == null,
                             onClick = {
                                 selectedCategory = null
@@ -1145,14 +1146,14 @@ fun SettingsScreen(
                         com.netodev66.alllm.security.PermissionCategory.SECRETS,
                     )
                     items(filterCategories) { cat ->
-                        FilterChip(
+                        PocketFilterChip(
                             selected = selectedCategory == cat,
                             onClick = { selectedCategory = if (selectedCategory == cat) null else cat },
                             label = { Text(cat.name, fontSize = 11.sp) },
                         )
                     }
                     item {
-                        FilterChip(
+                        PocketFilterChip(
                             selected = selectedDecision == com.netodev66.alllm.security.AuditDecision.BLOCKED_DANGEROUS,
                             onClick = {
                                 selectedDecision = if (selectedDecision == com.netodev66.alllm.security.AuditDecision.BLOCKED_DANGEROUS) null else com.netodev66.alllm.security.AuditDecision.BLOCKED_DANGEROUS
