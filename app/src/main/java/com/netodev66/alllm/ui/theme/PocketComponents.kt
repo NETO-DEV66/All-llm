@@ -599,8 +599,11 @@ fun PocketNavDrawerItem(
             .padding(horizontal = 12.dp, vertical = 3.dp)
             .clip(PocketRadii.sm)
             .background(if (selected) accent.copy(alpha = 0.14f) else Color.Transparent)
-            .bounceScale(interaction, pressedScale = 0.97f)
-            .clickable(interactionSource = interaction, indication = null, onClick = onClick)
+            .bounceClick(
+                interactionSource = interaction,
+                pressedScale = 0.97f,
+                onClick = onClick,
+            )
             .padding(horizontal = 14.dp, vertical = 13.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp),
