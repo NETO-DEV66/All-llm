@@ -10,7 +10,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -439,7 +438,7 @@ fun SettingsScreen(
                         }
 
                         Column(
-                            modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded }
+                            modifier = Modifier.fillMaxWidth().bounceClick { expanded = !expanded }
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth()
@@ -984,7 +983,7 @@ fun SettingsScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onOpenPrivacyPolicy() }
+                        .bounceClick { onOpenPrivacyPolicy() }
                         .padding(vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -1013,7 +1012,7 @@ fun SettingsScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { onOpenDiagnostics() }
+                        .bounceClick { onOpenDiagnostics() }
                         .padding(vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {

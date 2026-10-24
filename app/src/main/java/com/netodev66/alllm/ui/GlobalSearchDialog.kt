@@ -1,6 +1,5 @@
 package com.netodev66.alllm.ui
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -62,6 +61,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import com.netodev66.alllm.ui.theme.PocketClickableSurface
+import com.netodev66.alllm.ui.theme.bounceClick
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
@@ -291,7 +291,7 @@ fun GlobalSearchDialog(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable {
+                                .bounceClick {
                                     selectedPreviewFiles = if (checked) {
                                         selectedPreviewFiles - plan.filePath
                                     } else {

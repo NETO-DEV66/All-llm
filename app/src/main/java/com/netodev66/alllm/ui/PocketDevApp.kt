@@ -1655,7 +1655,7 @@ private fun DevStackChoiceRow(
             .background(if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f) else Color.Transparent)
             // Medium: locked rows used to swallow taps with no reason.
             // They now explain why they are locked, and look dimmed.
-            .clickable {
+            .bounceClick {
                 if (locked) {
                     lockedReason?.let { Toast.makeText(context, it, Toast.LENGTH_SHORT).show() }
                 } else {
@@ -2283,7 +2283,7 @@ private fun SetupLogPanel(logs: List<String>) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { expanded = !expanded },
+            .bounceClick { expanded = !expanded },
         color = pocketTokens.fill,
         shape = RoundedCornerShape(18.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
@@ -2955,7 +2955,7 @@ private fun DshApiProtocolPicker(selected: String, onSelected: (String) -> Unit)
         )
         options.forEach { option ->
             Row(
-                modifier = Modifier.fillMaxWidth().clickable { onSelected(option) }.padding(vertical = 6.dp),
+                modifier = Modifier.fillMaxWidth().bounceClick { onSelected(option) }.padding(vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
@@ -3390,7 +3390,7 @@ private fun ProviderCredentialsStep(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable {
+                                    .bounceClick {
                                         onModel(option.id)
                                         status = null
                                         modelSearch = ""
@@ -3781,7 +3781,7 @@ private fun StudioCardsSection(
                 modifier = Modifier
                     .weight(1f)
                     .height(112.dp)
-                    .clickable { onOpenAppFactory() },
+                    .bounceClick { onOpenAppFactory() },
                 shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)),
@@ -3823,7 +3823,7 @@ private fun StudioCardsSection(
                 modifier = Modifier
                     .weight(1f)
                     .height(112.dp)
-                    .clickable { onOpenTeamStudio() },
+                    .bounceClick { onOpenTeamStudio() },
                 shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.35f),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.4f)),
@@ -3865,7 +3865,7 @@ private fun StudioCardsSection(
                 modifier = Modifier
                     .weight(1f)
                     .height(112.dp)
-                    .clickable { onOpenCloudHybrid() },
+                    .bounceClick { onOpenCloudHybrid() },
                 shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.35f),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.tertiary.copy(alpha = 0.4f)),
@@ -3912,7 +3912,7 @@ private fun StudioCardsSection(
                 modifier = Modifier
                     .weight(1f)
                     .height(112.dp)
-                    .clickable { onOpenPenTesting() },
+                    .bounceClick { onOpenPenTesting() },
                 shape = RoundedCornerShape(16.dp),
                 color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.35f),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.4f)),
@@ -4298,7 +4298,7 @@ private fun ProjectsScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { importExpanded = !importExpanded }
+                                .bounceClick { importExpanded = !importExpanded }
                                 .padding(horizontal = 14.dp, vertical = 13.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
@@ -4399,7 +4399,7 @@ private fun ProjectsScreen(
                 }
                 item {
                     Surface(
-                        modifier = Modifier.fillMaxWidth().clickable { showUpdateDialog = true },
+                        modifier = Modifier.fillMaxWidth().bounceClick { showUpdateDialog = true },
                         shape = RoundedCornerShape(18.dp),
                         color = PocketOrange.copy(alpha = 0.11f),
                         border = BorderStroke(1.dp, PocketOrange.copy(alpha = 0.45f)),
@@ -4573,7 +4573,7 @@ private fun ProjectsScreen(
                             shape = RoundedCornerShape(8.dp),
                             color = if (isSel) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
                             border = if (isSel) BorderStroke(1.dp, MaterialTheme.colorScheme.primary) else null,
-                            modifier = Modifier.clickable { selectedTemplate = tmpl },
+                            modifier = Modifier.bounceClick { selectedTemplate = tmpl },
                         ) {
                             Text(
                                 tmpl.displayName,
@@ -4732,7 +4732,7 @@ private fun ProjectsScreen(
                     GitHubAuthStatus.AWAITING_USER -> Column(verticalArrangement = Arrangement.spacedBy(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("Enter this one-time code in the GitHub page opened in your browser.", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Surface(
-                            modifier = Modifier.fillMaxWidth().clickable { state.githubUserCode?.let { clipboard.setText(AnnotatedString(it)) } },
+                            modifier = Modifier.fillMaxWidth().bounceClick { state.githubUserCode?.let { clipboard.setText(AnnotatedString(it)) } },
                             shape = RoundedCornerShape(14.dp),
                             color = MaterialTheme.colorScheme.primaryContainer,
                         ) {
@@ -4879,7 +4879,7 @@ private fun ProjectsScreen(
                     if (!downloading && !installing) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.clickable { skipUpdateVersion = !skipUpdateVersion },
+                            modifier = Modifier.bounceClick { skipUpdateVersion = !skipUpdateVersion },
                         ) {
                             Checkbox(checked = skipUpdateVersion, onCheckedChange = { skipUpdateVersion = it })
                             Spacer(Modifier.width(4.dp))
@@ -5702,7 +5702,7 @@ private fun WorkspaceScreen(
                 val added = state.changes.sumOf { it.additions }
                 val deleted = state.changes.sumOf { it.deletions }
                 Surface(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp).clickable { selectedTab = WorkspaceTab.CHANGES },
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp).bounceClick { selectedTab = WorkspaceTab.CHANGES },
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
                     shape = RoundedCornerShape(14.dp),
                 ) {
@@ -5939,7 +5939,7 @@ private fun WorkspaceCommandPalette(
                         Surface(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { onSelect(command) },
+                                .bounceClick { onSelect(command) },
                             shape = RoundedCornerShape(12.dp),
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
                         ) {
@@ -6331,7 +6331,7 @@ private fun FilesTab(
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .clickable {
+                    .bounceClick {
                         if (entry.isDirectory) {
                             expandedDirectories = if (entry.path in expandedSet) {
                                 expandedDirectories.filterNot { it == entry.path || it.startsWith("${entry.path}/") }
@@ -6933,7 +6933,7 @@ private fun ChatTab(
                             val attachEnabled = pendingAttachments.size < 5
                             Row(
                                 modifier = Modifier
-                                    .clickable {
+                                    .bounceClick {
                                         if (attachEnabled) {
                                             toolsOpen = false
                                             onAttach()
@@ -6957,7 +6957,7 @@ private fun ChatTab(
                             }
                             Row(
                                 modifier = Modifier
-                                    .clickable {
+                                    .bounceClick {
                                         toolsOpen = false
                                         showWorkspaceControls = !showWorkspaceControls
                                     }
@@ -6989,7 +6989,7 @@ private fun ChatTab(
                             }
                             Row(
                                 modifier = Modifier
-                                    .clickable {
+                                    .bounceClick {
                                         toolsOpen = false
                                         showYouTubeDialog = true
                                     }
@@ -7615,7 +7615,7 @@ private fun MessageBubble(
                             .padding(end = 8.dp)
                             .size(30.dp)
                             .clip(CircleShape)
-                            .clickable {
+                            .bounceClick {
                                 clipboardManager.setText(AnnotatedString(message.text))
                                 copied = true
                                 val label = if (message.fromUser) "Prompt copied to clipboard" else "Response copied to clipboard"
@@ -7782,7 +7782,7 @@ private fun ChangesTab(
             Card(Modifier.fillMaxWidth()) {
                 Column {
                     Row(
-                        Modifier.fillMaxWidth().clickable { expandedPath = if (expanded) null else change.path }.padding(15.dp),
+                        Modifier.fillMaxWidth().bounceClick { expandedPath = if (expanded) null else change.path }.padding(15.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(Icons.Default.Description, null)

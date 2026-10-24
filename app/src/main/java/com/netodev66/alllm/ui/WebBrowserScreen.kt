@@ -19,7 +19,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -692,7 +691,7 @@ fun PreviewTab(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(RoundedCornerShape(8.dp))
-                            .clickable { showTabsStrip = !showTabsStrip },
+                            .bounceClick { showTabsStrip = !showTabsStrip },
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Text(
@@ -1036,7 +1035,7 @@ fun PreviewTab(
                                     1.dp,
                                     if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f),
                                 ),
-                                modifier = Modifier.clickable {
+                                modifier = Modifier.bounceClick {
                                     activeTabId = tab.id
                                     address = tab.url
                                     addressError = null
@@ -1243,7 +1242,7 @@ fun PreviewTab(
                             Surface(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { navigateTo(item.url) },
+                                    .bounceClick { navigateTo(item.url) },
                                 shape = RoundedCornerShape(12.dp),
                                 color = pocketTokens.fill,
                                 border = BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
@@ -1601,7 +1600,7 @@ fun PreviewTab(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable {
+                                .bounceClick {
                                     showHistorySheet = false
                                     navigateTo(bm.url)
                                 }
@@ -1629,7 +1628,7 @@ fun PreviewTab(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable {
+                                    .bounceClick {
                                         showHistorySheet = false
                                         navigateTo(item.url)
                                     }

@@ -4,7 +4,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -59,6 +58,7 @@ import androidx.compose.ui.window.Dialog
 import com.netodev66.alllm.util.YouTubeUrlValidator
 import com.netodev66.alllm.util.YouTubeVideoInfo
 import com.netodev66.alllm.ui.theme.pocketTokens
+import com.netodev66.alllm.ui.theme.bounceClick
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
@@ -288,7 +288,7 @@ fun YouTubeVideoDialog(
                                 1.dp,
                                 if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
                             ),
-                            modifier = Modifier.clickable { selectedPreset = preset },
+                            modifier = Modifier.bounceClick { selectedPreset = preset },
                         ) {
                             Text(
                                 text = preset,

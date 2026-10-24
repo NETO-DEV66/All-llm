@@ -13,7 +13,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -443,7 +442,7 @@ fun AgentScreen(
                                 ),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable {
+                                    .bounceClick {
                                         onSetAntigravityModel(modelId)
                                         showAntigravityModelSheet = false
                                     },
@@ -619,7 +618,7 @@ fun AgentScreen(
                                 border = BorderStroke(1.dp, PocketOrange.copy(alpha = 0.5f)),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable {
+                                    .bounceClick {
                                         model = modelSearch.trim()
                                         modelSearch = ""
                                         showModels = false
@@ -669,7 +668,7 @@ fun AgentScreen(
                                     ),
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .clickable {
+                                        .bounceClick {
                                             model = opt.id
                                             modelSearch = ""
                                             showModels = false
@@ -713,7 +712,7 @@ fun AgentScreen(
                                     border = BorderStroke(1.dp, PocketOrange.copy(alpha = 0.5f)),
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .clickable {
+                                        .bounceClick {
                                             model = modelSearch.trim()
                                             modelSearch = ""
                                             showModels = false
@@ -744,7 +743,7 @@ fun AgentScreen(
                                 ),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable {
+                                    .bounceClick {
                                         model = option.id
                                         modelSearch = ""
                                         showModels = false
@@ -1451,7 +1450,7 @@ private fun AgentAntigravityCard(
                                             fontWeight = if (account.isActive) FontWeight.SemiBold else FontWeight.Normal,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
-                                            modifier = Modifier.clickable { clipboard.setText(AnnotatedString(account.email)) },
+                                            modifier = Modifier.bounceClick { clipboard.setText(AnnotatedString(account.email)) },
                                         )
                                         if (account.isQuotaExhausted) {
                                             Surface(
@@ -1549,7 +1548,7 @@ private fun AgentAntigravityCard(
                             color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = email?.let { Modifier.clickable { clipboard.setText(AnnotatedString(it)) } } ?: Modifier,
+                            modifier = email?.let { Modifier.bounceClick { clipboard.setText(AnnotatedString(it)) } } ?: Modifier,
                         )
                         Text(
                             if (auth.status == AntigravityAuthStatus.SIGNED_IN) "Connected with Google" else "Required for Antigravity",
@@ -1564,7 +1563,7 @@ private fun AgentAntigravityCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier
                                 .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
-                                .clickable { onLogout() }
+                                .bounceClick { onLogout() }
                                 .padding(horizontal = 6.dp, vertical = 4.dp),
                         )
                     }
@@ -1688,7 +1687,7 @@ private fun AgentAntigravityCard(
                         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onOpenModelSheet() },
+                            .bounceClick { onOpenModelSheet() },
                     ) {
                         Row(
                             modifier = Modifier.padding(12.dp),
@@ -1784,7 +1783,7 @@ private fun AgentAntigravityCard(
                                     color = if (isSelected) PocketOrange else Color.Transparent,
                                     modifier = Modifier
                                         .weight(1f)
-                                        .clickable { onSetEffort(effort) },
+                                        .bounceClick { onSetEffort(effort) },
                                 ) {
                                     Box(
                                         modifier = Modifier.padding(vertical = 7.dp),
@@ -2089,7 +2088,7 @@ private fun AgentProviderCard(
                                 Row(
                                     Modifier
                                         .fillMaxWidth()
-                                        .clickable {
+                                        .bounceClick {
                                             onProvider(kind)
                                             connectionExpanded = false
                                             endpointExpanded = kind == ProviderKind.CUSTOM
@@ -2197,7 +2196,7 @@ private fun AgentProviderCard(
                                     Column {
                                         listOf("anthropic-messages", "openai-completions", "openai-responses").forEach { option ->
                                             Row(
-                                                Modifier.fillMaxWidth().clickable { onDshApi(option) }.padding(horizontal = 12.dp, vertical = 9.dp),
+                                                Modifier.fillMaxWidth().bounceClick { onDshApi(option) }.padding(horizontal = 12.dp, vertical = 9.dp),
                                                 verticalAlignment = Alignment.CenterVertically,
                                             ) {
                                                 Text(option, Modifier.weight(1f), fontSize = 12.sp, fontFamily = FontFamily.Monospace)
@@ -2316,7 +2315,7 @@ private fun AgentProviderCard(
                             fontSize = 11.sp,
                             color = PocketOrange,
                             fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.clickable { addKeyExpanded = !addKeyExpanded }.padding(6.dp),
+                            modifier = Modifier.bounceClick { addKeyExpanded = !addKeyExpanded }.padding(6.dp),
                         )
                     }
                     savedKeys.forEach { key ->
@@ -2324,7 +2323,7 @@ private fun AgentProviderCard(
                         Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.25f)) {
                             Column {
                                 Row(
-                                    Modifier.fillMaxWidth().clickable { onActivateKey(key.id) }.padding(start = 12.dp, top = 7.dp, bottom = 7.dp),
+                                    Modifier.fillMaxWidth().bounceClick { onActivateKey(key.id) }.padding(start = 12.dp, top = 7.dp, bottom = 7.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                 ) {
                                     Column(Modifier.weight(1f)) {
@@ -2625,7 +2624,7 @@ private fun AgentCustomCard(
                         border = if (selected) BorderStroke(1.dp, PocketOrange.copy(alpha = 0.5f)) else null,
                         modifier = Modifier
                             .weight(1f)
-                            .clickable { apiType = value },
+                            .bounceClick { apiType = value },
                     ) {
                         Text(
                             label,
