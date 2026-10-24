@@ -25,6 +25,7 @@ data class MotionTokens(
     val settle: SpringSpec,
     val snappy: SpringSpec,
     val gentle: SpringSpec,
+    val smooth: SpringSpec,
     val screenEnterMillis: Int,
     val screenExitMillis: Int,
 ) {
@@ -33,6 +34,13 @@ data class MotionTokens(
 
     /** Reveal spring used by expand/collapse and staggered list entrances. */
     val reveal: SpringSpec get() = bouncy
+
+    /**
+     * Slide spring for surfaces that travel a long distance (the nav drawer).
+     * Critically damped on purpose: a full-height panel that overshoots reads as a
+     * glitch rather than as bounce, so distance is what separates this from [snappy].
+     */
+    val drawer: SpringSpec get() = smooth
 }
 
 /** A spring described in the form Compose's `animate*AsState` overloads accept. */
@@ -48,11 +56,15 @@ data class SpringSpec(
 }
 
 internal val DefaultMotion = MotionTokens(
-    bouncy = SpringSpec(dampingRatio = 0.42f, stiffness = Spring.StiffnessMediumLow),
-    bouncyStrong = SpringSpec(dampingRatio = 0.34f, stiffness = Spring.StiffnessLow),
-    settle = SpringSpec(dampingRatio = 0.85f, stiffness = Spring.StiffnessMedium),
-    snappy = SpringSpec(dampingRatio = 0.55f, stiffness = Spring.StiffnessHigh),
+    // Damping is kept just under 1.0: the overshoot still reads as a bounce, but a
+    // single small rebound instead of the multi-wobble that a low ratio produces.
+    // Lower ratios look lively in a screenshot and feel seasick in a scrolling list.
+    bouncy = SpringSpec(dampingRatio = 0.68f, stiffness = Spring.StiffnessMediumLow),
+    bouncyStrong = SpringSpec(dampingRatio = 0.58f, stiffness = Spring.StiffnessMediumLow),
+    settle = SpringSpec(dampingRatio = 0.9f, stiffness = Spring.StiffnessMedium),
+    snappy = SpringSpec(dampingRatio = 0.72f, stiffness = Spring.StiffnessHigh),
     gentle = SpringSpec(dampingRatio = 1f, stiffness = Spring.StiffnessLow),
+    smooth = SpringSpec(dampingRatio = 0.9f, stiffness = Spring.StiffnessLow),
     screenEnterMillis = 320,
     screenExitMillis = 220,
 )

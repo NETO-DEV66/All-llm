@@ -34,7 +34,6 @@ import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
-import com.netodev66.alllm.ui.theme.pocketTokens
 
 private enum class DevToolsTab(val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector) {
     CONSOLE("Console", Icons.Default.Terminal),
@@ -74,7 +73,6 @@ fun VisualDevToolsSheet(
     val timeFormat = remember { SimpleDateFormat("HH:mm:ss", Locale.getDefault()) }
 
     ModalBottomSheet(
-        containerColor = pocketTokens.modalSurface,
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         modifier = Modifier.fillMaxHeight(0.85f),

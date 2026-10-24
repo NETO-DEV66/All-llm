@@ -91,6 +91,7 @@ import com.netodev66.alllm.runtime.SkillScanReport
 import com.netodev66.alllm.runtime.SkillSearchResult
 import com.netodev66.alllm.ui.coordinators.McpToolApproval
 import org.json.JSONObject
+import com.netodev66.alllm.ui.theme.PocketHamburgerButton
 import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
@@ -144,6 +145,7 @@ fun SkillsScreen(
     mcpRunTarget: String? = null,
     mcpRunRunning: Boolean = false,
     onClearMcpRunResult: () -> Unit = {},
+    onOpenMenu: () -> Unit = {},
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     var query by rememberSaveable { mutableStateOf("") }
@@ -163,6 +165,9 @@ fun SkillsScreen(
         topBar = {
             Column {
                 PocketTopAppBar(
+                    navigationIcon = {
+                        PocketHamburgerButton(onOpenMenu, modifier = Modifier.size(40.dp))
+                    },
                     title = {
                         Column {
                             Text(

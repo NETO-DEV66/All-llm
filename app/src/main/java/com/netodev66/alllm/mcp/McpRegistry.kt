@@ -86,12 +86,16 @@ class McpRegistry(
         // A template installed for a project gets a project-scoped id, so
         // installing it for project B no longer overwrites project A's entry.
         val serverId = if (projectId.isNullOrBlank()) template.id else "${template.id}::$projectId"
+        // defaultCommand is a full command line ("npx -y …"), but the launcher
+        // execs `command` as one binary, so the line is split here. Storing it
+        // whole registered a server that could never start.
+        val (executable, embeddedArgs) = splitMcpCommandLine(template.defaultCommand)
         val server = McpServerInfo(
             id = serverId,
             name = template.name,
             description = template.description,
-            command = template.defaultCommand,
-            args = template.defaultArgs,
+            command = executable,
+            args = embeddedArgs + template.defaultArgs,
             env = envOverrides,
             enabled = true,
             isBuiltIn = true,
@@ -196,7 +200,9 @@ class McpRegistry(
                     val array = JSONArray(text)
                     for (i in 0 until array.length()) {
                         val obj = array.getJSONObject(i)
-                        val server = McpServerInfo.fromJson(obj)
+                        // Older builds persisted the whole command line in
+                        // `command`; repair it on load so those installs start.
+                        val server = normalizeServerCommandLine(McpServerInfo.fromJson(obj))
                         servers[server.id] = server
                     }
                 }

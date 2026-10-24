@@ -123,6 +123,7 @@ import com.netodev66.alllm.network.ConnectionValidation
 import com.netodev66.alllm.network.DiscoveredModel
 import com.netodev66.alllm.network.ModelDiscoveryResult
 import com.netodev66.alllm.runtime.AntigravityAuthStatus
+import com.netodev66.alllm.ui.theme.PocketHamburgerButton
 import com.netodev66.alllm.ui.theme.PocketBlue
 import com.netodev66.alllm.ui.theme.PocketOrange
 import kotlinx.coroutines.launch
@@ -134,6 +135,7 @@ import com.netodev66.alllm.ui.theme.PocketButton
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.bouncyExpandEnter
 import com.netodev66.alllm.ui.theme.bouncyExpandExit
+import com.netodev66.alllm.ui.theme.bounceClick
 
 
 private data class KeyConnectionStatus(
@@ -215,6 +217,7 @@ fun AgentScreen(
     onClearGeminiApiKey: () -> Unit = {},
     onSetGeminiApiModel: (String) -> Unit = {},
     teamOrchestrator: AgentTeamOrchestrator? = null,
+    onOpenMenu: () -> Unit = {},
 ) {
     LaunchedEffect(Unit) { onRefreshInstalledAgents() }
     val scope = rememberCoroutineScope()
@@ -384,7 +387,7 @@ fun AgentScreen(
         ModalBottomSheet(
             onDismissRequest = { showAntigravityModelSheet = false },
             sheetState = antigravitySheetState,
-            containerColor = pocketTokens.modalSurface,
+            containerColor = pocketTokens.fillStrong,
         ) {
             Column(
                 Modifier
@@ -496,7 +499,7 @@ fun AgentScreen(
         ModalBottomSheet(
             onDismissRequest = { showModels = false },
             sheetState = providerSheetState,
-            containerColor = pocketTokens.modalSurface,
+            containerColor = pocketTokens.fillStrong,
         ) {
             Column(
                 Modifier
@@ -798,6 +801,9 @@ fun AgentScreen(
         topBar = {
             PocketTopAppBar(
                 modifier = Modifier.padding(top = 4.dp),
+                navigationIcon = {
+                    PocketHamburgerButton(onOpenMenu, modifier = Modifier.size(40.dp))
+                },
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Surface(
@@ -925,7 +931,7 @@ fun AgentScreen(
                                     modifier = Modifier
                                         .size(56.dp)
                                         .alpha(if (state.agentInstalling == null) 1f else 0.4f)
-                                        .clickable(enabled = state.agentInstalling == null) {
+                                        .bounceClick(enabled = state.agentInstalling == null) {
                                             viewedAgent = agent
                                             if (isInstalled) onSelectAgent(agent)
                                         },
@@ -1660,7 +1666,7 @@ private fun AgentAntigravityCard(
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .clickable(enabled = !state.antigravityModelsLoading) { onRefreshModels() }
+                                .bounceClick(enabled = !state.antigravityModelsLoading) { onRefreshModels() }
                                 .padding(start = 6.dp, top = 2.dp, bottom = 2.dp),
                         ) {
                             if (state.antigravityModelsLoading) {
@@ -2216,7 +2222,7 @@ private fun AgentProviderCard(
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = PocketOrange,
-                        modifier = Modifier.clickable(enabled = !isDiscovering, onClick = onDiscover).padding(6.dp),
+                        modifier = Modifier.bounceClick(enabled = !isDiscovering, onClick = onDiscover).padding(6.dp),
                     )
                 }
 
@@ -2428,7 +2434,7 @@ private fun PremiumSummaryRow(
     onClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 13.dp),
+        modifier = Modifier.fillMaxWidth().bounceClick(onClick = onClick).padding(vertical = 13.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
@@ -2774,7 +2780,7 @@ private fun AgentUpdateBlock(
             if (viewedAgent != AgentKind.CUSTOM) {
                 Row(
                     modifier = Modifier
-                        .clickable(enabled = canCheck, onClick = onCheck)
+                        .bounceClick(enabled = canCheck, onClick = onCheck)
                         .padding(horizontal = 6.dp, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {

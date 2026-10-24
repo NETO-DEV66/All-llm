@@ -62,6 +62,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import com.netodev66.alllm.ui.theme.PocketHamburgerButton
 import com.netodev66.alllm.ui.theme.PocketOrange
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -110,6 +111,7 @@ fun MarketplaceScreen(
     updatesAvailable: Set<String> = emptySet(),
     onUpdateItem: (MarketplaceItem) -> Unit = {},
     onScreenOpened: () -> Unit = {},
+    onOpenMenu: () -> Unit = {},
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var searchOpen by remember { mutableStateOf(false) }
@@ -159,6 +161,9 @@ fun MarketplaceScreen(
     Scaffold(
         topBar = {
             PocketTopAppBar(
+                navigationIcon = {
+                    PocketHamburgerButton(onOpenMenu, modifier = Modifier.size(40.dp))
+                },
                 title = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

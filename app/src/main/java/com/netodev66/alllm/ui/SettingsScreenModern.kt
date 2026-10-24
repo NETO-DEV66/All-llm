@@ -136,6 +136,7 @@ import com.netodev66.alllm.runtime.EnvironmentComponentState
 import com.netodev66.alllm.runtime.EnvironmentManifestComponent
 import com.netodev66.alllm.runtime.EnvironmentUpdateManager
 import com.netodev66.alllm.runtime.RuntimeInstaller
+import com.netodev66.alllm.ui.theme.PocketHamburgerButton
 import com.netodev66.alllm.ui.theme.AppThemeMode
 import com.netodev66.alllm.ui.theme.PocketGreen
 import com.netodev66.alllm.ui.theme.PocketOrange
@@ -160,6 +161,7 @@ import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketAlertDialog
+import com.netodev66.alllm.ui.theme.bounceClick
 
 
 private enum class SettingsSection { ACCOUNT, APPEARANCE, TOOLS, RUNTIME, ENVIRONMENT, CONTRIBUTORS, UPDATE_CHANNEL, PERMISSIONS }
@@ -211,6 +213,7 @@ fun SettingsScreen(
     onTogglePermissionPolicy: (com.netodev66.alllm.security.PermissionCategory, Boolean) -> Unit = { _, _ -> },
     onClearSecurityAuditLogs: () -> Unit = {},
     onReplayAppTour: () -> Unit = {},
+    onOpenMenu: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val runtimeInstaller = remember { RuntimeInstaller(context) }
@@ -251,6 +254,9 @@ fun SettingsScreen(
         topBar = {
             PocketTopAppBar(
                 modifier = Modifier.padding(top = 8.dp),
+                navigationIcon = {
+                    PocketHamburgerButton(onOpenMenu, modifier = Modifier.size(40.dp))
+                },
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
@@ -1061,7 +1067,7 @@ fun SettingsScreen(
         }
 
         ModalBottomSheet(
-            containerColor = pocketTokens.modalSurface,
+            containerColor = pocketTokens.fillStrong,
             onDismissRequest = { showAuditLogSheet = false },
         ) {
             Column(
@@ -1571,7 +1577,7 @@ private fun SelectionDot(selected: Boolean) {
 @Composable
 private fun ModernThemeChoice(title: String, icon: ImageVector, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Surface(
-        modifier = modifier.clickable(onClick = onClick),
+        modifier = modifier.bounceClick(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         color = if (selected) PocketOrange.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
         border = BorderStroke(if (selected) 1.5.dp else 1.dp, if (selected) PocketOrange else MaterialTheme.colorScheme.outlineVariant),
@@ -1679,7 +1685,7 @@ private fun AppUpdateChannelSection(
                     Surface(
                         shape = RoundedCornerShape(50),
                         color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.clickable(onClick = onCheckNow),
+                        modifier = Modifier.bounceClick(onClick = onCheckNow),
                     ) {
                         Text(
                             text = "Check now",

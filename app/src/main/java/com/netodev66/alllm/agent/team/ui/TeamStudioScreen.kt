@@ -118,6 +118,7 @@ import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
+import com.netodev66.alllm.ui.theme.bounceClick
 
 
 /**
@@ -663,7 +664,6 @@ private fun TeamRosterTab(
             .filter { it.role == role }
             .maxByOrNull { it.startedAtMs }
         ModalBottomSheet(
-            containerColor = pocketTokens.modalSurface,
             onDismissRequest = { selectedRole = null },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         ) {
@@ -1534,7 +1534,7 @@ private fun TeamCommsTab(orchestrator: AgentTeamOrchestrator) {
                     Box(
                         modifier = Modifier
                             .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
-                            .clickable(enabled = inputMessage.isNotBlank(), onClick = { sendMessage() }),
+                            .bounceClick(enabled = inputMessage.isNotBlank(), onClick = { sendMessage() }),
                         contentAlignment = Alignment.Center
                     ) {
                         Box(

@@ -97,7 +97,13 @@ class GitHubWorkflowEngine(
                 "No build/test validator was provided for ${dir.path}. " +
                     "Wire a real Gradle build+test invocation; the workflow refuses to claim passing tests it never ran."
             )
-        }
+        },
+        /**
+         * How many build → fix → re-test cycles to run before giving up. Each cycle costs one
+         * agent call plus one full build, so this is deliberately small: enough for a fix that
+         * uncovers a second error, not enough to loop forever on a hopeless change.
+         */
+        maxRepairAttempts: Int = 3,
     ): OperationResult {
         val startedAt = System.currentTimeMillis()
         val initialSteps = WorkflowStage.entries
@@ -191,45 +197,71 @@ class GitHubWorkflowEngine(
                 "Code changes generated (${agentResult.verificationEvidence ?: "agent completed"})"
             )
 
-            // 4-5. Build & Test — real commands, real exit codes.
+            // 4-7. Build → test → fix → re-test, repeated until green or the budget runs out.
+            //
+            // One repair pass is not enough for real projects: the first fix often trades one
+            // compile error for another, and giving up there reports failure on a codebase that
+            // was one iteration from building. The loop is still bounded, so a genuinely broken
+            // change fails honestly instead of spinning.
             updateStep(WorkflowStage.BUILDING, WorkflowStepStatus.IN_PROGRESS, "Compiling project...")
-            val buildResult = buildAndTestValidator(workingDir)
-            if (!buildResult.isSuccess) {
-                updateStep(WorkflowStage.BUILDING, WorkflowStepStatus.FAILED, buildResult.error ?: "Build/test failed")
-                // 6. Auto-Fix Failures — one bounded repair attempt driven by the real failure.
-                updateStep(WorkflowStage.FIXING, WorkflowStepStatus.IN_PROGRESS, "Triggering self-healing repair...")
+            var verified = buildAndTestValidator(workingDir)
+            var repairAttempt = 0
+            while (!verified.isSuccess && repairAttempt < maxRepairAttempts) {
+                repairAttempt++
+                updateStep(
+                    WorkflowStage.BUILDING,
+                    WorkflowStepStatus.FAILED,
+                    "Attempt $repairAttempt/$maxRepairAttempts failed: ${verified.error ?: "build/test failed"}",
+                )
+                updateStep(
+                    WorkflowStage.FIXING,
+                    WorkflowStepStatus.IN_PROGRESS,
+                    "Self-healing repair $repairAttempt/$maxRepairAttempts...",
+                )
                 val fixPrompt = buildString {
                     append("Build/test failed with the following real output:\n")
-                    append(buildResult.logs.takeLast(60).joinToString("\n"))
-                    append("\n\nPlease fix the failures immediately.")
+                    append(verified.logs.takeLast(60).joinToString("\n"))
+                    append(
+                        "\n\nPlease fix the failures immediately. This is automated repair attempt " +
+                            "$repairAttempt of $maxRepairAttempts, so make the change complete: fix every " +
+                            "reported error rather than only the first one."
+                    )
                 }
                 val fixResult = agentExecutor(fixPrompt)
                 if (fixResult.status == OperationStatus.SIMULATED || !fixResult.isSuccess) {
                     updateStep(WorkflowStage.FIXING, WorkflowStepStatus.FAILED, fixResult.error ?: "Repair agent failed")
                     return failWorkflow(
-                        "Build repair failed: ${fixResult.error ?: fixResult.status}",
+                        "Build repair attempt $repairAttempt/$maxRepairAttempts failed: " +
+                            "${fixResult.error ?: fixResult.status}",
                         startedAt = startedAt,
                     )
                 }
-                val rebuildResult = buildAndTestValidator(workingDir)
-                if (!rebuildResult.isSuccess) {
-                    updateStep(WorkflowStage.FIXING, WorkflowStepStatus.FAILED, rebuildResult.error ?: "Rebuild failed")
-                    return failWorkflow(
-                        "Build still failing after repair: ${rebuildResult.error ?: rebuildResult.status}",
-                        startedAt = startedAt,
-                    )
-                }
-                updateStep(
-                    WorkflowStage.FIXING,
-                    WorkflowStepStatus.SUCCESS,
-                    "Repair successful (${rebuildResult.verificationEvidence ?: "rebuild passed"})"
-                )
-                updateStep(WorkflowStage.TESTING, WorkflowStepStatus.SUCCESS, rebuildResult.verificationEvidence ?: "Tests passed")
-            } else {
-                updateStep(WorkflowStage.BUILDING, WorkflowStepStatus.SUCCESS, buildResult.verificationEvidence ?: "Build passed")
-                updateStep(WorkflowStage.TESTING, WorkflowStepStatus.SUCCESS, buildResult.verificationEvidence ?: "All tests passed")
-                updateStep(WorkflowStage.FIXING, WorkflowStepStatus.SKIPPED, "No repairs needed")
+                updateStep(WorkflowStage.FIXING, WorkflowStepStatus.IN_PROGRESS, "Re-running build and tests...")
+                verified = buildAndTestValidator(workingDir)
             }
+
+            if (!verified.isSuccess) {
+                updateStep(WorkflowStage.BUILDING, WorkflowStepStatus.FAILED, verified.error ?: "Build/test failed")
+                updateStep(WorkflowStage.FIXING, WorkflowStepStatus.FAILED, "Repair budget exhausted")
+                return failWorkflow(
+                    "Build still failing after $maxRepairAttempts repair attempt(s): " +
+                        "${verified.error ?: verified.status}",
+                    startedAt = startedAt,
+                )
+            }
+
+            val buildEvidence = verified.verificationEvidence ?: "build and tests passed"
+            updateStep(WorkflowStage.BUILDING, WorkflowStepStatus.SUCCESS, buildEvidence)
+            updateStep(WorkflowStage.TESTING, WorkflowStepStatus.SUCCESS, buildEvidence)
+            updateStep(
+                WorkflowStage.FIXING,
+                if (repairAttempt > 0) WorkflowStepStatus.SUCCESS else WorkflowStepStatus.SKIPPED,
+                if (repairAttempt > 0) {
+                    "Repaired after $repairAttempt attempt(s) ($buildEvidence)"
+                } else {
+                    "No repairs needed"
+                },
+            )
 
             // 7. Commit
             updateStep(WorkflowStage.COMMITTING, WorkflowStepStatus.IN_PROGRESS, "Verifying changes...")

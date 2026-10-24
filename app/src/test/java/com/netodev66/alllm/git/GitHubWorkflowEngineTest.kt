@@ -212,7 +212,106 @@ class GitHubWorkflowEngineTest {
         assertEquals(WorkflowStage.COMPLETED, state.currentStage)
         val fixingStep = state.steps.find { it.stage == WorkflowStage.FIXING }
         assertEquals(WorkflowStepStatus.SUCCESS, fixingStep?.status)
-        assertTrue(fixingStep?.detail?.startsWith("Repair successful") == true)
+        assertTrue(fixingStep?.detail?.startsWith("Repaired after 1 attempt") == true)
+    }
+
+    /**
+     * The loop must keep going while the build is still red: a fix that trades one
+     * compile error for another needs a second repair pass, not an immediate failure.
+     */
+    @Test
+    fun autonomousWorkflowRepairsAcrossMultipleIterations() = runBlocking {
+        val gitController = scriptedStatusGitController(
+            mutableListOf(),
+            listOf("", " M src/Fix.kt")
+        )
+        val workflowEngine = engine(gitController)
+
+        val issue = GitHubIssue(
+            number = 100,
+            title = "Multi-error build",
+            state = "open",
+            user = "developer",
+            comments = 0,
+            htmlUrl = "https://github.com/example/repo/issues/100"
+        )
+
+        var buildAttempt = 0
+        val repairPrompts = mutableListOf<String>()
+
+        val result = workflowEngine.runAutonomousWorkflow(
+            issue = issue,
+            token = "fake-token-for-testing",
+            repoFullName = "example/repo",
+            workingDir = tempDir,
+            agentExecutor = { prompt ->
+                if (prompt.contains("Build/test failed")) repairPrompts.add(prompt)
+                OperationResult.success()
+            },
+            buildAndTestValidator = {
+                buildAttempt++
+                if (buildAttempt <= 3) {
+                    OperationResult.failure("error: unresolved reference $buildAttempt")
+                } else {
+                    OperationResult.success(verificationEvidence = "gradle assembleDebug testDebugUnitTest exit=0")
+                }
+            }
+        )
+
+        assertTrue("build should have been retried four times", buildAttempt == 4)
+        assertEquals("three repair passes expected", 3, repairPrompts.size)
+        assertTrue("repair prompt must name the attempt budget", repairPrompts.first().contains("attempt 1 of 3"))
+        assertTrue(result.isSuccess)
+
+        val fixingStep = workflowEngine.state.value.steps.find { it.stage == WorkflowStage.FIXING }
+        assertEquals(WorkflowStepStatus.SUCCESS, fixingStep?.status)
+        assertTrue(fixingStep?.detail?.startsWith("Repaired after 3 attempt") == true)
+    }
+
+    /**
+     * A build that never goes green must fail honestly once the budget is spent,
+     * and must never reach the commit phase.
+     */
+    @Test
+    fun autonomousWorkflowGivesUpWhenRepairBudgetExhausted() = runBlocking {
+        val executedCommands = mutableListOf<List<String>>()
+        val gitController = scriptedStatusGitController(executedCommands, listOf("", " M src/Broken.kt"))
+        val workflowEngine = engine(gitController)
+
+        val issue = GitHubIssue(
+            number = 101,
+            title = "Never compiles",
+            state = "open",
+            user = "developer",
+            comments = 0,
+            htmlUrl = "https://github.com/example/repo/issues/101"
+        )
+
+        var buildAttempt = 0
+        val result = workflowEngine.runAutonomousWorkflow(
+            issue = issue,
+            token = "fake-token-for-testing",
+            repoFullName = "example/repo",
+            workingDir = tempDir,
+            agentExecutor = { OperationResult.success() },
+            buildAndTestValidator = {
+                buildAttempt++
+                OperationResult.failure("error: still broken")
+            },
+            maxRepairAttempts = 2,
+        )
+
+        assertFalse(result.isSuccess)
+        assertEquals("one initial build plus two repair builds", 3, buildAttempt)
+        assertTrue(
+            "failure must mention the exhausted budget: ${result.error}",
+            result.error.orEmpty().contains("2 repair attempt"),
+        )
+        assertFalse(
+            "a red build must never be committed",
+            executedCommands.any { it.contains("commit") },
+        )
+        assertEquals(WorkflowStage.FAILED, workflowEngine.state.value.currentStage)
     }
 
     @Test

@@ -65,7 +65,6 @@ import kotlinx.coroutines.launch
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
-import com.netodev66.alllm.ui.theme.pocketTokens
 
 /**
  * Multi-Agent Engineering Team UI Dashboard (Phase 11).
@@ -84,7 +83,6 @@ fun MultiAgentTeamBottomSheet(
     var fullStudioMode by rememberSaveable { mutableStateOf(false) }
 
     ModalBottomSheet(
-        containerColor = pocketTokens.modalSurface,
         onDismissRequest = onDismiss,
         sheetState = sheetState,
     ) {

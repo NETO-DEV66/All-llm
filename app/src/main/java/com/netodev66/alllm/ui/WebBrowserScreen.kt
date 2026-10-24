@@ -84,6 +84,7 @@ import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
 import com.netodev66.alllm.ui.theme.PocketAlertDialog
 import com.netodev66.alllm.ui.theme.bouncyExpandEnter
+import com.netodev66.alllm.ui.theme.bounceClick
 
 
 private data class BrowserTab(
@@ -646,7 +647,7 @@ fun PreviewTab(
                                 modifier = Modifier
                                     .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
                                     .clip(CircleShape)
-                                    .clickable(onClick = navigate),
+                                    .bounceClick(onClick = navigate),
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Surface(

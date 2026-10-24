@@ -265,13 +265,16 @@ internal fun marketplaceItemToMcpServer(item: MarketplaceItem, serverId: String)
     val commandLine = item.installUrl.trim()
     if (commandLine.isBlank()) return null
     if (commandLine.startsWith("http://") || commandLine.startsWith("https://")) return null
-    val parts = commandLine.split(Regex("\\s+"))
+    // Shared with the template install path, so a listing and the template it
+    // derives from always produce the same executable/args pair.
+    val (executable, args) = com.netodev66.alllm.mcp.splitMcpCommandLine(commandLine)
+    if (executable.isBlank()) return null
     return McpServerInfo(
         id = serverId,
         name = item.name,
         description = item.description,
-        command = parts.first(),
-        args = parts.drop(1),
+        command = executable,
+        args = args,
         enabled = true,
         isBuiltIn = false,
         projectId = null,

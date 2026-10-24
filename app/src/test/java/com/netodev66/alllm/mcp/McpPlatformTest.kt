@@ -50,7 +50,14 @@ class McpPlatformTest {
         // Retrieve from registry
         val retrieved = registry.getServer("sqlite")
         assertNotNull(retrieved)
-        assertEquals("npx -y @modelcontextprotocol/server-sqlite", retrieved?.command)
+        // The template writes a full command line, but the launcher execs
+        // `command` as one binary, so it must be stored split. Asserting the
+        // whole line here is what hid "installed but never starts".
+        assertEquals("npx", retrieved?.command)
+        assertEquals(
+            listOf("-y", "@modelcontextprotocol/server-sqlite", "--db", "workspace.db"),
+            retrieved?.args,
+        )
 
         // Reload from disk to verify persistence
         val reloadedRegistry = McpRegistry(baseDir)

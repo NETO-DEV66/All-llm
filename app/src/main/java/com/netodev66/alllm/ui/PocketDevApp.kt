@@ -283,6 +283,10 @@ import com.netodev66.alllm.network.ConnectionValidation
 import com.netodev66.alllm.network.DiscoveredModel
 import com.netodev66.alllm.network.ModelDiscoveryResult
 import com.netodev66.alllm.network.GitHubRepository
+import com.netodev66.alllm.ui.theme.PocketHamburgerButton
+import com.netodev66.alllm.ui.theme.PocketNavDrawerSectionLabel
+import com.netodev66.alllm.ui.theme.PocketNavDrawerItem
+import com.netodev66.alllm.ui.theme.PocketNavDrawer
 import com.netodev66.alllm.ui.theme.PocketBlue
 import com.netodev66.alllm.ui.theme.PocketGreen
 import com.netodev66.alllm.ui.theme.PocketOrange
@@ -302,19 +306,19 @@ import com.netodev66.alllm.ui.theme.BouncyAppear
 import com.netodev66.alllm.ui.theme.bouncyEntry
 import com.netodev66.alllm.ui.theme.motion
 import com.netodev66.alllm.ui.theme.pocketTokens
+import com.netodev66.alllm.ui.theme.PocketClickableCard
 import com.netodev66.alllm.ui.theme.PocketClickableSurface
 import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketTextButton
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
-import com.netodev66.alllm.ui.theme.PocketNavigationRail
-import com.netodev66.alllm.ui.theme.PocketNavRailItem
 import com.netodev66.alllm.ui.theme.PocketPanel
 import com.netodev66.alllm.ui.theme.PocketRadii
 import com.netodev66.alllm.ui.theme.PocketAlertDialog
 import com.netodev66.alllm.ui.theme.bouncyExpandEnter
 import com.netodev66.alllm.ui.theme.bouncyExpandExit
+import com.netodev66.alllm.ui.theme.bounceClick
 
 
 // All-LLM branding is rendered in the shared setup headers.
@@ -1724,7 +1728,7 @@ private fun AgentChoiceRow(
         modifier = Modifier
             .fillMaxWidth()
             .background(if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f) else Color.Transparent)
-            .clickable(onClick = onClick)
+            .bounceClick(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -2474,9 +2478,10 @@ private fun RootScreenHost(
     onOpenDiagnostics: () -> Unit = {},
     onOpenAllProjects: () -> Unit = {},
 ) {
-    // Chat is the landing screen: the primary action is starting a task, and
-    // projects are reachable from the prompt card and the rail.
+    // Chat is the landing screen: the primary action is starting a task, and every
+    // other destination is one tap away in the hamburger drawer.
     var screen by rememberSaveable { mutableStateOf(RootScreen.CHAT) }
+    var navDrawerOpen by rememberSaveable { mutableStateOf(false) }
     var showQuickTerminal by rememberSaveable { mutableStateOf(false) }
     var showPrivacyPolicy by rememberSaveable { mutableStateOf(false) }
     val marketplaceInstalledIds by viewModel.marketplaceInstalledIds.collectAsStateWithLifecycle()
@@ -2495,25 +2500,10 @@ private fun RootScreenHost(
         Scaffold(
             contentWindowInsets = WindowInsets(0, 0, 0, 0),
         ) { padding ->
-        Row(Modifier.fillMaxSize().padding(padding)) {
-            PocketNavigationRail(
-                modifier = Modifier
-                    .width(76.dp)
-                    .fillMaxHeight(),
-            ) {
-                RootScreen.entries.forEach { tab ->
-                    PocketNavRailItem(
-                        selected = screen == tab,
-                        icon = tab.icon,
-                        label = tab.label,
-                        onClick = { screen = tab },
-                    )
-                }
-            }
+        Box(Modifier.fillMaxSize().padding(padding)) {
             Box(
                 Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
+                    .fillMaxSize()
                     .bouncyEntry(key = screen, fromScale = 0.975f),
             ) {
             when (screen) {
@@ -2524,6 +2514,7 @@ private fun RootScreenHost(
                     onBrowseProjects = { screen = RootScreen.PROJECTS },
                     onSettings = { screen = RootScreen.SETTINGS },
                     onToggleTheme = viewModel::toggleTheme,
+                    onOpenMenu = { navDrawerOpen = true },
                 )
                 RootScreen.PROJECTS -> ProjectsScreen(
                     state = state,
@@ -2554,6 +2545,7 @@ private fun RootScreenHost(
                     onOpenCloudHybrid = onOpenCloudHybrid,
                     onOpenPenTesting = onOpenPenTesting,
                     onOpenAllProjects = onOpenAllProjects,
+                    onOpenMenu = { navDrawerOpen = true },
                 )
                 RootScreen.AGENT -> AgentScreen(
                     state = state,
@@ -2590,6 +2582,7 @@ private fun RootScreenHost(
                     onClearGeminiApiKey = viewModel::clearGeminiApiKey,
                     onSetGeminiApiModel = viewModel::setGeminiApiModel,
                     teamOrchestrator = viewModel.teamOrchestrator,
+                    onOpenMenu = { navDrawerOpen = true },
                 )
                 RootScreen.SKILLS -> SkillsScreen(
                     installed = state.skills,
@@ -2630,6 +2623,7 @@ private fun RootScreenHost(
                     mcpRunTarget = state.mcpRunTarget,
                     mcpRunRunning = state.mcpRunRunning,
                     onClearMcpRunResult = viewModel::clearMcpRunResult,
+                    onOpenMenu = { navDrawerOpen = true },
                 )
                 RootScreen.MARKETPLACE -> MarketplaceScreen(
                     onBack = { screen = RootScreen.PROJECTS },
@@ -2640,6 +2634,7 @@ private fun RootScreenHost(
                     updatesAvailable = marketplaceUpdatesAvailable,
                     onUpdateItem = { item -> viewModel.updateMarketplaceItem(item) },
                     onScreenOpened = { viewModel.checkMarketplaceUpdates() },
+                    onOpenMenu = { navDrawerOpen = true },
                 )
                 RootScreen.SETTINGS -> SettingsScreen(
                     state = state,
@@ -2688,7 +2683,25 @@ private fun RootScreenHost(
                     onTogglePermissionPolicy = viewModel::updatePermissionPolicy,
                     onClearSecurityAuditLogs = viewModel::clearSecurityAuditLogs,
                     onReplayAppTour = viewModel::replayAppTour,
+                    onOpenMenu = { navDrawerOpen = true },
                 )
+            }
+            PocketNavDrawer(
+                open = navDrawerOpen,
+                onDismiss = { navDrawerOpen = false },
+            ) {
+                PocketNavDrawerSectionLabel("Navigation")
+                RootScreen.entries.forEach { tab ->
+                    PocketNavDrawerItem(
+                        selected = screen == tab,
+                        icon = tab.icon,
+                        label = tab.label,
+                        onClick = {
+                            screen = tab
+                            navDrawerOpen = false
+                        },
+                    )
+                }
             }
         }
     }
@@ -3195,7 +3208,7 @@ private fun ProviderChoiceRow(
         modifier = Modifier
             .fillMaxWidth()
             .background(if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.08f) else Color.Transparent)
-            .clickable(onClick = onClick)
+            .bounceClick(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -3960,6 +3973,7 @@ private fun ChatHomeScreen(
     onBrowseProjects: () -> Unit,
     onSettings: () -> Unit,
     onToggleTheme: () -> Unit,
+    onOpenMenu: () -> Unit = {},
 ) {
     var prompt by rememberSaveable { mutableStateOf("") }
     val recent = remember(state.projects) { state.projects.take(6) }
@@ -3967,6 +3981,9 @@ private fun ChatHomeScreen(
 
     Column(Modifier.fillMaxSize()) {
         PocketTopAppBar(
+            navigationIcon = {
+                PocketHamburgerButton(onOpenMenu, modifier = Modifier.size(40.dp))
+            },
             title = {
                 Column {
                     Text("All-LLM", fontWeight = FontWeight.Bold)
@@ -4123,6 +4140,7 @@ private fun ProjectsScreen(
     state: AppUiState,
     listState: LazyListState = rememberSaveable(saver = LazyListState.Saver) { LazyListState() },
     onOpen: (Project) -> Unit,
+    onOpenMenu: () -> Unit = {},
     onCreate: (String, Uri?) -> Unit,
     onScaffoldTemplate: (com.netodev66.alllm.workspace.ProjectTemplate) -> Unit = {},
     onCreateQuickProject: () -> Unit,
@@ -4200,6 +4218,8 @@ private fun ProjectsScreen(
                     horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    PocketHamburgerButton(onOpenMenu, modifier = Modifier.size(38.dp))
+                    Spacer(Modifier.width(6.dp))
                     BrandMark(compact = false)
                     Spacer(Modifier.width(10.dp))
                     Text(
@@ -4335,7 +4355,7 @@ private fun ProjectsScreen(
                                     )
                                 }
                                 Surface(
-                                    modifier = Modifier.fillMaxWidth().clickable(enabled = !state.gitCloneRunning) {
+                                    modifier = Modifier.fillMaxWidth().bounceClick(enabled = !state.gitCloneRunning) {
                                         showGitHubDialog = true
                                         if (state.githubAuthStatus == GitHubAuthStatus.CONNECTED && state.githubRepositories.isEmpty()) onRefreshGitHub()
                                     },
@@ -4776,7 +4796,7 @@ private fun ProjectsScreen(
                         LazyColumn(Modifier.fillMaxWidth().heightIn(max = 350.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             items(filteredRepositories, key = { it.fullName }) { repository ->
                                 Surface(
-                                    modifier = Modifier.fillMaxWidth().clickable(enabled = !state.gitCloneRunning) {
+                                    modifier = Modifier.fillMaxWidth().bounceClick(enabled = !state.gitCloneRunning) {
                                         showGitHubDialog = false
                                         onCloneGitHub(repository)
                                     },
@@ -4951,7 +4971,7 @@ private fun ApiStatusChip(state: AppUiState, onSettings: () -> Unit, onPing: () 
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable(onClick = onSettings).padding(start = 12.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
+            modifier = Modifier.bounceClick(onClick = onSettings).padding(start = 12.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
         ) {
             // Status dot
             Box(
@@ -5004,7 +5024,14 @@ private fun ProjectCard(
     var showRename by rememberSaveable(project.id) { mutableStateOf(false) }
     var showDelete by rememberSaveable(project.id) { mutableStateOf(false) }
     var renameText by rememberSaveable(project.id) { mutableStateOf(project.name) }
-    Card(Modifier.fillMaxWidth().clickable(onClick = onOpen), colors = CardDefaults.cardColors(containerColor = pocketTokens.fill)) {
+    // PocketClickableCard rather than a raw clickable Card: Material3's Surface owns
+    // its own ripple and ignores LocalIndication, so a raw clickable Card would
+    // ripple here instead of bouncing like every other row.
+    PocketClickableCard(
+        onClick = onOpen,
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = pocketTokens.fill),
+    ) {
         Row(Modifier.padding(start = 16.dp, top = 12.dp, bottom = 12.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
             Surface(shape = RoundedCornerShape(14.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
                 Icon(Icons.Default.Folder, null, Modifier.padding(13.dp), tint = PocketOrange)
@@ -5972,7 +5999,7 @@ private fun ChatSwitcherDialog(
                 LazyColumn(Modifier.fillMaxWidth().heightIn(max = 380.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     items(chats, key = { it.id }) { chat ->
                         Surface(
-                            modifier = Modifier.fillMaxWidth().clickable(enabled = switchingEnabled) { onSwitch(chat.id) },
+                            modifier = Modifier.fillMaxWidth().bounceClick(enabled = switchingEnabled) { onSwitch(chat.id) },
                             shape = RoundedCornerShape(12.dp),
                             color = if (chat.id == activeChatId) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
                         ) {
@@ -7066,7 +7093,7 @@ private fun ChatTab(
                             Box(
                                 modifier = Modifier
                                     .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
-                                    .clickable(onClick = onStop)
+                                    .bounceClick(onClick = onStop)
                                     .align(Alignment.Bottom),
                                 contentAlignment = Alignment.Center,
                             ) {
@@ -7091,7 +7118,7 @@ private fun ChatTab(
                             Box(
                                 modifier = Modifier
                                     .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
-                                    .clickable(
+                                    .bounceClick(
                                         enabled = canSend,
                                         onClick = {
                                             if (canSend) {
@@ -7345,7 +7372,7 @@ private fun ActivitySummaryRow(
 ) {
     val muted = MaterialTheme.colorScheme.onSurfaceVariant
     Row(
-        Modifier.fillMaxWidth().sizeIn(minHeight = 48.dp).clickable(onClick = onToggle).padding(vertical = 6.dp),
+        Modifier.fillMaxWidth().sizeIn(minHeight = 48.dp).bounceClick(onClick = onToggle).padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
@@ -7650,7 +7677,7 @@ private fun AttachmentChip(
         else -> Icons.Default.Description
     }
     Surface(
-        modifier = Modifier.then(if (onOpen != null) Modifier.clickable(onClick = onOpen) else Modifier),
+        modifier = Modifier.then(if (onOpen != null) Modifier.bounceClick(onClick = onOpen) else Modifier),
         shape = RoundedCornerShape(10.dp),
         color = MaterialTheme.colorScheme.surfaceVariant,
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),

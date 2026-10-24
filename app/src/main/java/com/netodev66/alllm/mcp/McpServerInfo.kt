@@ -146,6 +146,54 @@ data class McpCatalogTemplate(
 )
 
 /**
+ * Splits a shell-style command line into the executable and its arguments.
+ *
+ * [McpCatalogTemplate.defaultCommand] is written the way a user would type it
+ * ("npx -y @modelcontextprotocol/server-sqlite"), but the process launcher execs
+ * `command` as a single binary with `args` appended. Storing that whole line in
+ * `command` therefore asks the OS to exec a file named "npx -y @modelcontext…",
+ * which does not exist: the server is registered, the UI says installed, and the
+ * process never starts. Every path that turns a command line into a server must
+ * go through here.
+ *
+ * Quoted segments are kept as one argument, so a path with spaces still works.
+ */
+fun splitMcpCommandLine(commandLine: String): Pair<String, List<String>> {
+    val tokens = mutableListOf<String>()
+    val current = StringBuilder()
+    var quote: Char? = null
+    var quoted = false
+    for (ch in commandLine.trim()) {
+        when {
+            quote != null && ch == quote -> quote = null
+            quote != null -> current.append(ch)
+            ch == '"' || ch == '\'' -> { quote = ch; quoted = true }
+            ch.isWhitespace() -> {
+                if (current.isNotEmpty() || quoted) tokens.add(current.toString())
+                current.setLength(0)
+                quoted = false
+            }
+            else -> current.append(ch)
+        }
+    }
+    if (current.isNotEmpty() || quoted) tokens.add(current.toString())
+    return (tokens.firstOrNull() ?: "") to tokens.drop(1)
+}
+
+/**
+ * Repairs a persisted server whose `command` still holds a whole command line
+ * from an older build. Left alone when the string names a real file, so a
+ * deliberate single executable with a space in its path is never split.
+ */
+fun normalizeServerCommandLine(server: McpServerInfo): McpServerInfo {
+    val command = server.command
+    if (!command.contains(' ') || java.io.File(command).exists()) return server
+    val (executable, embeddedArgs) = splitMcpCommandLine(command)
+    if (executable.isBlank()) return server
+    return server.copy(command = executable, args = embeddedArgs + server.args)
+}
+
+/**
  * Single source of truth for the built-in MCP server catalog. Referenced
  * by [McpRegistry.catalogTemplates] (Skills screen) and derived into
  * marketplace listings by the developer marketplace, so descriptions and
