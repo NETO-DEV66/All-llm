@@ -81,6 +81,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.netodev66.alllm.mcp.McpAuditEntry
+import com.netodev66.alllm.mcp.tokenizeMcpCommandLine
 import com.netodev66.alllm.mcp.McpCatalogTemplate
 import com.netodev66.alllm.mcp.McpPermissionDecision
 import com.netodev66.alllm.mcp.McpServerInfo
@@ -979,7 +980,9 @@ private fun AddCustomMcpDialog(
                 OutlinedTextField(
                     value = command,
                     onValueChange = { command = it },
-                    label = { Text("Executable Command (e.g. node, python, npx)", fontSize = 11.sp) },
+                    // The field accepts a bare executable or a whole command
+                    // line; McpRegistry splits it either way.
+                    label = { Text("Command (e.g. npx -y @scope/server)", fontSize = 11.sp) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -1025,7 +1028,9 @@ private fun AddCustomMcpDialog(
             PocketButton( {
                     val envMap = parseKeyValueList(envText)
                     val secretsMap = parseKeyValueList(secretsText)
-                    val argsList = argsText.split(" ").map { it.trim() }.filter { it.isNotBlank() }
+                    // Quote-aware, so a path or argument with a space survives
+                    // as one token; the registry splits `command` the same way.
+                    val argsList = tokenizeMcpCommandLine(argsText)
                     val serverId = id.ifBlank { "custom-" + System.currentTimeMillis() }
                     onAdd(
                         McpServerInfo(

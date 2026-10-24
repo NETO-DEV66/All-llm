@@ -1,0 +1,7 @@
+All-LLM 3.9.2 - installs that run, and taps that answer.
+- Custom MCP servers now work: a full command line splits into the executable
+  plus its arguments, so "npx -y @scope/server" starts instead of failing silently
+- Quoted paths and arguments with spaces stay whole
+- Every remaining tap bounces on press: model pickers, browser tabs, bookmarks,
+  history, search results, settings rows
+- Dismiss backdrops stay still on purpose - they are not buttons

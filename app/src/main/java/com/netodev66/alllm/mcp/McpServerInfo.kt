@@ -159,6 +159,17 @@ data class McpCatalogTemplate(
  * Quoted segments are kept as one argument, so a path with spaces still works.
  */
 fun splitMcpCommandLine(commandLine: String): Pair<String, List<String>> {
+    val tokens = tokenizeMcpCommandLine(commandLine)
+    return (tokens.firstOrNull() ?: "") to tokens.drop(1)
+}
+
+/**
+ * Splits a command line into tokens, honouring single and double quotes so a
+ * path with a space (`"/opt/my tools/server" --flag`) survives as one argument.
+ * Exposed on its own because the add-custom-server dialog needs to parse just an
+ * argument list with the same rules the launcher will use.
+ */
+fun tokenizeMcpCommandLine(commandLine: String): List<String> {
     val tokens = mutableListOf<String>()
     val current = StringBuilder()
     var quote: Char? = null
@@ -177,7 +188,7 @@ fun splitMcpCommandLine(commandLine: String): Pair<String, List<String>> {
         }
     }
     if (current.isNotEmpty() || quoted) tokens.add(current.toString())
-    return (tokens.firstOrNull() ?: "") to tokens.drop(1)
+    return tokens
 }
 
 /**

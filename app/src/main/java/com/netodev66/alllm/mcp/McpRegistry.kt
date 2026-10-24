@@ -66,9 +66,14 @@ class McpRegistry(
     fun getServer(id: String): McpServerInfo? = servers[id]
 
     fun installServer(server: McpServerInfo): McpServerInfo {
-        servers[server.id] = server
+        // Both entry points funnel here — the catalog templates and the
+        // add-custom-server dialog. The dialog's "Executable Command" field
+        // invites a whole command line, and a whole command line stored in
+        // `command` never starts, so it is split once, here, for both.
+        val normalized = normalizeServerCommandLine(server)
+        servers[normalized.id] = normalized
         persist()
-        return server
+        return normalized
     }
 
     fun installFromTemplate(

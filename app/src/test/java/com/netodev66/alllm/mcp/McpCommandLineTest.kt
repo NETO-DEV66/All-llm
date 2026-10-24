@@ -128,4 +128,59 @@ class McpCommandLineTest {
             dir.deleteRecursively()
         }
     }
+
+    @Test
+    fun `installServer splits a whole command line typed into the custom dialog`() {
+        val dir = File(System.getProperty("java.io.tmpdir"), "mcp_custom_" + System.nanoTime())
+        try {
+            val registry = McpRegistry(File(dir, "registry"))
+            // The add-custom-server dialog's field invites a full command line.
+            // Stored whole, the launcher would exec one binary named
+            // "npx -y @scope/server" and the server would never start.
+            val installed = registry.installServer(
+                McpServerInfo(
+                    id = "custom-demo",
+                    name = "Demo",
+                    command = "npx -y @scope/server",
+                    enabled = true,
+                    isBuiltIn = false,
+                ),
+            )
+            assertEquals("npx", installed.command)
+            assertEquals(listOf("-y", "@scope/server"), installed.args)
+
+            // The repair must survive a reload, or the next launch re-breaks it.
+            val reloaded = McpRegistry(File(dir, "registry")).getServer("custom-demo")!!
+            assertEquals("npx", reloaded.command)
+            assertEquals(listOf("-y", "@scope/server"), reloaded.args)
+        } finally {
+            dir.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `installServer keeps a quoted executable path whole`() {
+        val dir = File(System.getProperty("java.io.tmpdir"), "mcp_quoted_" + System.nanoTime())
+        try {
+            val registry = McpRegistry(File(dir, "registry"))
+            val installed = registry.installServer(
+                McpServerInfo(
+                    id = "custom-quoted",
+                    name = "Quoted",
+                    command = "\"/opt/my tools/server\" --port 8080",
+                    enabled = true,
+                    isBuiltIn = false,
+                ),
+            )
+            assertEquals("/opt/my tools/server", installed.command)
+            assertEquals(listOf("--port", "8080"), installed.args)
+        } finally {
+            dir.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `tokenizer keeps quoted arguments whole`() {
+        assertEquals(listOf("--dir", "/my data", "--verbose"), tokenizeMcpCommandLine("--dir \"/my data\" --verbose"))
+    }
 }
