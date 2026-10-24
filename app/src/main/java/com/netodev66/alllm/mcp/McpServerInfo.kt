@@ -37,11 +37,23 @@ data class McpServerInfo(
     val remoteUrl: String? = null,
     val authType: McpAuthType = McpAuthType.NONE,
     val credentialName: String? = null,
-    val apiKeyHeaderName: String = "X-API-Key"
+    val apiKeyHeaderName: String = "X-API-Key",
+    /**
+     * Non-null when this server's tools are served by a handler compiled into the
+     * app instead of a child process. Built-in catalog servers used to shell out to
+     * `npx`, which cannot work on Android — the platform has no Node on PATH, so
+     * those servers registered, reported "installed", and then could never start.
+     * A server whose tools are plain REST calls runs here instead.
+     */
+    val nativeHandler: String? = null,
 ) {
     /** True when this server speaks to a remote endpoint instead of a local process. */
     val isRemote: Boolean
         get() = transport == McpTransportType.SSE || transport == McpTransportType.STREAMABLE_HTTP
+
+    /** True when an in-app handler serves this server's tools. */
+    val isNative: Boolean
+        get() = !nativeHandler.isNullOrBlank()
 
     fun remoteConfig(): McpRemoteConfig? {
         val url = remoteUrl ?: return null
@@ -74,6 +86,7 @@ data class McpServerInfo(
         put("authType", authType.name)
         credentialName?.let { put("credentialName", it) }
         put("apiKeyHeaderName", apiKeyHeaderName)
+        nativeHandler?.let { put("nativeHandler", it) }
     }
 
     companion object {
@@ -126,7 +139,8 @@ data class McpServerInfo(
                 remoteUrl = json.optString("remoteUrl").takeIf { it.isNotBlank() },
                 authType = authType,
                 credentialName = json.optString("credentialName").takeIf { it.isNotBlank() },
-                apiKeyHeaderName = json.optString("apiKeyHeaderName", "X-API-Key")
+                apiKeyHeaderName = json.optString("apiKeyHeaderName", "X-API-Key"),
+                nativeHandler = json.optString("nativeHandler").takeIf { it.isNotBlank() },
             )
         }
     }
@@ -142,7 +156,11 @@ data class McpCatalogTemplate(
     val defaultCommand: String,
     val defaultArgs: List<String> = emptyList(),
     val requiredEnv: List<String> = emptyList(),
-    val category: String = "Utility"
+    val category: String = "Utility",
+    /** Non-null for templates whose tools are served in-app (see [McpServerInfo.nativeHandler]). */
+    val nativeHandler: String? = null,
+    /** Non-secret configuration written into the server's env (e.g. a base URL). */
+    val defaultEnv: Map<String, String> = emptyMap(),
 )
 
 /**
@@ -265,11 +283,15 @@ val McpBuiltInCatalogTemplates: List<McpCatalogTemplate> = listOf(
         category = "Agent Memory"
     ),
     McpCatalogTemplate(
-        id = "brave-search",
-        name = "Brave Search",
-        description = "Perform private web searches and retrieve up-to-date web answers.",
-        defaultCommand = "npx -y @modelcontextprotocol/server-brave-search",
-        requiredEnv = listOf("BRAVE_API_KEY"),
+        id = "keiro-search",
+        name = "KieroLabs Web Search",
+        description = "Search the web through the KieroLabs search API. Runs in-app, so it needs no Node.",
+        // Served by KeiroLabsSearchHandler; `command` is never executed for a
+        // native server, it only keeps the catalog row uniform.
+        defaultCommand = "keiro-search",
+        requiredEnv = listOf(KeiroLabsSearchHandler.CONFIG_API_KEY),
+        defaultEnv = mapOf(KeiroLabsSearchHandler.CONFIG_BASE_URL to "https://kierolabs.space/api"),
+        nativeHandler = KeiroLabsSearchHandler.HANDLER_ID,
         category = "Search"
     ),
     McpCatalogTemplate(

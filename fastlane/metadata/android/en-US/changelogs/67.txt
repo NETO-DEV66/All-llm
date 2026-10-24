@@ -1,0 +1,6 @@
+All-LLM 3.9.3 - a Back button that walks back, and a search that runs.
+- Back now steps back one screen at a time instead of closing the whole app
+- MCP: built-in servers could never run. Android has no Node, so every "npx"
+  server registered, said installed, then failed on first use
+- New KieroLabs Web Search MCP server, running in-app, so it needs no Node
+- Catalog installs now ask for the server's key and store it encrypted

@@ -66,6 +66,18 @@ class McpToolRegistry(
         registry.getServer(serverId)
             ?: throw IllegalArgumentException("MCP server '$serverId' is not installed")
 
+    /**
+     * Resolves a server's in-app handler. A missing handler means the config was
+     * written by a build that knows a handler this one does not, which is a real
+     * failure and must not silently fall through to spawning a process.
+     */
+    private fun nativeHandlerFor(server: McpServerInfo): McpNativeHandler =
+        McpNativeHandlers.find(server.nativeHandler)
+            ?: throw McpConfigurationException(
+                "MCP server '${server.id}' needs the in-app handler '${server.nativeHandler}', " +
+                    "which this build does not provide. Reinstall the server."
+            )
+
     private fun sessionFor(server: McpServerInfo): McpServerSession {
         synchronized(lock) {
             return sessions.getOrPut(server.id) { sessionFactory(server) }
@@ -105,7 +117,9 @@ class McpToolRegistry(
                 return cached.tools
             }
         }
-        val tools = if (server.isRemote) {
+        val tools = if (server.isNative) {
+            nativeHandlerFor(server).tools()
+        } else if (server.isRemote) {
             val config = server.remoteConfig()
                 ?: throw McpConfigurationException("Remote MCP server '${server.id}' has no URL configured")
             remoteClientFactory(server, config).listTools()
@@ -171,7 +185,9 @@ class McpToolRegistry(
             throw McpPromptRequiredException(decision)
         }
         val outcome = try {
-            if (server.isRemote) {
+            if (server.isNative) {
+                nativeHandlerFor(server).call(toolName, arguments, resolveEnv(server))
+            } else if (server.isRemote) {
                 val config = server.remoteConfig()
                     ?: throw McpConfigurationException("Remote MCP server '${server.id}' has no URL configured")
                 remoteClientFactory(server, config).callTool(toolName, arguments)

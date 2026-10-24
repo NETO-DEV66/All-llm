@@ -86,8 +86,20 @@ class MarketplaceCoordinatorMcpMappingTest {
             // difference between "says installed" and "actually starts".
             assertFalse("command must be one executable for ${item.id}", server.command.contains(' '))
             assertTrue("command must not be blank for ${item.id}", server.command.isNotBlank())
-            assertTrue("args must be populated for ${item.id}", server.args.isNotEmpty())
             assertTrue("server must be enabled for ${item.id}", server.enabled)
+            val template = McpBuiltInCatalogTemplates.find { "catalog-mcp-${it.id}" == item.id }
+            if (template?.nativeHandler != null) {
+                // A native server runs in-app, so it has no arguments to exec. What
+                // must survive the mapping is the handler, or install registers a
+                // server that can never dispatch a tool.
+                assertEquals(
+                    "the in-app handler must survive the mapping for ${item.id}",
+                    template.nativeHandler,
+                    server.nativeHandler,
+                )
+            } else {
+                assertTrue("args must be populated for ${item.id}", server.args.isNotEmpty())
+            }
         }
     }
 

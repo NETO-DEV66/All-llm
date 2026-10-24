@@ -202,10 +202,13 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -322,7 +325,7 @@ import com.netodev66.alllm.ui.theme.bounceClick
 
 
 // All-LLM branding is rendered in the shared setup headers.
-private enum class RootScreen(val label: String, val icon: ImageVector) {
+internal enum class RootScreen(val label: String, val icon: ImageVector) {
     CHAT("Chat", Icons.Default.AutoAwesome),
     PROJECTS("Projects", Icons.Default.Folder),
     AGENT("Agent", Icons.Default.SmartToy),
@@ -475,7 +478,7 @@ fun PocketDevApp(
         BackHandler(onBack = { navigator.closeOverlay() })
         MarketplaceScreen(
             onBack = { navigator.closeOverlay() },
-            onInstallItem = { item -> viewModel.installMarketplaceItem(item) },
+            onInstallItem = { item, secrets -> viewModel.installMarketplaceItem(item, secrets) },
             onUninstallItem = { item -> viewModel.uninstallMarketplaceItem(item) },
             onPublishItem = { item -> viewModel.publishMarketplaceItem(item) },
             initiallyInstalledIds = marketplaceInstalledIds,
@@ -2480,7 +2483,16 @@ private fun RootScreenHost(
 ) {
     // Chat is the landing screen: the primary action is starting a task, and every
     // other destination is one tap away in the hamburger drawer.
-    var screen by rememberSaveable { mutableStateOf(RootScreen.CHAT) }
+    // Screen plus visited history, so the system Back button unwinds one screen
+    // at a time instead of closing the app. The state object is plain Kotlin and
+    // unit-tested; Compose only mirrors it.
+    // The saved list is the single source of truth: the navigator is derived from
+    // it, so a process restart and a recomposition restore the same stack.
+    var navigatorNames by rememberSaveable {
+        mutableStateOf(listOf(RootScreen.CHAT.name))
+    }
+    val navigator = remember(navigatorNames) { RootNavigatorState.restore(navigatorNames) }
+    val screen = navigator.current
     var navDrawerOpen by rememberSaveable { mutableStateOf(false) }
     var showQuickTerminal by rememberSaveable { mutableStateOf(false) }
     var showPrivacyPolicy by rememberSaveable { mutableStateOf(false) }
@@ -2491,6 +2503,28 @@ private fun RootScreenHost(
     val isTerminalRunning by viewModel.isTerminalRunning.collectAsStateWithLifecycle()
     val terminalLiveOutput by viewModel.terminalLiveOutput.collectAsStateWithLifecycle()
     val terminalCurrentCommand by viewModel.terminalCurrentCommand.collectAsStateWithLifecycle()
+
+    fun navigateTo(destination: RootScreen) {
+        navigator.navigateTo(destination)
+        navigatorNames = navigator.save()
+        navDrawerOpen = false
+    }
+
+    fun popVisitedScreen(): Boolean {
+        val moved = navigator.pop()
+        if (moved) navigatorNames = navigator.save()
+        return moved
+    }
+
+    // The drawer is the topmost layer, so it closes first; then history unwinds
+    // one screen per press; only at Chat with an empty history does Back leave
+    // the app. Chat is the root, so it is not pushed onto the history.
+    BackHandler(enabled = navDrawerOpen || navigator.canGoBack()) {
+        when {
+            navDrawerOpen -> navDrawerOpen = false
+            !popVisitedScreen() -> navigateTo(RootScreen.CHAT)
+        }
+    }
 
     if (showPrivacyPolicy) {
         PrivacyPolicyScreen(
@@ -2511,8 +2545,8 @@ private fun RootScreenHost(
                     state = state,
                     onStartTask = { prompt -> viewModel.createQuickProject(prompt) },
                     onOpenProject = viewModel::openProject,
-                    onBrowseProjects = { screen = RootScreen.PROJECTS },
-                    onSettings = { screen = RootScreen.SETTINGS },
+                    onBrowseProjects = { navigateTo(RootScreen.PROJECTS) },
+                    onSettings = { navigateTo(RootScreen.SETTINGS) },
                     onToggleTheme = viewModel::toggleTheme,
                     onOpenMenu = { navDrawerOpen = true },
                 )
@@ -2534,7 +2568,7 @@ private fun RootScreenHost(
                     onCloneGitHub = viewModel::cloneGitHubRepository,
                     onRenameProject = viewModel::renameProject,
                     onDeleteProject = viewModel::deleteProject,
-                    onSettings = { screen = RootScreen.SETTINGS },
+                    onSettings = { navigateTo(RootScreen.SETTINGS) },
                     onPing = viewModel::pingApi,
                     onToggleTheme = viewModel::toggleTheme,
                     onInstallUpdate = viewModel::installAppUpdate,
@@ -2611,7 +2645,7 @@ private fun RootScreenHost(
                     mcpAuditLogs = state.mcpAuditLogs,
                     mcpBusy = state.mcpBusy,
                     mcpMessage = state.mcpMessage,
-                    onInstallMcpTemplate = viewModel::installMcpTemplate,
+                    onInstallMcpTemplate = { templateId, secrets -> viewModel.installMcpTemplate(templateId, secrets) },
                     onInstallCustomMcp = { server, secrets -> viewModel.installMcpServer(server, secrets) },
                     onToggleMcpServer = viewModel::toggleMcpServer,
                     onRemoveMcpServer = viewModel::removeMcpServer,
@@ -2626,8 +2660,8 @@ private fun RootScreenHost(
                     onOpenMenu = { navDrawerOpen = true },
                 )
                 RootScreen.MARKETPLACE -> MarketplaceScreen(
-                    onBack = { screen = RootScreen.PROJECTS },
-                    onInstallItem = { item -> viewModel.installMarketplaceItem(item) },
+                    onBack = { if (!popVisitedScreen()) navigateTo(RootScreen.CHAT) },
+                    onInstallItem = { item, secrets -> viewModel.installMarketplaceItem(item, secrets) },
                     onUninstallItem = { item -> viewModel.uninstallMarketplaceItem(item) },
                     onPublishItem = { item -> viewModel.publishMarketplaceItem(item) },
                     initiallyInstalledIds = marketplaceInstalledIds,
@@ -2696,10 +2730,7 @@ private fun RootScreenHost(
                         selected = screen == tab,
                         icon = tab.icon,
                         label = tab.label,
-                        onClick = {
-                            screen = tab
-                            navDrawerOpen = false
-                        },
+                        onClick = { navigateTo(tab) },
                     )
                 }
             }
@@ -2729,6 +2760,12 @@ private fun RootScreenHost(
     }
     }
     }
+
+/**
+ * Saves the visited-destination stack across process recreation. A bare
+ * `rememberSaveable` of a List<RootScreen> would not compile — the enum has no
+ * default Saver — so it is stored as names and resolved back by name.
+ */
 
 @Composable
 private fun QuickTerminalSheet(

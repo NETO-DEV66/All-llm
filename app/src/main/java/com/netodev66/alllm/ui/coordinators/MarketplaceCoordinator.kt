@@ -16,6 +16,7 @@ import com.netodev66.alllm.marketplace.pendingSeedIds
 import com.netodev66.alllm.marketplace.resolveUpstreamHeadSha
 import com.netodev66.alllm.marketplace.updateCheckDue
 import com.netodev66.alllm.marketplace.validateMarketplaceItem
+import com.netodev66.alllm.mcp.McpCredentialStore
 import com.netodev66.alllm.mcp.McpRegistry
 import com.netodev66.alllm.mcp.McpServerInfo
 import kotlinx.coroutines.Dispatchers
@@ -47,6 +48,8 @@ class MarketplaceCoordinator(
     private val installManager: MarketplaceInstallManager,
     private val publishedStore: MarketplacePublishedItemsStore,
     private val mcpRegistry: McpRegistry,
+    /** Stores a listing's declared credential in the encrypted store on install. */
+    private val credentialStore: McpCredentialStore,
     /** Refreshes the MCP server list UI after a marketplace (un)install registers one. */
     private val onMcpServersChanged: () -> Unit = {},
 ) {
@@ -175,11 +178,11 @@ class MarketplaceCoordinator(
         host.updateState { it.copy(toastMessage = outcome) }
     }
 
-    fun installMarketplaceItem(item: MarketplaceItem) {
+    fun installMarketplaceItem(item: MarketplaceItem, secrets: Map<String, String> = emptyMap()) {
         host.scope.launch(Dispatchers.IO) {
             val outcome = when (val result = installManager.install(item)) {
                 is MarketplaceInstallResult.Installed -> {
-                    val mcpNote = registerMarketplaceMcpServer(item)
+                    val mcpNote = registerMarketplaceMcpServer(item, secrets)
                     "Installed ${item.name}$mcpNote"
                 }
                 is MarketplaceInstallResult.ReferenceRecorded -> {
@@ -188,7 +191,7 @@ class MarketplaceCoordinator(
                     // lands here. Registering the server is the whole point of
                     // the install, so it must happen on this branch too —
                     // otherwise the card reads "Installed" while no server exists.
-                    val mcpNote = registerMarketplaceMcpServer(item)
+                    val mcpNote = registerMarketplaceMcpServer(item, secrets)
                     if (mcpNote.isEmpty()) {
                         "Saved ${item.name} as a reference — no package was downloaded"
                     } else {
@@ -213,7 +216,10 @@ class MarketplaceCoordinator(
      * nothing to register (non-MCP item, or an install value that is not a
      * command).
      */
-    private fun registerMarketplaceMcpServer(item: MarketplaceItem): String {
+    private fun registerMarketplaceMcpServer(
+        item: MarketplaceItem,
+        secrets: Map<String, String> = emptyMap(),
+    ): String {
         if (item.category != MarketplaceCategory.MCP_SERVERS) return ""
         val template = com.netodev66.alllm.mcp.McpBuiltInCatalogTemplates
             .find { "catalog-mcp-${it.id}" == item.id }
@@ -221,11 +227,15 @@ class MarketplaceCoordinator(
         // catalog badge, "Installed Servers" list and template installs all
         // agree on one identity per logical server.
         val serverId = template?.id ?: "marketplace-${item.id}"
-        val server = marketplaceItemToMcpServer(item, serverId)?.copy(
-            secretEnvNames = template?.requiredEnv ?: emptyList()
-        )
-            ?: return ""
+        val server = marketplaceItemToMcpServer(item, serverId) ?: return ""
         mcpRegistry.installServer(server)
+        // The listing's key must land in the encrypted store, or the server
+        // installs without a credential and fails on its first call.
+        secrets.forEach { (name, value) ->
+            if (name.isNotBlank() && value.isNotBlank()) {
+                credentialStore.setCredential(server.id, name, value)
+            }
+        }
         onMcpServersChanged()
         return " (MCP server registered)"
     }
@@ -269,14 +279,22 @@ internal fun marketplaceItemToMcpServer(item: MarketplaceItem, serverId: String)
     // derives from always produce the same executable/args pair.
     val (executable, args) = com.netodev66.alllm.mcp.splitMcpCommandLine(commandLine)
     if (executable.isBlank()) return null
+    // A listing derives from a catalog template, and a native template's
+    // runnability lives in its handler, not in a command line. Dropping those
+    // fields here registered a native server that could never dispatch a tool.
+    val template = com.netodev66.alllm.mcp.McpBuiltInCatalogTemplates
+        .find { "catalog-mcp-${it.id}" == item.id }
     return McpServerInfo(
         id = serverId,
         name = item.name,
         description = item.description,
         command = executable,
         args = args,
+        env = template?.defaultEnv ?: emptyMap(),
         enabled = true,
         isBuiltIn = false,
         projectId = null,
+        secretEnvNames = template?.requiredEnv ?: emptyList(),
+        nativeHandler = template?.nativeHandler,
     )
 }

@@ -75,6 +75,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.netodev66.alllm.mcp.McpBuiltInCatalogTemplates
 import com.netodev66.alllm.marketplace.DeveloperMarketplaceCatalog
 import com.netodev66.alllm.marketplace.MarketplaceCategory
 import com.netodev66.alllm.marketplace.MarketplaceItem
@@ -95,7 +96,7 @@ import com.netodev66.alllm.ui.theme.bouncyExpandEnter
 @Composable
 fun MarketplaceScreen(
     onBack: (() -> Unit)? = null,
-    onInstallItem: (MarketplaceItem) -> Unit = {},
+    onInstallItem: (MarketplaceItem, Map<String, String>) -> Unit = { _, _ -> },
     onUninstallItem: (MarketplaceItem) -> Unit = {},
     /**
      * Publish handler: validates, persists durably, and adds to the catalog.
@@ -125,6 +126,9 @@ fun MarketplaceScreen(
     val installedSet = initiallyInstalledIds
     var showPublishDialog by rememberSaveable { mutableStateOf(false) }
     var catalogVersion by remember { mutableStateOf(0) }
+    // A listing that derives from a template needing a key must collect it before
+    // installing; otherwise the card reads "Installed" and the server has no key.
+    var secretPromptItem by remember { mutableStateOf<MarketplaceItem?>(null) }
 
     LaunchedEffect(Unit) { onScreenOpened() }
 
@@ -145,6 +149,18 @@ fun MarketplaceScreen(
             SearchSort.DOWNLOADS -> visible.sortedByDescending { it.downloads }
             SearchSort.RELEVANCE -> visible
         }
+    }
+
+    secretPromptItem?.let { item ->
+        MarketplaceSecretPromptDialog(
+            item = item,
+            requiredEnv = requiredEnvForListing(item),
+            onDismiss = { secretPromptItem = null },
+            onInstall = { secrets ->
+                onInstallItem(item, secrets)
+                secretPromptItem = null
+            },
+        )
     }
 
     if (showPublishDialog) {
@@ -380,7 +396,14 @@ fun MarketplaceScreen(
                         item = item,
                         isInstalled = isInstalled,
                         hasUpdate = updatesAvailable.contains(item.id),
-                        onInstall = { onInstallItem(item) },
+                        onInstall = {
+                            val required = requiredEnvForListing(item)
+                            if (required.isEmpty()) {
+                                onInstallItem(item, emptyMap())
+                            } else {
+                                secretPromptItem = item
+                            }
+                        },
                         onUninstall = { onUninstallItem(item) },
                         onUpdate = { onUpdateItem(item) },
                         onDeleteCustom = if (item.isCustom) {
@@ -860,5 +883,55 @@ private fun PublishMarketplaceItemDialog(
         dismissButton = {
             PocketTextButton( onDismiss) { Text("Cancel") }
         },
+    )
+}
+
+/**
+ * The credential names a listing's catalog template declares. A listing that is
+ * not derived from a template (a user-published one) needs none.
+ */
+internal fun requiredEnvForListing(item: MarketplaceItem): List<String> =
+    McpBuiltInCatalogTemplates.find { "catalog-mcp-${it.id}" == item.id }?.requiredEnv ?: emptyList()
+
+/** Collects the credential a listing's server needs, before the install runs. */
+@Composable
+private fun MarketplaceSecretPromptDialog(
+    item: MarketplaceItem,
+    requiredEnv: List<String>,
+    onDismiss: () -> Unit,
+    onInstall: (Map<String, String>) -> Unit,
+) {
+    var values by remember { mutableStateOf(requiredEnv.associateWith { "" }) }
+    PocketAlertDialog(onDismiss,
+        title = { Text(item.name, fontSize = 16.sp, fontWeight = FontWeight.Bold) },
+        text = {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()).imePadding(),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text(item.description, fontSize = 12.sp)
+                requiredEnv.forEach { name ->
+                    OutlinedTextField(
+                        value = values[name].orEmpty(),
+                        onValueChange = { values = values + (name to it) },
+                        label = { Text(name, fontSize = 11.sp) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+                Text(
+                    "Stored encrypted on this device and never written to the server config.",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        confirmButton = {
+            PocketButton(
+                { onInstall(values.filterValues { it.isNotBlank() }) },
+                enabled = values.values.all { it.isNotBlank() },
+            ) { Text("Install") }
+        },
+        dismissButton = { PocketTextButton(onDismiss) { Text("Cancel") } },
     )
 }

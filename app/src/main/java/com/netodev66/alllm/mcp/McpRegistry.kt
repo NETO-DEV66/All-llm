@@ -101,13 +101,16 @@ class McpRegistry(
             description = template.description,
             command = executable,
             args = embeddedArgs + template.defaultArgs,
-            env = envOverrides,
+            // A native template carries non-secret defaults (e.g. a base URL);
+            // explicit overrides win.
+            env = template.defaultEnv + envOverrides,
             enabled = true,
             isBuiltIn = true,
             projectId = projectId,
             // Template-declared secrets resolve from McpCredentialStore at start time,
             // never from the persisted registry JSON.
-            secretEnvNames = template.requiredEnv
+            secretEnvNames = template.requiredEnv,
+            nativeHandler = template.nativeHandler,
         )
         return installServer(server)
     }

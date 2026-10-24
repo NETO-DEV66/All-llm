@@ -1008,6 +1008,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             marketplaceInstallManager,
             marketplacePublishedItemsStore,
             mcpRegistry,
+            mcpCredentialStore,
             onMcpServersChanged = { mcpCoordinator.refreshMcpServers() },
         )
     private val teamCoordinator =
@@ -5517,8 +5518,10 @@ Your objective: Analyze the request and workspace, formulate the plan, and provi
      * reported honestly instead of a toast-only fake install (Milestone 0).
      */
     // ---- Milestone 1: delegated to domain coordinators (public API unchanged). ----
-    fun installMarketplaceItem(item: com.netodev66.alllm.marketplace.MarketplaceItem) =
-        marketplaceCoordinator.installMarketplaceItem(item)
+    fun installMarketplaceItem(
+        item: com.netodev66.alllm.marketplace.MarketplaceItem,
+        secrets: Map<String, String> = emptyMap(),
+    ) = marketplaceCoordinator.installMarketplaceItem(item, secrets)
 
     fun publishMarketplaceItem(item: com.netodev66.alllm.marketplace.MarketplaceItem) =
         marketplaceCoordinator.publishMarketplaceItem(item)

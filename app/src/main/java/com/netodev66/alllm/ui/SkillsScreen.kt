@@ -133,7 +133,7 @@ fun SkillsScreen(
     mcpAuditLogs: List<McpAuditEntry> = emptyList(),
     mcpBusy: Boolean = false,
     mcpMessage: String? = null,
-    onInstallMcpTemplate: (String) -> Unit = {},
+    onInstallMcpTemplate: (String, Map<String, String>) -> Unit = { _, _ -> },
     onInstallCustomMcp: (McpServerInfo, Map<String, String>) -> Unit = { _, _ -> },
     onToggleMcpServer: (String, Boolean) -> Unit = { _, _ -> },
     onRemoveMcpServer: (String) -> Unit = {},
@@ -153,6 +153,7 @@ fun SkillsScreen(
     var githubUrl by rememberSaveable { mutableStateOf("") }
     var showAddCustomMcpDialog by rememberSaveable { mutableStateOf(false) }
     var runDialogServer by remember { mutableStateOf<McpServerInfo?>(null) }
+    var secretPromptTemplate by remember { mutableStateOf<McpCatalogTemplate?>(null) }
     var runDialogTool by remember { mutableStateOf<McpToolDefinition?>(null) }
 
     val zipLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -542,7 +543,17 @@ fun SkillsScreen(
                         template = template,
                         isInstalled = isInstalled,
                         busy = mcpBusy,
-                        onInstall = { onInstallMcpTemplate(template.id) }
+                        onInstall = {
+                            // A template that needs a key must collect it now: the
+                            // install used to persist nothing, so the server
+                            // reported "installed" and every call failed with a
+                            // missing-credential error.
+                            if (template.requiredEnv.isEmpty()) {
+                                onInstallMcpTemplate(template.id, emptyMap())
+                            } else {
+                                secretPromptTemplate = template
+                            }
+                        }
                     )
                 }
 
@@ -604,6 +615,16 @@ fun SkillsScreen(
     }
 
     if (showAddCustomMcpDialog) {
+        secretPromptTemplate?.let { template ->
+            McpSecretPromptDialog(
+                template = template,
+                onDismiss = { secretPromptTemplate = null },
+                onInstall = { secrets ->
+                    onInstallMcpTemplate(template.id, secrets)
+                    secretPromptTemplate = null
+                },
+            )
+        }
         AddCustomMcpDialog(
             onDismiss = { showAddCustomMcpDialog = false },
             onAdd = { customServer, secrets ->
@@ -933,6 +954,60 @@ internal fun parseKeyValueList(text: String): Map<String, String> {
         if (key.isNotEmpty()) map[key] = parts[1].trim()
     }
     return map
+}
+
+/**
+ * Collects the credential a catalog template declares in `requiredEnv`.
+ * Without this the template installed with no key, so the server looked installed
+ * and failed on first use.
+ */
+@Composable
+private fun McpSecretPromptDialog(
+    template: McpCatalogTemplate,
+    onDismiss: () -> Unit,
+    onInstall: (Map<String, String>) -> Unit,
+) {
+    var values by remember {
+        mutableStateOf(template.requiredEnv.associateWith { "" })
+    }
+    PocketAlertDialog(onDismiss,
+        title = { Text(template.name, fontSize = 16.sp, fontWeight = FontWeight.Bold) },
+        text = {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()).imePadding(),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text(template.description, fontSize = 12.sp)
+                template.requiredEnv.forEach { name ->
+                    OutlinedTextField(
+                        value = values[name].orEmpty(),
+                        onValueChange = { values = values + (name to it) },
+                        label = { Text(name, fontSize = 11.sp) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+                Text(
+                    "Stored encrypted on this device and sent only to ${template.name}. Never written to the server config.",
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        confirmButton = {
+            PocketButton(
+                {
+                    onInstall(values.filterValues { it.isNotBlank() })
+                },
+                enabled = values.values.all { it.isNotBlank() },
+            ) {
+                Text("Install")
+            }
+        },
+        dismissButton = {
+            PocketTextButton(onDismiss) { Text("Cancel") }
+        },
+    )
 }
 
 @Composable
