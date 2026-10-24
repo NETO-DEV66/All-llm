@@ -1575,6 +1575,7 @@ fun PreviewTab(
         ModalBottomSheet(
             onDismissRequest = { showHistorySheet = false },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = pocketTokens.modalSurface,
         ) {
             Column(
                 modifier = Modifier

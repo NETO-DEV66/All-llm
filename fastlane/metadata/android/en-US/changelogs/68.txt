@@ -1,0 +1,8 @@
+All-LLM 3.9.4 - glass you can still read.
+- Liquid glass is back, and readable: panes keep a nearly opaque body so text
+  stays crisp, while the drifting backdrop, specular sheen and bright top edge
+  give every panel the glass read
+- The top bar, rail, bottom bar and drawer are truly translucent, so the moving
+  backdrop shows through where nothing must be read against it
+- Dialogs and sheets get a near-opaque body, so their text never competes with
+  the dimmed app behind them

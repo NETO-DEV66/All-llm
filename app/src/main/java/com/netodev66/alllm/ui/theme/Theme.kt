@@ -25,12 +25,16 @@ val PocketSurfaceVariant = Color(0xFF1B222D)
 val PocketOutline = Color(0xFF2A3240)
 
 /**
- * Dark scheme, solid.
+ * Dark scheme in liquid-glass form.
  *
- * Every surface role is opaque, so `background`, `surface` and the container roles
- * are plain colours and the borders carry the separation. Container roles still
- * step up in brightness with elevation so menus, sheets and dialogs read as
- * sitting above the panels beneath them.
+ * `background` is transparent so [PocketBackdrop]'s drifting gradient shows
+ * through, and the surface roles are veils over it. The veils are deliberately
+ * heavy — a `surface` that carried body text would otherwise have to be read
+ * against a moving gradient. Chrome that holds no text uses `chromeFill` and
+ * stays genuinely translucent.
+ *
+ * Foreground roles (`onSurface`, `onBackground`) stay opaque, so text contrast is
+ * unaffected by the translucency.
  */
 private val DarkColors = darkColorScheme(
     primary = PocketOrange,
@@ -45,27 +49,31 @@ private val DarkColors = darkColorScheme(
     onTertiary = Color(0xFF00391E),
     tertiaryContainer = Color(0xFF17351F),
     onTertiaryContainer = Color(0xFFC7F2D8),
-    background = PocketBackground,
+    background = Color(0x00000000),
     onBackground = Color(0xFFE6EDF3),
-    surface = PocketSurface,
+    surface = Color(0xF2131821),
     onSurface = Color(0xFFE6EDF3),
-    surfaceVariant = PocketSurfaceVariant,
+    surfaceVariant = Color(0xED1B222D),
     onSurfaceVariant = Color(0xFFA8B0BC),
-    surfaceContainerLowest = Color(0xFF0D1117),
-    surfaceContainerLow = Color(0xFF12161E),
-    surfaceContainer = Color(0xFF171C25),
-    surfaceContainerHigh = Color(0xFF1D2431),
-    surfaceContainerHighest = Color(0xFF232B39),
+    surfaceContainerLowest = Color(0xE60D1117),
+    surfaceContainerLow = Color(0xED12161E),
+    surfaceContainer = Color(0xF2171C25),
+    surfaceContainerHigh = Color(0xF71D2431),
+    surfaceContainerHighest = Color(0xFA232B39),
     surfaceBright = Color(0xFF2A3240),
-    surfaceDim = Color(0xFF0A0D13),
+    surfaceDim = Color(0xE60A0D13),
     inverseSurface = Color(0xFFE6EDF3),
     inverseOnSurface = Color(0xFF131821),
-    outline = PocketOutline,
-    outlineVariant = Color(0xFF232B39),
+    outline = Color(0x33FFFFFF),
+    outlineVariant = Color(0x1FFFFFFF),
     scrim = Color(0x99000000),
 )
 
-/** Light scheme, solid. Same structure as the dark scheme with light fills. */
+/**
+ * Light scheme in liquid-glass form. Same structure as the dark scheme: transparent
+ * background, heavy veils where text lives, opaque foregrounds. The veils are white
+ * rather than grey so a pane brightens the backdrop instead of muddying it.
+ */
 private val LightColors = lightColorScheme(
     primary = Color(0xFFD85A20),
     onPrimary = Color(0xFFFFFFFF),
@@ -79,23 +87,23 @@ private val LightColors = lightColorScheme(
     onTertiary = Color(0xFFFFFFFF),
     tertiaryContainer = Color(0xFFD3F5E1),
     onTertiaryContainer = Color(0xFF00291A),
-    background = Color(0xFFF6F8FB),
+    background = Color(0x00000000),
     onBackground = Color(0xFF1F2328),
-    surface = Color(0xFFFFFFFF),
+    surface = Color(0xF7FFFFFF),
     onSurface = Color(0xFF1F2328),
-    surfaceVariant = Color(0xFFF1F4F9),
+    surfaceVariant = Color(0xF2F1F4F9),
     onSurfaceVariant = Color(0xFF4A525C),
-    surfaceContainerLowest = Color(0xFFFFFFFF),
-    surfaceContainerLow = Color(0xFFFAFBFD),
-    surfaceContainer = Color(0xFFF6F8FB),
-    surfaceContainerHigh = Color(0xFFF1F4F9),
+    surfaceContainerLowest = Color(0xF7FFFFFF),
+    surfaceContainerLow = Color(0xFAFAFBFD),
+    surfaceContainer = Color(0xF7F6F8FB),
+    surfaceContainerHigh = Color(0xFAF1F4F9),
     surfaceContainerHighest = Color(0xFFEBEFF5),
     surfaceBright = Color(0xFFFFFFFF),
-    surfaceDim = Color(0xFFE8ECF2),
+    surfaceDim = Color(0xF2E8ECF2),
     inverseSurface = Color(0xFF1F2328),
     inverseOnSurface = Color(0xFFF6F8FA),
-    outline = Color(0xFFC6CFDD),
-    outlineVariant = Color(0xFFE1E6EF),
+    outline = Color(0x59101820),
+    outlineVariant = Color(0x26101820),
     scrim = Color(0x66101820),
 )
 
