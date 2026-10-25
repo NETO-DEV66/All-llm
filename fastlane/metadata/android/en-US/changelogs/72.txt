@@ -1,0 +1,7 @@
+All-LLM 3.9.8 - an install you can trust.
+- Installing an MCP server now starts it and reports whether it actually came
+  up, so "Installed" means installed and startable.
+- Each server card shows whether it starts and how many tools it offers, or the
+  server's own error when it cannot start.
+- A server that needs the Linux runtime now says so plainly, instead of failing
+  with a bare "Cannot run program npx".
