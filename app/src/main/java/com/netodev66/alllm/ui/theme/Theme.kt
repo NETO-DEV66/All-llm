@@ -62,6 +62,10 @@ private val DarkColors = darkColorScheme(
     inverseOnSurface = Color(0xFF131821),
     outline = PocketOutline,
     outlineVariant = Color(0xFF232B39),
+    error = Color(0xFFFF8A80),
+    onError = Color(0xFF3A0A0A),
+    errorContainer = Color(0xFF8C1D18),
+    onErrorContainer = Color(0xFFF9DEDC),
     scrim = Color(0x99000000),
 )
 
@@ -96,6 +100,10 @@ private val LightColors = lightColorScheme(
     inverseOnSurface = Color(0xFFF6F8FA),
     outline = Color(0xFFC6CFDD),
     outlineVariant = Color(0xFFE1E6EF),
+    error = Color(0xFFB3261E),
+    onError = Color(0xFFFFFFFF),
+    errorContainer = Color(0xFFF9DEDC),
+    onErrorContainer = Color(0xFF410E0B),
     scrim = Color(0x66101820),
 )
 
@@ -139,6 +147,7 @@ fun PocketTheme(themeMode: AppThemeMode = AppThemeMode.SYSTEM, content: @Composa
     ) {
         CompositionLocalProvider(
             LocalDesignTokens provides if (isDark) DarkDesign else LightDesign,
+            LocalStatusColors provides if (isDark) DarkStatusColors else LightStatusColors,
             LocalMotionTokens provides DefaultMotion,
             // One seam gives every `clickable` in the app the signature bounce.
             // Components that animate themselves opt out via `indication = null`.

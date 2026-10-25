@@ -71,7 +71,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
@@ -93,6 +92,8 @@ import com.netodev66.alllm.network.GitHubPullRequest
 import com.netodev66.alllm.network.GitHubRelease
 import com.netodev66.alllm.network.GitHubWorkflowRun
 import com.netodev66.alllm.network.PullRequestMergeMethod
+import com.netodev66.alllm.ui.theme.statusColors
+import com.netodev66.alllm.ui.theme.statusOn
 import com.netodev66.alllm.ui.theme.pocketTokens
 import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketTextButton
@@ -422,13 +423,13 @@ private fun FileRowItem(
                 shape = RoundedCornerShape(4.dp),
                 color = when {
                     file.isConflict -> MaterialTheme.colorScheme.error
-                    file.isStaged -> Color(0xFF2E7D32)
+                    file.isStaged -> statusColors.success
                     else -> MaterialTheme.colorScheme.primary
                 }
             ) {
                 Text(
                     text = if (file.isStaged) file.indexStatus.code else file.worktreeStatus.code,
-                    color = Color.White,
+                    color = statusOn(if (file.isStaged) statusColors.success else MaterialTheme.colorScheme.primary),
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
@@ -773,11 +774,11 @@ private fun IssuesSection(issues: List<GitHubIssue>, onCreateIssue: (String, Str
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Surface(
                             shape = RoundedCornerShape(4.dp),
-                            color = if (issue.state == "open") Color(0xFF2E7D32) else Color.Gray
+                            color = if (issue.state == "open") statusColors.success else Color.Gray
                         ) {
                             Text(
                                 "#${issue.number} ${issue.state.uppercase()}",
-                                color = Color.White,
+                                color = statusOn(if (issue.state == "open") statusColors.success else Color.Gray),
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
@@ -815,7 +816,7 @@ private fun PullRequestsSection(
                             shape = RoundedCornerShape(4.dp),
                             color = Color(0xFF1565C0)
                         ) {
-                            Text(pr.state.uppercase(), color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp))
+                            Text(pr.state.uppercase(), color = statusOn(Color(0xFF1565C0)), fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp))
                         }
                     }
                     Text("${pr.headBranch} → ${pr.baseBranch}", fontSize = 11.5.sp, fontFamily = FontFamily.Monospace)
@@ -823,7 +824,7 @@ private fun PullRequestsSection(
                     if (pr.state == "open") {
                         PocketButton( { onMergePullRequest(pr.number, PullRequestMergeMethod.SQUASH) },
                             modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
+                            colors = ButtonDefaults.buttonColors(containerColor = statusColors.success, contentColor = statusColors.onSuccess)
                         ) {
                             Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
@@ -849,7 +850,7 @@ private fun ActionsSection(runs: List<GitHubWorkflowRun>) {
                     Icon(
                         if (run.conclusion == "success") Icons.Default.CheckCircle else Icons.Default.Error,
                         contentDescription = null,
-                        tint = if (run.conclusion == "success") Color(0xFF2E7D32) else MaterialTheme.colorScheme.error,
+                        tint = if (run.conclusion == "success") statusColors.success else MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(Modifier.width(10.dp))
@@ -959,7 +960,7 @@ private fun AutonomousWorkflowTab(
                     shape = RoundedCornerShape(8.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = when (step.status) {
-                            WorkflowStepStatus.SUCCESS -> Color(0xFF2E7D32).copy(alpha = 0.12f)
+                            WorkflowStepStatus.SUCCESS -> statusColors.successContainer
                             WorkflowStepStatus.IN_PROGRESS -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
                             WorkflowStepStatus.FAILED -> MaterialTheme.colorScheme.errorContainer
                             else -> MaterialTheme.colorScheme.surface
@@ -970,7 +971,7 @@ private fun AutonomousWorkflowTab(
                     Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
                         when (step.status) {
                             WorkflowStepStatus.IN_PROGRESS -> CircularProgressIndicator(modifier = Modifier.size(16.dp))
-                            WorkflowStepStatus.SUCCESS -> Icon(Icons.Default.CheckCircle, contentDescription = null, tint = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) Color(0xFF81C784) else Color(0xFF2E7D32), modifier = Modifier.size(18.dp))
+                            WorkflowStepStatus.SUCCESS -> Icon(Icons.Default.CheckCircle, contentDescription = null, tint = statusColors.success, modifier = Modifier.size(18.dp))
                             WorkflowStepStatus.FAILED -> Icon(Icons.Default.Error, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(18.dp))
                             else -> Box(modifier = Modifier.size(18.dp).background(Color.Gray.copy(alpha = 0.3f), CircleShape))
                         }
@@ -989,12 +990,12 @@ private fun AutonomousWorkflowTab(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFF2E7D32).copy(alpha = 0.15f),
+                        containerColor = statusColors.successContainer,
                         contentColor = MaterialTheme.colorScheme.onSurface
                     )
                 ) {
                     Column(Modifier.padding(14.dp)) {
-                        Text("🎉 Autonomous Workflow Completed!", fontWeight = FontWeight.Bold, color = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) Color(0xFFA5D6A7) else Color(0xFF2E7D32))
+                        Text("🎉 Autonomous Workflow Completed!", fontWeight = FontWeight.Bold, color = statusColors.success)
                         Text("Pull Request: ${workflowState.prUrl}", fontSize = 12.sp, fontFamily = FontFamily.Monospace, color = MaterialTheme.colorScheme.onSurface)
                     }
                 }

@@ -72,7 +72,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
@@ -92,15 +91,17 @@ import com.netodev66.alllm.factory.model.KeystoreConfig
 import com.netodev66.alllm.factory.model.StoreListingBundle
 import com.netodev66.alllm.factory.model.VersionBumpType
 import java.io.File
+import com.netodev66.alllm.ui.theme.statusColors
 import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketOutlinedButton
 import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
 import com.netodev66.alllm.ui.theme.PocketFilterChip
 
+// Delegates to the semantic palette; the luminance guess broke on any surface
+// that was not the app background.
 @Composable
-private fun adaptiveCheckGreen(): Color =
-    if (MaterialTheme.colorScheme.background.luminance() < 0.5f) Color(0xFF81C784) else Color(0xFF2E7D32)
+private fun adaptiveCheckGreen(): Color = statusColors.success
 
 private enum class FactoryTab(val title: String, val icon: ImageVector) {
     BLUEPRINT("Blueprint", Icons.Default.AutoAwesome),
@@ -634,7 +635,7 @@ private fun BuildAutomationTab(
                                 // Dark green (0xFF2E7D32) on a dark background is unreadable;
                                 // light green in dark theme, dark green in light theme.
                                 tint = if (buildResult.success) {
-                                    if (MaterialTheme.colorScheme.background.luminance() < 0.5f) Color(0xFF81C784) else Color(0xFF2E7D32)
+                                    statusColors.success
                                 } else MaterialTheme.colorScheme.error
                             )
                             Spacer(Modifier.width(8.dp))
@@ -642,7 +643,7 @@ private fun BuildAutomationTab(
                                 if (buildResult.success) "Build Successful!" else "Build Failed",
                                 fontWeight = FontWeight.Bold,
                                 color = if (buildResult.success) {
-                                    if (MaterialTheme.colorScheme.background.luminance() < 0.5f) Color(0xFF81C784) else Color(0xFF2E7D32)
+                                    statusColors.success
                                 } else MaterialTheme.colorScheme.error
                             )
                         }
@@ -655,7 +656,7 @@ private fun BuildAutomationTab(
                             Spacer(Modifier.height(12.dp))
                             PocketButton( { onInstallApk(buildResult.outputFile) },
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32))
+                                colors = ButtonDefaults.buttonColors(containerColor = statusColors.success, contentColor = statusColors.onSuccess)
                             ) {
                                 Icon(Icons.Default.Android, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(8.dp))

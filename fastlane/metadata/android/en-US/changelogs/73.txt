@@ -1,0 +1,7 @@
+All-LLM 3.9.9 - status colours you can actually read.
+- One semantic palette (success, warning, info, danger) replaces 23 hand-written
+  greens and seven background-luminance theme guesses.
+- Text on every status badge now picks its own on-colour, so labels stay
+  readable in both light and dark themes.
+- Fixed dark green status text that was near-invisible on dark surfaces in the
+  workflow, diff and team screens.

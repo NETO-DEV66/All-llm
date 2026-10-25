@@ -112,6 +112,8 @@ import com.netodev66.alllm.agent.team.model.TeamTaskStatus
 import com.netodev66.alllm.agent.team.runtime.LiveTaskInfo
 import com.netodev66.alllm.agent.team.runtime.LiveTaskStatus
 import kotlinx.coroutines.launch
+import com.netodev66.alllm.ui.theme.statusColors
+import com.netodev66.alllm.ui.theme.statusOn
 import com.netodev66.alllm.ui.theme.pocketTokens
 import com.netodev66.alllm.ui.theme.PocketClickableCard
 import com.netodev66.alllm.ui.theme.PocketTextButton
@@ -571,7 +573,7 @@ private fun TeamRosterTab(
                         Surface(
                             shape = RoundedCornerShape(6.dp),
                             color = when {
-                                isRunning -> Color(0xFF2E7D32)
+                                isRunning -> statusColors.success
                                 isActive -> MaterialTheme.colorScheme.primary
                                 else -> MaterialTheme.colorScheme.surfaceVariant
                             }
@@ -859,7 +861,7 @@ private fun PulsingDot() {
         modifier = Modifier
             .size(8.dp)
             .alpha(alpha)
-            .background(Color(0xFF2E7D32), CircleShape)
+            .background(statusColors.success, CircleShape)
     )
 }
 
@@ -952,7 +954,7 @@ private fun AgentDetailSheet(
                 Text(
                     text = statusLabel,
                     fontSize = 11.sp,
-                    color = if (isRunning) Color(0xFF2E7D32) else MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (isRunning) statusColors.success else MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Medium
                 )
                 if (onCustomize != null) {
@@ -1336,8 +1338,8 @@ private fun TaskDagCard(
                         )
                     }
                     if (task.priority == TeamTaskPriority.CRITICAL) {
-                        Surface(shape = RoundedCornerShape(4.dp), color = Color(0xFFD32F2F)) {
-                            Text("CRITICAL", fontSize = 8.sp, color = Color.White, modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp))
+                        Surface(shape = RoundedCornerShape(4.dp), color = statusColors.danger) {
+                            Text("CRITICAL", fontSize = 8.sp, color = statusOn(statusColors.danger), modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp))
                         }
                     }
                 }
@@ -1722,9 +1724,9 @@ private fun TeamReviewBudgetTab(orchestrator: AgentTeamOrchestrator) {
                             Surface(
                                 shape = RoundedCornerShape(4.dp),
                                 color = when (rev.verdict) {
-                                    ReviewVerdict.APPROVED -> Color(0xFF2E7D32)
+                                    ReviewVerdict.APPROVED -> statusColors.success
                                     ReviewVerdict.CHANGES_REQUESTED -> Color(0xFFF57C00)
-                                    ReviewVerdict.REJECTED -> Color(0xFFD32F2F)
+                                    ReviewVerdict.REJECTED -> statusColors.danger
                                     ReviewVerdict.PENDING -> MaterialTheme.colorScheme.surfaceVariant
                                 }
                             ) {

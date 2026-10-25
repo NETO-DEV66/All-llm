@@ -25,7 +25,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
@@ -92,6 +91,7 @@ import com.netodev66.alllm.runtime.SkillScanReport
 import com.netodev66.alllm.runtime.SkillSearchResult
 import com.netodev66.alllm.ui.coordinators.McpToolApproval
 import org.json.JSONObject
+import com.netodev66.alllm.ui.theme.statusColors
 import com.netodev66.alllm.ui.theme.PocketHamburgerButton
 import com.netodev66.alllm.ui.theme.PocketTopAppBar
 import com.netodev66.alllm.ui.theme.PocketTextButton
@@ -100,9 +100,10 @@ import com.netodev66.alllm.ui.theme.PocketIconButton
 import com.netodev66.alllm.ui.theme.PocketButton
 import com.netodev66.alllm.ui.theme.PocketAlertDialog
 
+// Delegates to the semantic palette so this reads the theme directly instead of
+// guessing it from the background luminance.
 @Composable
-private fun successGreen(): Color =
-    if (MaterialTheme.colorScheme.background.luminance() < 0.5f) Color(0xFF81C784) else Color(0xFF2E7D32)
+private fun successGreen(): Color = statusColors.success
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

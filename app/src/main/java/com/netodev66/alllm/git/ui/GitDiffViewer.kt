@@ -46,7 +46,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -54,6 +53,7 @@ import androidx.compose.ui.unit.sp
 import com.netodev66.alllm.git.model.GitDiffLine
 import com.netodev66.alllm.git.model.GitDiffLineType
 import com.netodev66.alllm.git.model.GitFileDiff
+import com.netodev66.alllm.ui.theme.statusColors
 import com.netodev66.alllm.ui.theme.pocketTokens
 import com.netodev66.alllm.ui.theme.PocketClickableSurface
 import com.netodev66.alllm.ui.theme.PocketTopAppBar
@@ -170,11 +170,11 @@ private fun FileDiffCard(
 
                     Surface(
                         shape = RoundedCornerShape(4.dp),
-                        color = Color(0xFF2E7D32).copy(alpha = 0.15f)
+                        color = statusColors.success.copy(alpha = 0.15f)
                     ) {
                         Text(
                             "+${diff.additions}",
-                            color = Color(0xFF2E7D32),
+                            color = statusColors.success,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
@@ -247,8 +247,8 @@ private fun FileDiffCard(
 @Composable
 private fun DiffLineRow(line: GitDiffLine) {
     val bgColor = when (line.type) {
-        GitDiffLineType.ADDITION -> Color(0xFF2E7D32).copy(alpha = 0.12f)
-        GitDiffLineType.DELETION -> Color(0xFFC62828).copy(alpha = 0.12f)
+        GitDiffLineType.ADDITION -> statusColors.successContainer
+        GitDiffLineType.DELETION -> statusColors.dangerContainer
         GitDiffLineType.CONTEXT, GitDiffLineType.HEADER -> Color.Transparent
     }
 
@@ -259,12 +259,11 @@ private fun DiffLineRow(line: GitDiffLine) {
         GitDiffLineType.HEADER -> "@"
     }
 
-    // Dark green / dark red diff text is unreadable on dark backgrounds:
-    // light variants in dark theme, dark variants in light theme.
-    val isDark = MaterialTheme.colorScheme.background.luminance() < 0.5f
+    // Diff text is unreadable as dark green / dark red on a dark row, and the
+    // semantic palette already resolves that per theme.
     val textColor = when (line.type) {
-        GitDiffLineType.ADDITION -> if (isDark) Color(0xFFA5D6A7) else Color(0xFF1B5E20)
-        GitDiffLineType.DELETION -> if (isDark) Color(0xFFEF9A9A) else Color(0xFFB71C1C)
+        GitDiffLineType.ADDITION -> statusColors.success
+        GitDiffLineType.DELETION -> statusColors.danger
         GitDiffLineType.CONTEXT, GitDiffLineType.HEADER -> MaterialTheme.colorScheme.onSurface
     }
 

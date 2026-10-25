@@ -135,6 +135,8 @@ import com.netodev66.alllm.runtime.EnvironmentComponentState
 import com.netodev66.alllm.runtime.EnvironmentManifestComponent
 import com.netodev66.alllm.runtime.EnvironmentUpdateManager
 import com.netodev66.alllm.runtime.RuntimeInstaller
+import com.netodev66.alllm.ui.theme.statusColors
+import com.netodev66.alllm.ui.theme.statusOn
 import com.netodev66.alllm.ui.theme.PocketHamburgerButton
 import com.netodev66.alllm.ui.theme.AppThemeMode
 import com.netodev66.alllm.ui.theme.PocketGreen
@@ -1661,13 +1663,13 @@ private fun AppUpdateChannelSection(
                 // rounded like the button beside it, and smaller than before.
                 Surface(
                     shape = RoundedCornerShape(50),
-                    color = if (isOnline) Color(0xFF2874F0) else Color(0xFF2E7D32),
+                    color = if (isOnline) statusColors.info else statusColors.success,
                 ) {
                     Text(
                         text = "v${BuildConfig.VERSION_NAME} ${if (isOnline) "ONLINE" else "OFFLINE"}",
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White,
+                        color = statusOn(if (isOnline) statusColors.info else statusColors.success),
                         modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp),
                     )
                 }
