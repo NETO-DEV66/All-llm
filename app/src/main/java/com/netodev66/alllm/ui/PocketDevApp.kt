@@ -43,11 +43,9 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
@@ -323,6 +321,7 @@ import com.netodev66.alllm.ui.theme.PocketAlertDialog
 import com.netodev66.alllm.ui.theme.bouncyExpandEnter
 import com.netodev66.alllm.ui.theme.bouncyExpandExit
 import com.netodev66.alllm.ui.theme.bounceClick
+import com.netodev66.alllm.ui.theme.bounceCombinedClick
 import com.netodev66.alllm.ui.theme.PocketFilterChip
 
 
@@ -5231,7 +5230,7 @@ private fun ReadOnlyProjectScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun WorkspaceScreen(
     state: AppUiState,
@@ -5569,11 +5568,11 @@ private fun WorkspaceScreen(
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.combinedClickable(
-                                onClick = {
+                            modifier = Modifier.bounceCombinedClick(
+                                onLongClick = {
                                     Toast.makeText(context, state.activeProject?.name.orEmpty(), Toast.LENGTH_LONG).show()
                                 },
-                                onLongClick = {
+                                onClick = {
                                     Toast.makeText(context, state.activeProject?.name.orEmpty(), Toast.LENGTH_LONG).show()
                                 },
                             ),

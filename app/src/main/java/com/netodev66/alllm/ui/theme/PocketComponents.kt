@@ -17,7 +17,9 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -220,6 +222,33 @@ fun Modifier.bounceClick(
             interactionSource = interaction,
             indication = null,
             enabled = enabled,
+            onClick = onClick,
+        )
+}
+
+/**
+ * [bounceClick]'s long-press twin. `Modifier.combinedClickable` brings its own
+ * ripple, so a row that used it bounced on some gestures and not others; this
+ * keeps both taps on the shared bounce spring. The interaction source is shared
+ * with [bounceScale] so one press drives one animation.
+ */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun Modifier.bounceCombinedClick(
+    enabled: Boolean = true,
+    pressedScale: Float = 0.955f,
+    onLongClick: (() -> Unit)? = null,
+    onClick: () -> Unit,
+): Modifier {
+    if (!enabled) return this
+    val interaction = remember { MutableInteractionSource() }
+    return this
+        .bounceScale(interaction, enabled = enabled, pressedScale = pressedScale)
+        .combinedClickable(
+            interactionSource = interaction,
+            indication = null,
+            enabled = enabled,
+            onLongClick = onLongClick,
             onClick = onClick,
         )
 }

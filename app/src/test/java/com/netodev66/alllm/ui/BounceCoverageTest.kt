@@ -99,4 +99,28 @@ class BounceCoverageTest {
             Regex("""fun Modifier\.bounceClick\(""").findAll(components).count() == 1,
         )
     }
+
+    /**
+     * `combinedClickable` carries its own ripple and ignores `LocalIndication`,
+     * so a row using it bounced on tap but rippled on long-press. `bounceClick`
+     * and `bounceCombinedClick` are the only two press-feedback paths allowed.
+     */
+    @Test
+    fun `long-press rows use bounceCombinedClick`() {
+        val offenders = mutableListOf<String>()
+        sourceRoot.walkTopDown()
+            .filter { it.isFile && it.extension == "kt" && it.name != "PocketComponents.kt" }
+            .forEach { file ->
+                val text = file.readText()
+                val count = Regex("""(?<![\w.])combinedClickable\(""").findAll(text).count()
+                if (count > 0) {
+                    offenders += "${file.relativeTo(sourceRoot)}: $count combinedClickable (use bounceCombinedClick)"
+                }
+            }
+        assertTrue(
+            "Material's combinedClickable ripples on press instead of bouncing. " +
+                "Use Modifier.bounceCombinedClick:\n" + offenders.joinToString("\n"),
+            offenders.isEmpty(),
+        )
+    }
 }
