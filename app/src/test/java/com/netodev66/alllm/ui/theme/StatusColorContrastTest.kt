@@ -119,4 +119,36 @@ class StatusColorContrastTest {
             ratio(retired, DARK_PANE) < MIN_RATIO,
         )
     }
+
+    @Test
+    fun `every fill maps to a text colour legible on it`() {
+        // statusOn() picks the text for a solid status fill. Its first version
+        // returned the *container* on-colour for the solid fill, so a light green
+        // fill got light green text — the exact defect the palette was meant to
+        // remove. Each solid fill and each container must resolve to something
+        // legible, and the two must differ (a solid fill is not a container).
+        listOf("dark" to DarkStatusColors, "light" to LightStatusColors).forEach { (theme, t) ->
+            val fills = listOf(
+                "success" to (t.success to t.onSuccess),
+                "warning" to (t.warning to t.onWarning),
+                "info" to (t.info to t.onInfo),
+                "danger" to (t.danger to t.onDanger),
+                "successContainer" to (t.successContainer to t.onSuccessContainer),
+                "warningContainer" to (t.warningContainer to t.onWarningContainer),
+                "infoContainer" to (t.infoContainer to t.onInfoContainer),
+                "dangerContainer" to (t.dangerContainer to t.onDangerContainer),
+            )
+            fills.forEach { (name, pair) ->
+                val (fill, expectedOn) = pair
+                assertLegible("$theme statusOn($name)", expectedOn, fill)
+            }
+            assertTrue(
+                "$theme: a solid fill and its container must not share a text colour",
+                t.onSuccess != t.onSuccessContainer &&
+                    t.onWarning != t.onWarningContainer &&
+                    t.onInfo != t.onInfoContainer &&
+                    t.onDanger != t.onDangerContainer,
+            )
+        }
+    }
 }

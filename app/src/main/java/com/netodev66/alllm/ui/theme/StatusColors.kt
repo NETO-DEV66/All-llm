@@ -98,15 +98,24 @@ val statusColors: StatusColors
  * Call sites used to hardcode `Color.White` on a solid status fill, which is
  * correct only while the fill stays dark. Reading the choice from the palette
  * keeps white-on-dark and near-black-on-light both legible.
+ *
+ * The solid and container fills need different text colours: in the dark theme
+ * [StatusColors.success] is a *light* green, so its text must be near-black,
+ * whereas [StatusColors.successContainer] is dark and wants light text. Both
+ * directions are asserted by [StatusColorContrastTest].
  */
 @Composable
 fun statusOn(container: Color): Color {
     val tokens = statusColors
     return when (container) {
-        tokens.success, tokens.successContainer -> tokens.onSuccessContainer
-        tokens.warning, tokens.warningContainer -> tokens.onWarningContainer
-        tokens.info, tokens.infoContainer -> tokens.onInfoContainer
-        tokens.danger, tokens.dangerContainer -> tokens.onDangerContainer
+        tokens.success -> tokens.onSuccess
+        tokens.successContainer -> tokens.onSuccessContainer
+        tokens.warning -> tokens.onWarning
+        tokens.warningContainer -> tokens.onWarningContainer
+        tokens.info -> tokens.onInfo
+        tokens.infoContainer -> tokens.onInfoContainer
+        tokens.danger -> tokens.onDanger
+        tokens.dangerContainer -> tokens.onDangerContainer
         else -> MaterialTheme.colorScheme.onSurface
     }
 }

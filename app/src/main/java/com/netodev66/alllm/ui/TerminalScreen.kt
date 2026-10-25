@@ -305,7 +305,7 @@ fun TerminalScreen(
                                 )
                                 if (sessions.size > 1) {
                                     PocketIconButton( { onCloseSession(session.id) },
-                                        modifier = Modifier.size(18.dp),
+                                        modifier = Modifier.size(48.dp),
                                     ) {
                                         Icon(
                                             Icons.Default.Close,

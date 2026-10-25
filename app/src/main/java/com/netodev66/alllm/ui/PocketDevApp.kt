@@ -4023,7 +4023,7 @@ private fun ChatHomeScreen(
     Column(Modifier.fillMaxSize()) {
         PocketTopAppBar(
             navigationIcon = {
-                PocketHamburgerButton(onOpenMenu, modifier = Modifier.size(40.dp))
+                PocketHamburgerButton(onOpenMenu, modifier = Modifier.size(48.dp))
             },
             title = {
                 Column {
@@ -4036,7 +4036,7 @@ private fun ChatHomeScreen(
                 }
             },
             actions = {
-                PocketIconButton(onToggleTheme, modifier = Modifier.size(40.dp)) {
+                PocketIconButton(onToggleTheme, modifier = Modifier.size(48.dp)) {
                     Icon(
                         if (state.themeMode == com.netodev66.alllm.ui.theme.AppThemeMode.DARK) {
                             Icons.Default.LightMode
@@ -4047,7 +4047,7 @@ private fun ChatHomeScreen(
                         modifier = Modifier.size(20.dp),
                     )
                 }
-                PocketIconButton(onSettings, modifier = Modifier.size(40.dp)) {
+                PocketIconButton(onSettings, modifier = Modifier.size(48.dp)) {
                     Icon(Icons.Default.Settings, "Settings", modifier = Modifier.size(20.dp))
                 }
             },
@@ -4259,7 +4259,7 @@ private fun ProjectsScreen(
                     horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    PocketHamburgerButton(onOpenMenu, modifier = Modifier.size(38.dp))
+                    PocketHamburgerButton(onOpenMenu, modifier = Modifier.size(48.dp))
                     Spacer(Modifier.width(6.dp))
                     BrandMark(compact = false)
                     Spacer(Modifier.width(10.dp))
@@ -5611,7 +5611,7 @@ private fun WorkspaceScreen(
                                         }
                                     },
                                     enabled = !state.androidBuildRunning && !state.isRunning && !state.projectTerminalRunning,
-                                    modifier = Modifier.size(40.dp),
+                                    modifier = Modifier.size(48.dp),
                                 ) {
                                     if (state.androidBuildRunning) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
                                     else Icon(Icons.Default.PlayArrow, "Build and run Android app", modifier = Modifier.size(20.dp))
@@ -5620,24 +5620,24 @@ private fun WorkspaceScreen(
                                 // and retest. Build-and-run installs; this one proves.
                                 PocketIconButton( onRunSelfVerifyingBuild,
                                     enabled = !state.androidBuildRunning && !state.isRunning && !state.projectTerminalRunning,
-                                    modifier = Modifier.size(40.dp),
+                                    modifier = Modifier.size(48.dp),
                                 ) {
                                     if (state.androidBuildRunning) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
                                     else Icon(Icons.Default.FactCheck, "Verify build and tests, fixing failures", modifier = Modifier.size(20.dp))
                                 }
                             }
                             PocketIconButton( { showChats = true },
-                                modifier = Modifier.size(40.dp),
+                                modifier = Modifier.size(48.dp),
                             ) {
                                 Icon(Icons.Default.History, "Project chats", modifier = Modifier.size(20.dp))
                             }
                             PocketIconButton( { showCommandPalette = true },
-                                modifier = Modifier.size(40.dp),
+                                modifier = Modifier.size(48.dp),
                             ) {
                                 Icon(Icons.Default.MoreVert, "Command palette", modifier = Modifier.size(20.dp))
                             }
                             PocketIconButton( onBack,
-                                modifier = Modifier.size(40.dp),
+                                modifier = Modifier.size(48.dp),
                             ) {
                                 Icon(Icons.AutoMirrored.Filled.ArrowBack, "Projects", modifier = Modifier.size(20.dp))
                             }
@@ -5789,7 +5789,7 @@ private fun WorkspaceScreen(
                             Text("Resume", fontSize = 12.sp, maxLines = 1)
                         }
                         PocketIconButton( onDismissInterruptedSession,
-                            modifier = Modifier.size(32.dp),
+                            modifier = Modifier.size(48.dp),
                         ) {
                             Icon(Icons.Default.Close, contentDescription = "Dismiss", tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(16.dp))
                         }
@@ -7130,7 +7130,7 @@ private fun ChatTab(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         PocketIconButton( { toolsOpen = !toolsOpen },
-                            modifier = Modifier.size(40.dp).align(if (inputLineCount > 1) Alignment.Bottom else Alignment.CenterVertically),
+                            modifier = Modifier.size(48.dp).align(if (inputLineCount > 1) Alignment.Bottom else Alignment.CenterVertically),
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Add,
@@ -7177,7 +7177,7 @@ private fun ChatTab(
                             },
                         )
                         PocketIconButton( onStartVoiceInput,
-                            modifier = Modifier.size(40.dp).align(if (inputLineCount > 1) Alignment.Bottom else Alignment.CenterVertically),
+                            modifier = Modifier.size(48.dp).align(if (inputLineCount > 1) Alignment.Bottom else Alignment.CenterVertically),
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Mic,

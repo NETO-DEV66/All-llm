@@ -368,15 +368,15 @@ fun TeamStudioScreen(
                     Spacer(Modifier.height(8.dp))
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = Color(0xFFFFEBEE),
-                        border = BorderStroke(1.dp, Color(0xFFE57373)),
+                        color = statusColors.dangerContainer,
+                        border = BorderStroke(1.dp, statusColors.danger),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.padding(10.dp)) {
                             Text(
                                 text = error,
                                 fontSize = 11.sp,
-                                color = Color(0xFFB71C1C)
+                                color = statusColors.onDangerContainer
                             )
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -1213,8 +1213,8 @@ private fun TeamDagTab(orchestrator: AgentTeamOrchestrator) {
         if (sessionState.conflictWarnings.isNotEmpty()) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = Color(0xFFFFF3E0),
-                border = BorderStroke(1.dp, Color(0xFFFFB74D)),
+                color = statusColors.warningContainer,
+                border = BorderStroke(1.dp, statusColors.warning),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
@@ -1222,11 +1222,11 @@ private fun TeamDagTab(orchestrator: AgentTeamOrchestrator) {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Icon(Icons.Default.Warning, contentDescription = null, tint = Color(0xFFF57C00), modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Warning, contentDescription = null, tint = statusColors.warning, modifier = Modifier.size(18.dp))
                     Text(
                         text = sessionState.conflictWarnings.first(),
                         fontSize = 11.sp,
-                        color = Color(0xFFE65100)
+                        color = statusColors.onWarningContainer
                     )
                 }
             }
@@ -1725,7 +1725,7 @@ private fun TeamReviewBudgetTab(orchestrator: AgentTeamOrchestrator) {
                                 shape = RoundedCornerShape(4.dp),
                                 color = when (rev.verdict) {
                                     ReviewVerdict.APPROVED -> statusColors.success
-                                    ReviewVerdict.CHANGES_REQUESTED -> Color(0xFFF57C00)
+                                    ReviewVerdict.CHANGES_REQUESTED -> statusColors.warning
                                     ReviewVerdict.REJECTED -> statusColors.danger
                                     ReviewVerdict.PENDING -> MaterialTheme.colorScheme.surfaceVariant
                                 }
@@ -1735,8 +1735,10 @@ private fun TeamReviewBudgetTab(orchestrator: AgentTeamOrchestrator) {
                                     fontSize = 9.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = when (rev.verdict) {
+                                        ReviewVerdict.APPROVED -> statusColors.onSuccess
+                                        ReviewVerdict.CHANGES_REQUESTED -> statusColors.onWarning
+                                        ReviewVerdict.REJECTED -> statusColors.onDanger
                                         ReviewVerdict.PENDING -> MaterialTheme.colorScheme.onSurfaceVariant
-                                        else -> Color.White
                                     },
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                 )

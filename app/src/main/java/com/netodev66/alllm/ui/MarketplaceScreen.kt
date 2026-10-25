@@ -179,7 +179,7 @@ fun MarketplaceScreen(
         topBar = {
             PocketTopAppBar(
                 navigationIcon = {
-                    PocketHamburgerButton(onOpenMenu, modifier = Modifier.size(40.dp))
+                    PocketHamburgerButton(onOpenMenu, modifier = Modifier.size(48.dp))
                 },
                 title = {
                     Row(

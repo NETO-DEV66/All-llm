@@ -1,0 +1,7 @@
+All-LLM 3.10.0 - finishes the status-colour pass.
+- Every status badge now picks its own text colour, so a light green fill no
+  longer gets white text on it.
+- The team error and conflict banners follow the theme instead of forcing light
+  pastel panels on a dark screen.
+- Icon buttons now keep the 48dp tap target the platform guarantees.
+- A weight that has no font file no longer silently falls back.

@@ -257,7 +257,7 @@ fun SettingsScreen(
             PocketTopAppBar(
                 modifier = Modifier.padding(top = 8.dp),
                 navigationIcon = {
-                    PocketHamburgerButton(onOpenMenu, modifier = Modifier.size(40.dp))
+                    PocketHamburgerButton(onOpenMenu, modifier = Modifier.size(48.dp))
                 },
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {

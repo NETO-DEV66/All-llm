@@ -624,7 +624,7 @@ private fun BuildAutomationTab(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = if (buildResult.success) Color(0xFF1B5E20).copy(alpha = 0.12f) else MaterialTheme.colorScheme.errorContainer
+                        containerColor = if (buildResult.success) statusColors.successContainer else statusColors.dangerContainer
                     )
                 ) {
                     Column(Modifier.padding(16.dp)) {
@@ -632,19 +632,13 @@ private fun BuildAutomationTab(
                             Icon(
                                 if (buildResult.success) Icons.Default.CheckCircle else Icons.Default.Warning,
                                 contentDescription = null,
-                                // Dark green (0xFF2E7D32) on a dark background is unreadable;
-                                // light green in dark theme, dark green in light theme.
-                                tint = if (buildResult.success) {
-                                    statusColors.success
-                                } else MaterialTheme.colorScheme.error
+                                tint = if (buildResult.success) statusColors.success else statusColors.danger
                             )
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 if (buildResult.success) "Build Successful!" else "Build Failed",
                                 fontWeight = FontWeight.Bold,
-                                color = if (buildResult.success) {
-                                    statusColors.success
-                                } else MaterialTheme.colorScheme.error
+                                color = if (buildResult.success) statusColors.onSuccessContainer else statusColors.onDangerContainer
                             )
                         }
 

@@ -172,7 +172,7 @@ fun SkillsScreen(
             Column {
                 PocketTopAppBar(
                     navigationIcon = {
-                        PocketHamburgerButton(onOpenMenu, modifier = Modifier.size(40.dp))
+                        PocketHamburgerButton(onOpenMenu, modifier = Modifier.size(48.dp))
                     },
                     title = {
                         Column {
@@ -1212,7 +1212,7 @@ private fun SkillCard(
                 if (updateAvailable && skill.source.startsWith("https://github.com/", ignoreCase = true)) {
                     PocketTextButton( onUpdate, enabled = !busy) { Text("Update", fontSize = 12.sp) }
                 }
-                PocketIconButton( onRemove, enabled = !busy, modifier = Modifier.size(36.dp)) {
+                PocketIconButton( onRemove, enabled = !busy, modifier = Modifier.size(48.dp)) {
                     Icon(Icons.Default.Delete, contentDescription = "Remove skill", modifier = Modifier.size(18.dp))
                 }
             }
@@ -1253,7 +1253,7 @@ private fun SkillScanReportCard(
                         fontWeight = FontWeight.SemiBold,
                     )
                 }
-                PocketIconButton( onDismiss, modifier = Modifier.size(32.dp)) {
+                PocketIconButton( onDismiss, modifier = Modifier.size(48.dp)) {
                     Icon(Icons.Default.Close, contentDescription = "Dismiss scan", modifier = Modifier.size(16.dp))
                 }
             }

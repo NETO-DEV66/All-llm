@@ -801,7 +801,7 @@ fun AgentScreen(
             PocketTopAppBar(
                 modifier = Modifier.padding(top = 4.dp),
                 navigationIcon = {
-                    PocketHamburgerButton(onOpenMenu, modifier = Modifier.size(40.dp))
+                    PocketHamburgerButton(onOpenMenu, modifier = Modifier.size(48.dp))
                 },
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -2814,7 +2814,7 @@ private fun AgentUpdateBlock(
                             Text(agent.title, fontWeight = FontWeight.Bold, fontSize = 13.sp)
                             Text("v${update.installedVersion} → v${update.latestVersion}", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        Text("UPDATE", color = PocketOrange, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold)
+                        Text("UPDATE", color = PocketOrange, fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                     if (updating) {
                         state.agentUpdateMessage?.let { Text(it, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) }
