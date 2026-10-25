@@ -139,10 +139,7 @@ fun CommandPalette(
         workspaceFiles.filter { !it.isDirectory && it.path.lowercase().contains(normalizedQuery) }.take(8)
     } else emptyList()
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        containerColor = pocketTokens.modalSurface,
-    ) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             Modifier
                 .fillMaxWidth()

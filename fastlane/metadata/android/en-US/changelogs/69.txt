@@ -1,7 +1,6 @@
-All-LLM 3.9.5 - verify the build, not the agent's word.
+All-LLM 3.9.5 - solid surfaces, and a build you can verify.
+- Liquid glass is gone for good: panes, sheets and dialogs are opaque again, so
+  text never competes with a moving backdrop.
 - New Verify action in the IDE bar: builds and runs tests; on failure it hands
-  the real errors to the agent, applies the fix and retests. Green means exit 0
-  was seen, never that the agent claimed success.
-- Verification stops instead of spinning: a missing toolchain or an unfixable
-  error ends the run with the real reason.
-- A banner and the activity feed show each attempt and any applied fix.
+  the real errors to the agent, applies the fix, then retests.
+- Green means exit 0 was seen, not that the agent claimed success.

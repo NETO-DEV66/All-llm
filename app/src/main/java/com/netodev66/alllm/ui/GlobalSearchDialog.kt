@@ -193,10 +193,7 @@ fun GlobalSearchDialog(
         performSearch()
     }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        containerColor = pocketTokens.modalSurface,
-    ) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             Modifier
                 .fillMaxWidth()

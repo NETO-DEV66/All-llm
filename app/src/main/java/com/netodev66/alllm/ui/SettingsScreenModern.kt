@@ -1067,7 +1067,7 @@ fun SettingsScreen(
         }
 
         ModalBottomSheet(
-            containerColor = pocketTokens.modalSurface,
+            containerColor = pocketTokens.fillStrong,
             onDismissRequest = { showAuditLogSheet = false },
         ) {
             Column(

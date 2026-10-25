@@ -122,7 +122,6 @@ fun GitHubIssuesBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = pocketTokens.modalSurface,
     ) {
         Column(
             modifier = Modifier

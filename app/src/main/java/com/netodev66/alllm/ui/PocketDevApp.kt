@@ -1803,10 +1803,7 @@ private fun AgentSwitchSheet(
     onSelect: (AgentKind) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        containerColor = pocketTokens.modalSurface,
-    ) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -6001,10 +5998,7 @@ private fun WorkspaceCommandPalette(
             command.keywords.contains(normalized)
     }
 
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        containerColor = pocketTokens.modalSurface,
-    ) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             Modifier
                 .fillMaxWidth()

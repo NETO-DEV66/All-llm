@@ -78,7 +78,6 @@ fun VisualDevToolsSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         modifier = Modifier.fillMaxHeight(0.85f),
-        containerColor = pocketTokens.modalSurface,
     ) {
         Column(
             modifier = Modifier

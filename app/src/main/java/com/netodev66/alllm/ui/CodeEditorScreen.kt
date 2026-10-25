@@ -798,10 +798,7 @@ fun CodeEditorScreen(
     }
 
     if (outlineOpen) {
-        ModalBottomSheet(
-        onDismissRequest = { outlineOpen = false },
-        containerColor = pocketTokens.modalSurface,
-    ) {
+        ModalBottomSheet(onDismissRequest = { outlineOpen = false }) {
             Column(
                 Modifier
                     .fillMaxWidth()
@@ -1055,10 +1052,7 @@ fun CodeEditorScreen(
     }
 
     if (referencesOpen) {
-        ModalBottomSheet(
-        onDismissRequest = { referencesOpen = false },
-        containerColor = pocketTokens.modalSurface,
-    ) {
+        ModalBottomSheet(onDismissRequest = { referencesOpen = false }) {
             Column(
                 Modifier
                     .fillMaxWidth()
@@ -1099,10 +1093,7 @@ fun CodeEditorScreen(
     }
 
     if (diagnosticsOpen) {
-        ModalBottomSheet(
-        onDismissRequest = { diagnosticsOpen = false },
-        containerColor = pocketTokens.modalSurface,
-    ) {
+        ModalBottomSheet(onDismissRequest = { diagnosticsOpen = false }) {
             Column(
                 Modifier
                     .fillMaxWidth()
@@ -1185,10 +1176,7 @@ fun CodeEditorScreen(
     }
 
     if (codeActionsOpen) {
-        ModalBottomSheet(
-        onDismissRequest = { codeActionsOpen = false },
-        containerColor = pocketTokens.modalSurface,
-    ) {
+        ModalBottomSheet(onDismissRequest = { codeActionsOpen = false }) {
             Column(
                 Modifier
                     .fillMaxWidth()
@@ -1255,10 +1243,7 @@ fun CodeEditorScreen(
     }
 
     if (implementationsOpen) {
-        ModalBottomSheet(
-        onDismissRequest = { implementationsOpen = false },
-        containerColor = pocketTokens.modalSurface,
-    ) {
+        ModalBottomSheet(onDismissRequest = { implementationsOpen = false }) {
             Column(
                 Modifier
                     .fillMaxWidth()
@@ -1299,10 +1284,7 @@ fun CodeEditorScreen(
     }
 
     if (callHierarchyOpen) {
-        ModalBottomSheet(
-        onDismissRequest = { callHierarchyOpen = false },
-        containerColor = pocketTokens.modalSurface,
-    ) {
+        ModalBottomSheet(onDismissRequest = { callHierarchyOpen = false }) {
             Column(
                 Modifier
                     .fillMaxWidth()

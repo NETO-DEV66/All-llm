@@ -666,8 +666,7 @@ private fun TeamRosterTab(
             .maxByOrNull { it.startedAtMs }
         ModalBottomSheet(
             onDismissRequest = { selectedRole = null },
-            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-            containerColor = pocketTokens.modalSurface,
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         ) {
             AgentDetailSheet(
                 role = role,

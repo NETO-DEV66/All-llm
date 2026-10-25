@@ -1,11 +1,5 @@
 package com.netodev66.alllm.ui.theme
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -84,100 +78,22 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
 /**
- * Root background layer: the sheet of glass everything else sits on.
+ * Root background layer.
  *
- * Draws a slow-drifting multi-stop gradient, two soft accent glows and a specular
- * sweep. Every translucent pane in the app composites over this, so this layer is
- * what makes the glass read as glass rather than as flat grey.
- *
- * Performance: the layer is built so a running animation never recomposes the
- * content above it. All four animated values are read only inside `graphicsLayer`
- * blocks, which Compose evaluates in the layer-update phase — a frame invalidates
- * these layers, not the composition. The brushes are `remember`ed per theme, so no
- * per-frame allocation happens either. [blurred] costs one full-screen GPU blur
- * pass and is therefore applied to the glow layer only, never to content.
+ * A plain opaque fill of the theme background. Solid surfaces need something flat
+ * to sit on, and a drifting gradient behind them only made the borders look
+ * unsteady.
  */
 @Composable
 fun PocketBackdrop(
     modifier: Modifier = Modifier,
-    animated: Boolean = true,
-    blurred: Boolean = true,
     content: @Composable () -> Unit,
 ) {
-    val tokens = pocketTokens
-    val transition = rememberInfiniteTransition(label = "pocket-backdrop")
-    val drift by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = if (animated) 22_000 else 1,
-                easing = LinearEasing,
-            ),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "drift",
-    )
-    val sweep by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = if (animated) 9_000 else 1,
-                easing = LinearEasing,
-            ),
-            repeatMode = RepeatMode.Restart,
-        ),
-        label = "sweep",
-    )
-
-    val backdropBrush = remember(tokens) { glassBackdropBrush(tokens) }
-    val primaryGlow = remember(tokens) { glassGlowBrush(tokens, 0.9f) }
-    val secondaryGlow = remember(tokens) { glassGlowBrush(tokens, 0.7f) }
-    val sweepBrush = remember(tokens) { glassSweepBrush(tokens) }
-    val glowModifier = remember(tokens, blurred) {
-        if (blurred) Modifier.glassBlur(tokens.panelBlurRadius, RectangleShape) else Modifier
-    }
-
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(backdropBrush),
+            .background(MaterialTheme.colorScheme.background),
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .then(glowModifier)
-                .background(primaryGlow)
-                .graphicsLayer {
-                    alpha = 0.55f + 0.35f * drift
-                    translationX = size.width * (drift - 0.5f) * 0.15f
-                },
-        )
-        // Deliberately not blurred: a radial gradient is already smooth, so a second
-        // full-screen blur pass would cost GPU time and change nothing visible.
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(secondaryGlow)
-                .graphicsLayer {
-                    alpha = 0.30f + 0.30f * (1f - drift)
-                    translationX = size.width * (drift - 0.5f) * 0.4f
-                    translationY = size.height * (0.5f - drift) * 0.3f
-                },
-        )
-        // A single diagonal band of light that crosses the screen and repeats. This
-        // is the detail that separates "translucent panel" from "sheet of glass".
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .graphicsLayer {
-                    alpha = 0.5f
-                    translationX = size.width * (1.4f * sweep - 1.2f)
-                    translationY = size.height * (1.4f * sweep - 1.2f) * 0.35f
-                }
-                .background(sweepBrush),
-        )
         content()
     }
 }
@@ -384,13 +300,8 @@ fun Modifier.bouncyEntry(
 }
 
 /**
- * App bar with a translucent glass container and a bottom hairline. Mirrors
- * Material3's [TopAppBar] signature so call sites swap without touching their
- * arguments.
- *
- * The container is `chromeFill`, the one genuinely translucent token: a bar carries
- * no body text, so the backdrop drifting under it is the effect and nothing has to
- * be read against it.
+ * App bar with a solid container and a bottom hairline. Mirrors Material3's
+ * [TopAppBar] signature so call sites swap without touching their arguments.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -402,7 +313,7 @@ fun PocketTopAppBar(
     expandedHeight: Dp = TopAppBarDefaults.TopAppBarExpandedHeight,
     windowInsets: WindowInsets = TopAppBarDefaults.windowInsets,
     colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(
-        containerColor = pocketTokens.chromeFill,
+        containerColor = MaterialTheme.colorScheme.surface,
         titleContentColor = MaterialTheme.colorScheme.onSurface,
         navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
         actionIconContentColor = MaterialTheme.colorScheme.onSurface,
@@ -431,7 +342,7 @@ fun PocketTopAppBar(
 
 /**
  * Bottom bar that keeps Material3's [NavigationBar] layout and item semantics but
- * renders a translucent glass container with a top hairline.
+ * renders an opaque container with a top hairline.
  */
 @Composable
 fun PocketBottomBar(
@@ -448,7 +359,7 @@ fun PocketBottomBar(
         )
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            color = containerColor ?: pocketTokens.chromeFill,
+            color = containerColor ?: MaterialTheme.colorScheme.surface,
             tonalElevation = 0.dp,
             shadowElevation = 0.dp,
         ) {
