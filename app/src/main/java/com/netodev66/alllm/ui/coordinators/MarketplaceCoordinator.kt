@@ -52,6 +52,8 @@ class MarketplaceCoordinator(
     private val credentialStore: McpCredentialStore,
     /** Refreshes the MCP server list UI after a marketplace (un)install registers one. */
     private val onMcpServersChanged: () -> Unit = {},
+    /** Verifies a just-registered MCP server actually starts. Null skips the check. */
+    private val toolRegistry: com.netodev66.alllm.mcp.McpToolRegistry? = null,
 ) {
     private val _installedIds = MutableStateFlow(installManager.installedIds())
     val installedIds: StateFlow<Set<String>> = _installedIds.asStateFlow()
@@ -207,6 +209,39 @@ class MarketplaceCoordinator(
             withContext(Dispatchers.Main) {
                 host.updateState { it.copy(toastMessage = outcome) }
             }
+            // Only a registration can be verified; a plain reference has nothing
+            // to start, and claiming otherwise would be the same false "Installed".
+            if (item.category == MarketplaceCategory.MCP_SERVERS) {
+                verifyMarketplaceMcpServer(item)
+            }
+        }
+    }
+
+    /**
+     * Starts a marketplace-installed MCP server and reports whether it came up.
+     *
+     * The marketplace install reported success as soon as the server was
+     * registered — and four built-in rows pointed at npm packages that do not
+     * exist, so the card read "Installed" while the server could never start.
+     * This runs the real handshake and replaces the claim with the server's own
+     * error when it fails.
+     */
+    private suspend fun verifyMarketplaceMcpServer(item: MarketplaceItem) {
+        val registry = toolRegistry ?: return
+        val template = com.netodev66.alllm.mcp.McpBuiltInCatalogTemplates
+            .find { "catalog-mcp-${it.id}" == item.id }
+        val serverId = template?.id ?: "marketplace-${item.id}"
+        if (mcpRegistry.getServer(serverId) == null) return
+        val result = withContext(Dispatchers.IO) {
+            runCatching { registry.probe(serverId, host.state().activeProject?.id) }
+        }.getOrNull() ?: return
+        val message = if (result.success) {
+            "${item.name} is ready (${result.toolCount} tools)"
+        } else {
+            "${item.name} installed, but it could not start: ${result.detail}"
+        }
+        withContext(Dispatchers.Main) {
+            host.updateState { it.copy(toastMessage = message, mcpMessage = message) }
         }
     }
 

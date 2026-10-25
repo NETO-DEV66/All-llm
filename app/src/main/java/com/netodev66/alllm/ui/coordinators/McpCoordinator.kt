@@ -75,17 +75,71 @@ class McpCoordinator(
                 },
             )
         }
+        // A custom command can be a typo just as easily as a catalog row can name a
+        // missing package; both look identical until something tries to start it.
+        verifyMcpServer(server.id, server.name)
     }
 
     fun installMcpTemplate(templateId: String, envOverrides: Map<String, String> = emptyMap(), projectId: String? = host.state().activeProject?.id) {
         val name = mcpRegistry.catalogTemplates.find { it.id == templateId }?.name ?: templateId
-        runCatching {
-            mcpRegistry.installFromTemplate(templateId, envOverrides, projectId)
+        val installedId = runCatching {
+            val server = mcpRegistry.installFromTemplate(templateId, envOverrides, projectId)
             refreshMcpServers(projectId)
+            server.id
         }.onSuccess {
             host.updateState { it.copy(toastMessage = "Installed MCP server $name") }
         }.onFailure { err ->
             host.updateState { it.copy(toastMessage = "Failed to install MCP template: ${err.message}") }
+        }.getOrNull()
+        // Verify against the id the registry actually stored: a project-scoped
+        // install is keyed "<template>::<project>", not the bare template id.
+        if (installedId != null) verifyMcpServer(installedId, name)
+    }
+
+    /**
+     * Starts a freshly installed server for real and reports whether it came up.
+     *
+     * Registering a server never proved it could run: a catalog entry whose npm
+     * package does not exist registered fine, showed "Installed", and then died
+     * on the first tool call with an error the user could not see. This runs the
+     * actual handshake at install time and surfaces the server's own error text,
+     * so "installed" means installed *and* startable.
+     */
+    private fun verifyMcpServer(serverId: String, displayName: String) {
+        host.scope.launch {
+            host.updateState { it.copy(mcpBusy = true, mcpSelectedServerId = serverId, mcpMessage = "Starting $displayName to check it runs...") }
+            val probe = withContext(Dispatchers.IO) {
+                runCatching { toolRegistry.probe(serverId, host.state().activeProject?.id) }
+            }
+            probe.onSuccess { result ->
+                if (result.success) {
+                    host.updateState {
+                        it.copy(
+                            mcpBusy = false,
+                            mcpMessage = "$displayName is ready (${result.toolCount} tools)",
+                            toastMessage = "Installed MCP server $displayName - ${result.toolCount} tools available",
+                        )
+                    }
+                } else {
+                    // Keep the server installed: the user may fix a credential or
+                    // a command and retry. Only the claim that it works is dropped.
+                    host.updateState {
+                        it.copy(
+                            mcpBusy = false,
+                            mcpMessage = "$displayName installed but did not start: ${result.detail}",
+                            toastMessage = "$displayName installed, but it could not start: ${result.detail}",
+                        )
+                    }
+                }
+            }.onFailure { err ->
+                host.updateState {
+                    it.copy(
+                        mcpBusy = false,
+                        mcpMessage = "$displayName installed but could not be checked: ${err.message}",
+                        toastMessage = "$displayName installed, but it could not be checked: ${err.message}",
+                    )
+                }
+            }
         }
     }
 

@@ -341,4 +341,72 @@ class McpToolRegistryTest {
         assertEquals(null, spawns[0].error)
         assertTrue(spawns[0].resultPreview.contains("fake-cmd"))
     }
+
+    @Test
+    fun `probe starts a server that has no permission policy yet`() {
+        // The install path probes a server the moment it is registered, before the
+        // user has approved anything. A permission check there would report a
+        // healthy server as broken, which is the bug this whole path exists to fix.
+        registry.installServer(testStdioServer("unapproved"))
+        val result = toolRegistry().probe("unapproved")
+        assertTrue(result.detail, result.success)
+        assertEquals(1, result.toolCount)
+    }
+
+    @Test
+    fun `probe reports a server that cannot start, with the server's own error`() {
+        val failing = FakeMcpProcess(emptyMap())
+        failing.alive = false
+        registry.installServer(testStdioServer("dead"))
+        val tr = McpToolRegistry(
+            registry, permissionManager, auditLogger, credentialStore,
+            sessionFactory = { McpServerSession(it, ScriptedMcpProcessFactory(mutableListOf(failing)), ioTimeoutMs = 500, restartBackoffMs = 0) },
+            remoteClientFactory = { _, _ -> remoteOps },
+        )
+        val result = tr.probe("dead")
+        assertFalse("a server that never answers must not probe as healthy", result.success)
+        assertEquals(0, result.toolCount)
+        assertTrue("detail must carry a reason: ${result.detail}", result.detail.isNotBlank())
+    }
+
+    @Test
+    fun `probe refuses a disabled server`() {
+        registry.installServer(testStdioServer("off").copy(enabled = false))
+        val result = toolRegistry().probe("off")
+        assertFalse(result.success)
+        assertTrue(result.detail.contains("disabled"))
+    }
+
+    @Test
+    fun `probe warms the discovery cache so the first real call needs no handshake`() {
+        val tr = toolRegistry()
+        assertTrue(tr.probe("s1").success)
+        assertEquals(1, toolsListRequests())
+        // A cached probe result means discover does not spawn again.
+        assertEquals(listOf("echo"), tr.discover("s1").map { it.name })
+        assertEquals(1, sessionFactoryCalls)
+    }
+
+    @Test
+    fun `probe lists tools for a native server without spawning a process`() {
+        registry.installServer(
+            McpServerInfo(
+                id = "native1",
+                name = "Native",
+                command = "native",
+                nativeHandler = KeiroLabsSearchHandler.HANDLER_ID,
+            )
+        )
+        val result = toolRegistry().probe("native1")
+        assertTrue(result.detail, result.success)
+        assertEquals(1, result.toolCount)
+        assertEquals(0, sessionFactoryCalls)
+    }
+
+    @Test
+    fun `probe of an unknown server fails instead of inventing a result`() {
+        val result = toolRegistry().probe("nope")
+        assertFalse(result.success)
+        assertTrue(result.detail.contains("not installed"))
+    }
 }

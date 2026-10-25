@@ -1023,6 +1023,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             mcpRegistry,
             mcpCredentialStore,
             onMcpServersChanged = { mcpCoordinator.refreshMcpServers() },
+            toolRegistry = mcpToolRegistry,
         )
     private val teamCoordinator =
         com.netodev66.alllm.ui.coordinators.TeamCoordinator(teamOrchestrator)

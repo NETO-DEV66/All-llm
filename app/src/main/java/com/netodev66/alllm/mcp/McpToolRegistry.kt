@@ -18,6 +18,20 @@ data class McpDiscoveredTools(
 )
 
 /**
+ * Outcome of starting a server just to see whether it can start.
+ *
+ * [detail] is written to be shown to the user as-is: it carries the server's own
+ * error text (an npm 404, a stack trace's first line) rather than a generic
+ * "failed", because the install screen is the only place the real reason is
+ * still visible.
+ */
+data class McpProbeResult(
+    val success: Boolean,
+    val toolCount: Int,
+    val detail: String,
+)
+
+/**
  * Coordinates MCP tool discovery and invocation across stdio and remote servers.
  *
  * - Discovery (tools/list) results are cached with a TTL to avoid repeated handshakes.
@@ -102,21 +116,46 @@ class McpToolRegistry(
     }
 
     /**
-     * Discovers tools via tools/list, honoring the discovery cache TTL.
-     * @throws McpDeniedException when the server is disabled or denied by policy.
+     * Starts a server and lists its tools **without** the tool-call permission
+     * gate.
+     *
+     * Installing a server and being able to run it are different things, and
+     * the gap between them is what let four catalog entries sit at "Installed"
+     * while their package did not exist: nothing ever tried to start them. This
+     * is the honest check for the install path — it spawns the real process and
+     * performs the real `initialize` handshake, so a 404 or a crash surfaces as
+     * a failure at install time rather than on the user's first tool call.
+     *
+     * No tool is invoked, so no permission decision is needed or recorded; the
+     * spawn is still audited like any other. A successful probe warms the
+     * discovery cache, so the user's first real call needs no second handshake.
      */
-    fun discover(serverId: String, projectId: String? = null, forceRefresh: Boolean = false): List<McpToolDefinition> {
-        val server = requireServer(serverId)
-        val decision = permissionManager.evaluate(server, projectId = projectId)
-        if (!decision.allowed && !decision.requiresPrompt) {
-            throw McpDeniedException(decision)
-        }
-        synchronized(lock) {
-            val cached = discoveryCache[serverId]
-            if (!forceRefresh && cached != null && clock() - cached.discoveredAt < discoveryTtlMs) {
-                return cached.tools
+    fun probe(serverId: String, projectId: String? = null): McpProbeResult =
+        runCatching {
+            val server = requireServer(serverId)
+            if (!server.enabled) {
+                return@runCatching McpProbeResult(success = false, toolCount = 0, detail = "server is disabled")
             }
+            val tools = listToolsInternal(server, projectId)
+            McpProbeResult(
+                success = true,
+                toolCount = tools.size,
+                detail = if (tools.isEmpty()) "started, but it reports no tools" else "started",
+            )
+        }.getOrElse { error ->
+            McpProbeResult(
+                success = false,
+                toolCount = 0,
+                detail = error.message ?: error::class.java.simpleName,
+            )
         }
+
+    /**
+     * Starts the server (if it needs starting) and lists its tools, caching the
+     * result. Shared by [probe] and [discover] so the two can never drift on
+     * which transport a server kind uses.
+     */
+    private fun listToolsInternal(server: McpServerInfo, projectId: String?): List<McpToolDefinition> {
         val tools = if (server.isNative) {
             nativeHandlerFor(server).tools()
         } else if (server.isRemote) {
@@ -135,9 +174,28 @@ class McpToolRegistry(
             session.listTools()
         }
         synchronized(lock) {
-            discoveryCache[serverId] = McpDiscoveredTools(serverId, tools, clock())
+            discoveryCache[server.id] = McpDiscoveredTools(server.id, tools, clock())
         }
         return tools
+    }
+
+    /**
+     * Discovers tools via tools/list, honoring the discovery cache TTL.
+     * @throws McpDeniedException when the server is disabled or denied by policy.
+     */
+    fun discover(serverId: String, projectId: String? = null, forceRefresh: Boolean = false): List<McpToolDefinition> {
+        val server = requireServer(serverId)
+        val decision = permissionManager.evaluate(server, projectId = projectId)
+        if (!decision.allowed && !decision.requiresPrompt) {
+            throw McpDeniedException(decision)
+        }
+        synchronized(lock) {
+            val cached = discoveryCache[serverId]
+            if (!forceRefresh && cached != null && clock() - cached.discoveredAt < discoveryTtlMs) {
+                return cached.tools
+            }
+        }
+        return listToolsInternal(server, projectId)
     }
 
     /**
