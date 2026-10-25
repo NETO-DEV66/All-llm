@@ -1,0 +1,6 @@
+All-LLM 3.9.7 - installs that prove themselves.
+- Installing an MCP server now starts it for real and reports whether it came
+  up, so "Installed" means installed and startable, not just registered.
+- When a server cannot start, the message carries its own error instead of a
+  silent success: a missing package, a bad command or a missing key.
+- Applies to built-in templates, custom servers and marketplace installs.
