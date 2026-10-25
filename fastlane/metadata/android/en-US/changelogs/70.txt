@@ -1,0 +1,10 @@
+All-LLM 3.9.6 - the MCP servers now really install.
+- Four catalog entries pointed at packages that could never install:
+  server-sqlite and server-fetch were never published, and server-postgres and
+  server-puppeteer are deprecated and fail on start. Each row showed "Installed"
+  while the server died with a 404 the moment you opened it.
+- SQLite, PostgreSQL, Fetch and browser automation now point at maintained
+  packages, checked against the npm registry and started by hand.
+- A test pins every built-in install command, so a dead package cannot slip
+  back into the catalog unnoticed.
+- Long-press rows bounce like every other tap; the IDE header used to ripple.

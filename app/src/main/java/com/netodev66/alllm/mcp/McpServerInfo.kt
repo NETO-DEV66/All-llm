@@ -233,8 +233,10 @@ val McpBuiltInCatalogTemplates: List<McpCatalogTemplate> = listOf(
         id = "sqlite",
         name = "SQLite Server",
         description = "Interact with and query SQLite databases directly via MCP tools.",
-        defaultCommand = "npx -y @modelcontextprotocol/server-sqlite",
-        defaultArgs = listOf("--db", "workspace.db"),
+        // The old `@modelcontextprotocol/server-sqlite` never existed on npm: the
+        // install reported success and the server then failed to start with E404.
+        defaultCommand = "npx -y @executeautomation/database-server",
+        defaultArgs = listOf("--sqlite", "workspace.db"),
         category = "Database"
     ),
     McpCatalogTemplate(
@@ -249,6 +251,8 @@ val McpBuiltInCatalogTemplates: List<McpCatalogTemplate> = listOf(
         id = "github",
         name = "GitHub Platform",
         description = "Search repos, create issues, view pull requests, and commit files via GitHub API.",
+        // Deprecated upstream but still published and working; there is no npm
+        // successor, so this stays until the catalog can ship a native handler.
         defaultCommand = "npx -y @modelcontextprotocol/server-github",
         requiredEnv = listOf("GITHUB_PERSONAL_ACCESS_TOKEN"),
         category = "Development"
@@ -257,7 +261,9 @@ val McpBuiltInCatalogTemplates: List<McpCatalogTemplate> = listOf(
         id = "postgres",
         name = "PostgreSQL Server",
         description = "Inspect database schemas, query tables, and execute SQL statements.",
-        defaultCommand = "npx -y @modelcontextprotocol/server-postgres",
+        // The official server-postgres is deprecated on npm and crashes on start;
+        // this one is maintained and speaks the same protocol.
+        defaultCommand = "npx -y @henkey/postgres-mcp-server",
         requiredEnv = listOf("POSTGRES_CONNECTION_STRING"),
         category = "Database"
     ),
@@ -265,14 +271,17 @@ val McpBuiltInCatalogTemplates: List<McpCatalogTemplate> = listOf(
         id = "fetch",
         name = "Fetch & Markdown",
         description = "Fetch web pages, extract content, and convert HTML to readable Markdown for agents.",
-        defaultCommand = "npx -y @modelcontextprotocol/server-fetch",
+        // server-fetch is not published under the @modelcontextprotocol scope.
+        defaultCommand = "npx -y fetch-mcp",
         category = "Web"
     ),
     McpCatalogTemplate(
+        // Id kept for existing installs; the backing package is Playwright now.
         id = "puppeteer",
-        name = "Puppeteer Automation",
+        name = "Browser Automation",
         description = "Automate browser interactions, capture screenshots, and scrape dynamic pages.",
-        defaultCommand = "npx -y @modelcontextprotocol/server-puppeteer",
+        // server-puppeteer is deprecated; Playwright's server is the maintained path.
+        defaultCommand = "npx -y @playwright/mcp",
         category = "Web Automation"
     ),
     McpCatalogTemplate(

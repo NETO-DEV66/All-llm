@@ -55,7 +55,7 @@ class McpPlatformTest {
         // whole line here is what hid "installed but never starts".
         assertEquals("npx", retrieved?.command)
         assertEquals(
-            listOf("-y", "@modelcontextprotocol/server-sqlite", "--db", "workspace.db"),
+            listOf("-y", "@executeautomation/database-server", "--sqlite", "workspace.db"),
             retrieved?.args,
         )
 

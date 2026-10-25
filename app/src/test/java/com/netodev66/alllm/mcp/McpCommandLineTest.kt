@@ -103,7 +103,7 @@ class McpCommandLineTest {
             val installed = registry.installFromTemplate("sqlite")
             assertEquals("npx", installed.command)
             assertFalse("command must be a single executable", installed.command.contains(' '))
-            assertEquals(listOf("-y", "@modelcontextprotocol/server-sqlite", "--db", "workspace.db"), installed.args)
+            assertEquals(listOf("-y", "@executeautomation/database-server", "--sqlite", "workspace.db"), installed.args)
         } finally {
             dir.deleteRecursively()
         }
