@@ -380,6 +380,13 @@ data class AppUiState(
     val mcpSelectedServerId: String? = null,
     val mcpBusy: Boolean = false,
     val mcpMessage: String? = null,
+    /**
+     * Per-server start-check result, keyed by server id. A server can be
+     * `enabled` and still be unable to start (a missing package, a bad command),
+     * and that distinction used to live only in a toast that vanished. Keeping it
+     * here lets the server card state it next to the ACTIVE badge.
+     */
+    val mcpServerStatus: Map<String, com.netodev66.alllm.mcp.McpProbeResult> = emptyMap(),
     val mcpRunResult: com.netodev66.alllm.runtime.McpToolCallResult? = null,
     val mcpRunTarget: String? = null,
     val mcpRunRunning: Boolean = false,

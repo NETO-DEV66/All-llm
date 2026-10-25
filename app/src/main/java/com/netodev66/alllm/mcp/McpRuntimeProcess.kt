@@ -131,6 +131,23 @@ internal fun isGuestOnlyCommand(command: String): Boolean {
 }
 
 /**
+ * Explains why a runtime-only command cannot start without the runtime.
+ *
+ * Extracted from [McpRuntimeProcessFactory] so the message is testable without a
+ * real [RuntimeInstaller] (which needs a Context). Returns null when the command
+ * is fine to spawn directly.
+ */
+internal fun missingRuntimeMessage(command: String): String? {
+    if (!isGuestOnlyCommand(command)) return null
+    // Falling back to a plain Android process here would exec `npx`, which does
+    // not exist on the device, and the user would see a bare
+    // "Cannot run program npx" with no hint that a runtime install is the
+    // missing piece. Every built-in catalog server lands in this branch.
+    return "'$command' needs the Linux runtime, which is not installed. " +
+        "Install it from Settings > Runtime, then start '${command.substringAfterLast('/')}' again."
+}
+
+/**
  * Starts a stdio MCP server inside the app's PRoot runtime.
  *
  * Built-in catalog servers run through `npx`, which lives in the runtime's
@@ -152,7 +169,11 @@ class McpRuntimeProcessFactory(
         env: Map<String, String>,
         workingDir: File?,
     ): McpManagedProcess {
-        val installed = if (isGuestOnlyCommand(command)) runtime() else null
+        val needsRuntime = isGuestOnlyCommand(command)
+        val installed = if (needsRuntime) runtime() else null
+        if (needsRuntime && installed == null) {
+            throw McpTransportException(missingRuntimeMessage(command)!!)
+        }
         if (installed == null) return fallback.start(command, args, env, workingDir)
 
         val stderrFile = File(installed.rootfs, "tmp/mcp-stderr-${System.nanoTime()}.log")

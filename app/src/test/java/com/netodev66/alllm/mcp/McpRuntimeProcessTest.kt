@@ -114,4 +114,29 @@ class McpRuntimeProcessTest {
         assertNull("a finished writer must not leave the reader blocking", reader.pollLine(500))
         reader.stop()
     }
+
+    @Test
+    fun `a runtime-only server without the runtime fails with an actionable message`() {
+        // The alternative is ProcessBuilder throwing a bare "Cannot run program
+        // npx" on a device that has no Node, which reads as a broken app rather
+        // than a missing runtime install.
+        val message = missingRuntimeMessage("npx")
+        assertTrue("npx must explain the missing runtime, got $message", message != null)
+        assertTrue(message!!.contains("Linux runtime"))
+        assertTrue(message.contains("Settings > Runtime"))
+    }
+
+    @Test
+    fun `a host binary needs no runtime, so no message is produced`() {
+        // Only guest-only commands need the runtime; a custom server naming a real
+        // host binary must keep working with the runtime absent.
+        assertNull(missingRuntimeMessage("busybox"))
+        assertNull(missingRuntimeMessage("/system/bin/sh"))
+    }
+
+    @Test
+    fun `a runtime-only command reached by path names the bare command in the message`() {
+        val message = missingRuntimeMessage("/usr/local/bin/npx")
+        assertTrue("message should name the bare command: $message", message!!.contains("'npx'"))
+    }
 }

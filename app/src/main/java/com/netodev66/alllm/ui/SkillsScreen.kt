@@ -133,6 +133,9 @@ fun SkillsScreen(
     mcpAuditLogs: List<McpAuditEntry> = emptyList(),
     mcpBusy: Boolean = false,
     mcpMessage: String? = null,
+    /** Per-server start-check result, so a card can show a server that is
+     * enabled but cannot actually start. */
+    mcpServerStatus: Map<String, com.netodev66.alllm.mcp.McpProbeResult> = emptyMap(),
     onInstallMcpTemplate: (String, Map<String, String>) -> Unit = { _, _ -> },
     onInstallCustomMcp: (McpServerInfo, Map<String, String>) -> Unit = { _, _ -> },
     onToggleMcpServer: (String, Boolean) -> Unit = { _, _ -> },
@@ -507,6 +510,7 @@ fun SkillsScreen(
                             server = server,
                             tools = mcpTools.filter { it.serverId == server.id },
                             busy = mcpBusy,
+                            probeResult = mcpServerStatus[server.id],
                             onToggle = { onToggleMcpServer(server.id, it) },
                             onDiscoverTools = { onDiscoverMcpTools(server) },
                             onRemove = { onRemoveMcpServer(server.id) },
@@ -702,6 +706,7 @@ private fun McpServerCard(
     server: McpServerInfo,
     tools: List<McpToolDefinition>,
     busy: Boolean,
+    probeResult: com.netodev66.alllm.mcp.McpProbeResult? = null,
     onToggle: (Boolean) -> Unit,
     onDiscoverTools: () -> Unit,
     onRemove: () -> Unit,
@@ -746,6 +751,38 @@ private fun McpServerCard(
             }
 
             Text("Command: ${server.command} ${server.args.joinToString(" ")}", fontSize = 10.5.sp, fontFamily = FontFamily.Monospace, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+            // The badge above says ENABLED, which is only a setting. This says
+            // whether the server actually started, which is the question a user
+            // asks after installing it.
+            if (probeResult != null) {
+                val ok = probeResult.success
+                val tint = if (ok) successGreen() else MaterialTheme.colorScheme.error
+                Surface(
+                    shape = RoundedCornerShape(6.dp),
+                    color = tint.copy(alpha = 0.12f),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Row(Modifier.padding(horizontal = 8.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            if (ok) Icons.Default.CheckCircle else Icons.Default.Warning,
+                            contentDescription = null,
+                            tint = tint,
+                            modifier = Modifier.size(13.dp),
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            if (ok) {
+                                "Starts correctly - ${probeResult.toolCount} tool${if (probeResult.toolCount == 1) "" else "s"}"
+                            } else {
+                                "Installed, but it cannot start: ${probeResult.detail}"
+                            },
+                            fontSize = 10.5.sp,
+                            color = tint,
+                        )
+                    }
+                }
+            }
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                 PocketOutlinedButton( onDiscoverTools,

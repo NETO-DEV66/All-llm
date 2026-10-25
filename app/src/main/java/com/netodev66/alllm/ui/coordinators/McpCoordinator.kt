@@ -4,6 +4,7 @@ import com.netodev66.alllm.mcp.McpAuditLogger
 import com.netodev66.alllm.mcp.McpCredentialStore
 import com.netodev66.alllm.mcp.McpDeniedException
 import com.netodev66.alllm.mcp.McpPermissionManager
+import com.netodev66.alllm.mcp.McpProbeResult
 import com.netodev66.alllm.mcp.McpPromptRequiredException
 import com.netodev66.alllm.mcp.McpRegistry
 import com.netodev66.alllm.mcp.McpServerInfo
@@ -118,6 +119,7 @@ class McpCoordinator(
                             mcpBusy = false,
                             mcpMessage = "$displayName is ready (${result.toolCount} tools)",
                             toastMessage = "Installed MCP server $displayName - ${result.toolCount} tools available",
+                            mcpServerStatus = it.mcpServerStatus + (serverId to result),
                         )
                     }
                 } else {
@@ -128,6 +130,7 @@ class McpCoordinator(
                             mcpBusy = false,
                             mcpMessage = "$displayName installed but did not start: ${result.detail}",
                             toastMessage = "$displayName installed, but it could not start: ${result.detail}",
+                            mcpServerStatus = it.mcpServerStatus + (serverId to result),
                         )
                     }
                 }
@@ -137,6 +140,13 @@ class McpCoordinator(
                         mcpBusy = false,
                         mcpMessage = "$displayName installed but could not be checked: ${err.message}",
                         toastMessage = "$displayName installed, but it could not be checked: ${err.message}",
+                        mcpServerStatus = it.mcpServerStatus + (
+                            serverId to McpProbeResult(
+                                success = false,
+                                toolCount = 0,
+                                detail = err.message ?: "check failed",
+                            )
+                            ),
                     )
                 }
             }
